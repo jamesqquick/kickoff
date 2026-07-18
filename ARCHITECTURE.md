@@ -27,7 +27,7 @@ Browser → Cloudflare Worker → Astro Page → Action / Service → Repository
 
 **Pages** — Routing and rendering only. Fetch data from services. No business logic.
 
-**Actions** — Handle user mutations. Validate input, authenticate, call a service. No SQL, no business rules.
+**Actions** — Handle user mutations. Define input schema inline with Zod via `defineAction({ input: z.object({...}) })`. Use `z.infer<typeof schema>` for any TypeScript types derived from action inputs — never duplicate a Zod schema as a manual TypeScript type. Validate input, authenticate, call a service. No SQL, no business rules.
 
 **API Endpoints** (`src/pages/api/`) — External consumers only: webhooks, public feeds, exports, future mobile API.
 
@@ -59,6 +59,24 @@ Isolated behind an interface (`SchedulingEngine.generate()`, `SchedulingEngine.v
 ## Caching
 
 Edge-cache public pages (schedules, results, brackets, venues). Never cache authenticated or sensitive responses.
+
+## Environment Variables
+
+Use Astro's built-in `astro:env` API. Never use `import.meta.env` directly or a manual env validation file.
+
+Define all variables in `astro.config.mjs` with `envField`:
+
+- `context: "server"` — only available server-side
+- `context: "client"` — safe to expose in the browser
+- `access: "secret"` — not included in the bundle
+- `access: "public"` — included in the bundle
+
+Enable `validateSecrets: true` so missing required secrets fail at Worker startup, not at runtime.
+
+Import from the appropriate virtual module:
+
+- Server vars: `import { DATABASE_URL } from "astro:env/server"`
+- Client vars: `import { PUBLIC_APP_URL } from "astro:env/client"`
 
 ## Middleware
 

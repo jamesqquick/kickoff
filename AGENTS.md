@@ -40,6 +40,8 @@ Astro Pages → Astro Actions / API Endpoints → Service Layer → Repository L
 - API endpoints (`src/pages/api/`) are for external consumers only (webhooks, public feeds, exports).
 - React only where stateful interaction is required. Everything else is Astro components.
 - Long-running work goes through Cloudflare Workflows or Queues.
+- Declare all environment variables in the `env.schema` in `astro.config.mjs` using `envField`. Import from `astro:env/server` or `astro:env/client` — never use `import.meta.env` directly.
+- Actions define input validation inline via `defineAction({ input: z.object({...}) })`. Use `z.infer<typeof schema>` for any TypeScript types derived from those shapes — never duplicate a Zod schema as a manual TypeScript type.
 
 ### Folder Structure
 
