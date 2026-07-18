@@ -32,7 +32,7 @@ import MatchCard from "@/components/MatchCard.astro";
     </PageHeader>
 
     <!-- Stat cards: 2 cols on mobile, 4 on lg+ -->
-    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
       {[
         { icon: "🛡️", value: "128",    label: "Registered Teams", trend: "▲ 12 this week", trendColor: "text-(--color-primary)", badge: "Live", badgeVariant: "live" },
         { icon: "👥", value: "1,940",  label: "Total Players",     trend: "▲ 184 this week", trendColor: "text-(--color-primary)" },
