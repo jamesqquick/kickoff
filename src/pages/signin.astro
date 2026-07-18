@@ -8,10 +8,10 @@ import GoogleAuthButton from "@/components/GoogleAuthButton.astro";
 ---
 
 <BaseLayout title="Sign In">
-  <div class="min-h-screen grid grid-cols-2">
-    <!-- Left: branding panel -->
+  <div class="min-h-screen grid grid-cols-1 lg:grid-cols-2">
+    <!-- Left: branding panel — hidden on mobile/tablet -->
     <div
-      class="relative flex flex-col justify-between p-14 border-r border-(--color-border) overflow-hidden"
+      class="hidden lg:flex relative flex-col justify-between p-14 border-r border-(--color-border) overflow-hidden"
       style="background: radial-gradient(circle at 30% 20%, rgba(5,150,105,0.16), transparent 45%), radial-gradient(circle at 80% 80%, rgba(234,88,12,0.12), transparent 45%), #ffffff;"
     >
       <div class="absolute -bottom-32 -right-20 w-[340px] h-[340px] rounded-full" style="border: 2px solid rgba(5,150,105,0.12);" />
@@ -40,8 +40,14 @@ import GoogleAuthButton from "@/components/GoogleAuthButton.astro";
     </div>
 
     <!-- Right: form panel -->
-    <div class="flex items-center justify-center p-10 bg-(--color-background)">
+    <div class="flex items-center justify-center p-6 sm:p-10 bg-(--color-background)">
       <div class="w-full max-w-[400px]">
+        <!-- Brand mark — mobile only (branding panel is hidden) -->
+        <div class="flex items-center gap-2 mb-8 lg:hidden">
+          <BrandMark size="sm" />
+          <span class="font-display font-bold text-lg text-(--color-foreground)">Kickoff</span>
+        </div>
+
         <!-- Tab switcher -->
         <div id="tab-bar" class="flex gap-1 p-1 rounded-lg border border-(--color-border) bg-[#eef2f7] mb-7">
           <button

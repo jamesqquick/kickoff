@@ -8,7 +8,7 @@ import TeamCrest from "@/components/TeamCrest.astro";
 ---
 
 <AppLayout title="FC Velocity" activeNav="teams">
-  <div class="p-8">
+  <div class="p-4 sm:p-6 lg:p-8">
     <!-- Breadcrumb -->
     <p class="text-sm text-(--color-muted) mb-5">
       <a href="/teams" class="hover:text-(--color-primary)">Teams</a>
@@ -18,17 +18,18 @@ import TeamCrest from "@/components/TeamCrest.astro";
 
     <!-- Hero banner -->
     <div
-      class="relative rounded-xl border border-(--color-border) overflow-hidden p-7 mb-6 flex items-center gap-6"
+      class="relative rounded-xl border border-(--color-border) overflow-hidden p-5 sm:p-7 mb-6 flex flex-col sm:flex-row items-start sm:items-center gap-5 sm:gap-6"
       style="background: radial-gradient(circle at 15% 30%, rgba(5,150,105,0.18), transparent 40%), radial-gradient(circle at 85% 70%, rgba(234,88,12,0.12), transparent 45%), #ffffff;"
     >
-      <TeamCrest initials="FV" gradient="from-emerald-500 to-emerald-700" size="2xl" class="shadow-lg" />
+      <TeamCrest initials="FV" gradient="from-emerald-500 to-emerald-700" size="2xl" class="shadow-lg shrink-0" />
       <div class="flex-1 min-w-0">
         <div class="flex items-center gap-3 mb-1">
-          <h1 class="font-display text-3xl font-bold text-(--color-foreground)">FC Velocity</h1>
+          <h1 class="font-display text-2xl sm:text-3xl font-bold text-(--color-foreground)">FC Velocity</h1>
           <span class={badgeVariants({ variant: "success" })}>● Approved</span>
         </div>
         <p class="text-sm text-(--color-muted)">Austin, TX · U18 Men's Division · Coach Alex Morgan</p>
-        <div class="flex gap-7 mt-4">
+        <!-- Stats: wrap on small screens -->
+        <div class="flex flex-wrap gap-x-6 gap-y-3 mt-4">
           {[
             { val: "18",    lbl: "Players" },
             { val: "4-1-0", lbl: "W-D-L",        color: "text-(--color-primary)" },
@@ -43,7 +44,8 @@ import TeamCrest from "@/components/TeamCrest.astro";
           ))}
         </div>
       </div>
-      <div class="flex flex-col gap-2 shrink-0">
+      <!-- Action buttons: row on all sizes, pushed to end of flex -->
+      <div class="flex sm:flex-col gap-2 shrink-0">
         <button class={cn(buttonVariants({ variant: "default" }), "h-9 px-4")}>Edit Team</button>
         <button class={cn(buttonVariants({ variant: "outline" }), "h-9 px-4")}>Share Profile</button>
       </div>
@@ -55,24 +57,31 @@ import TeamCrest from "@/components/TeamCrest.astro";
       the simple title + single-action slot pattern.
     -->
     <div class="rounded-xl border border-(--color-border) bg-(--color-card)">
-      <div class="flex items-center justify-between px-6 py-4 border-b border-(--color-border)">
+      <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between px-4 sm:px-6 py-4 gap-3 border-b border-(--color-border)">
         <h3 class="font-display font-semibold text-(--color-foreground)">
           Squad Roster <span class="font-normal text-sm text-(--color-muted)">· 18 players</span>
         </h3>
-        <div class="flex items-center gap-3">
-          <div class="relative">
+        <div class="flex items-center gap-3 w-full sm:w-auto">
+          <div class="relative flex-1 sm:flex-none">
             <span class="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-(--color-muted-fg)">🔍</span>
-            <input placeholder="Search players…" class="h-8 pl-8 pr-3 rounded-md border border-(--color-border) bg-(--color-surface) text-sm w-48 focus:outline-none focus:ring-2 focus:ring-(--color-primary) focus:ring-offset-1" />
+            <input placeholder="Search players…" class="h-8 pl-8 pr-3 rounded-md border border-(--color-border) bg-(--color-surface) text-sm w-full sm:w-48 focus:outline-none focus:ring-2 focus:ring-(--color-primary) focus:ring-offset-1" />
           </div>
-          <button class={cn(buttonVariants({ variant: "default" }), "h-8 px-3 text-xs")}>+ Add Player</button>
+          <button class={cn(buttonVariants({ variant: "default" }), "h-8 px-3 text-xs shrink-0")}>+ Add Player</button>
         </div>
       </div>
       <table class="w-full">
         <thead>
           <tr class="border-b border-(--color-border)">
-            {["#", "Player", "Position", "Age", "Goals", "Assists", "Status", ""].map((h) => (
-              <th class="text-left text-xs font-semibold uppercase tracking-wider text-(--color-muted-fg) px-5 py-3">{h}</th>
-            ))}
+            <!-- # — hidden on mobile -->
+            <th class="hidden sm:table-cell text-left text-xs font-semibold uppercase tracking-wider text-(--color-muted-fg) px-5 py-3">#</th>
+            <th class="text-left text-xs font-semibold uppercase tracking-wider text-(--color-muted-fg) px-5 py-3">Player</th>
+            <th class="text-left text-xs font-semibold uppercase tracking-wider text-(--color-muted-fg) px-5 py-3">Position</th>
+            <!-- Age, Goals, Assists — hidden on mobile -->
+            <th class="hidden sm:table-cell text-left text-xs font-semibold uppercase tracking-wider text-(--color-muted-fg) px-5 py-3">Age</th>
+            <th class="hidden sm:table-cell text-left text-xs font-semibold uppercase tracking-wider text-(--color-muted-fg) px-5 py-3">Goals</th>
+            <th class="hidden sm:table-cell text-left text-xs font-semibold uppercase tracking-wider text-(--color-muted-fg) px-5 py-3">Assists</th>
+            <th class="text-left text-xs font-semibold uppercase tracking-wider text-(--color-muted-fg) px-5 py-3">Status</th>
+            <th class="text-left text-xs font-semibold uppercase tracking-wider text-(--color-muted-fg) px-5 py-3"></th>
           </tr>
         </thead>
         <tbody>
@@ -86,10 +95,9 @@ import TeamCrest from "@/components/TeamCrest.astro";
             { num: 11, initials: "KP", name: "Kai Peterson",  email: "kai@fcvelocity.com",    gradient: "from-orange-500 to-orange-700",   pos: "FWD", posV: "destructive", age: 18, g: 0, a: 0, status: "Injured",     statusV: "destructive" },
           ].map((p) => (
             <tr class="border-b border-(--color-border-soft) last:border-0 hover:bg-(--color-background) transition-colors">
-              <td class="px-5 py-3.5 font-semibold text-sm text-(--color-foreground)">{p.num}</td>
+              <td class="hidden sm:table-cell px-5 py-3.5 font-semibold text-sm text-(--color-foreground)">{p.num}</td>
               <td class="px-5 py-3.5">
                 <div class="flex items-center gap-3">
-                  <!-- Player avatars are circular (person), not team crests (square) -->
                   <div class={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white bg-gradient-to-br ${p.gradient} shrink-0`}>{p.initials}</div>
                   <div>
                     <div class="flex items-center gap-1.5">
@@ -103,9 +111,9 @@ import TeamCrest from "@/components/TeamCrest.astro";
               <td class="px-5 py-3.5">
                 <span class={badgeVariants({ variant: p.posV as any })}>{p.pos}</span>
               </td>
-              <td class="px-5 py-3.5 text-sm text-(--color-muted)">{p.age}</td>
-              <td class="px-5 py-3.5 text-sm text-(--color-foreground)">{p.g}</td>
-              <td class="px-5 py-3.5 text-sm text-(--color-foreground)">{p.a}</td>
+              <td class="hidden sm:table-cell px-5 py-3.5 text-sm text-(--color-muted)">{p.age}</td>
+              <td class="hidden sm:table-cell px-5 py-3.5 text-sm text-(--color-foreground)">{p.g}</td>
+              <td class="hidden sm:table-cell px-5 py-3.5 text-sm text-(--color-foreground)">{p.a}</td>
               <td class="px-5 py-3.5">
                 <span class={badgeVariants({ variant: p.statusV as any })}>{p.status}</span>
               </td>

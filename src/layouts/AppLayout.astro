@@ -1,6 +1,7 @@
 ---
 import BaseLayout from "./BaseLayout.astro";
 import Sidebar from "@/components/layout/Sidebar.astro";
+import BrandMark from "@/components/BrandMark.astro";
 
 interface Props {
   title?: string;
@@ -10,10 +11,67 @@ const { title, activeNav } = Astro.props;
 ---
 
 <BaseLayout title={title}>
+  <!-- Backdrop overlay — mobile/tablet only, shown when sidebar is open -->
+  <div
+    id="sidebar-backdrop"
+    class="fixed inset-0 z-40 bg-black/40 hidden lg:hidden"
+    aria-hidden="true"
+  />
+
+  <!-- Mobile top bar — visible below lg -->
+  <header class="fixed top-0 inset-x-0 z-30 flex items-center gap-3 px-4 h-14 bg-(--color-surface) border-b border-(--color-border) lg:hidden">
+    <button
+      id="sidebar-open"
+      class="flex items-center justify-center w-9 h-9 rounded-md text-(--color-muted) hover:bg-(--color-border-soft) hover:text-(--color-foreground) transition-colors"
+      aria-label="Open menu"
+    >
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="3" y1="6" x2="21" y2="6" />
+        <line x1="3" y1="12" x2="21" y2="12" />
+        <line x1="3" y1="18" x2="21" y2="18" />
+      </svg>
+    </button>
+    <div class="flex items-center gap-2">
+      <BrandMark size="sm" />
+      <span class="font-display font-bold text-[17px] text-(--color-foreground)">Kickoff</span>
+    </div>
+  </header>
+
   <div class="flex min-h-screen">
     <Sidebar activeNav={activeNav} />
-    <main class="flex-1 overflow-auto">
+    <!-- pt-14 clears the fixed mobile top bar; removed at lg where the bar is hidden -->
+    <main class="flex-1 overflow-auto pt-14 lg:pt-0">
       <slot />
     </main>
   </div>
 </BaseLayout>
+
+<script>
+  const openBtn = document.getElementById("sidebar-open");
+  const closeBtn = document.getElementById("sidebar-close");
+  const sidebar  = document.getElementById("sidebar");
+  const backdrop = document.getElementById("sidebar-backdrop");
+
+  function openSidebar() {
+    sidebar?.classList.remove("-translate-x-full");
+    sidebar?.classList.add("translate-x-0");
+    backdrop?.classList.remove("hidden");
+    document.body.style.overflow = "hidden";
+  }
+
+  function closeSidebar() {
+    sidebar?.classList.add("-translate-x-full");
+    sidebar?.classList.remove("translate-x-0");
+    backdrop?.classList.add("hidden");
+    document.body.style.overflow = "";
+  }
+
+  openBtn?.addEventListener("click", openSidebar);
+  closeBtn?.addEventListener("click", closeSidebar);
+  backdrop?.addEventListener("click", closeSidebar);
+
+  // Close on nav link click (mobile UX — navigating should close the drawer)
+  sidebar?.querySelectorAll("a").forEach((link) => {
+    link.addEventListener("click", closeSidebar);
+  });
+</script>

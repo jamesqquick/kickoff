@@ -11,27 +11,28 @@ import MatchCard from "@/components/MatchCard.astro";
 ---
 
 <AppLayout title="Dashboard" activeNav="dashboard">
-  <div class="p-8">
+  <div class="p-4 sm:p-6 lg:p-8">
     <PageHeader
       eyebrow="Spring Invitational Cup"
       title="Tournament Dashboard"
       subtitle="March 14–22, 2026 · Live now"
     >
-      <div slot="actions" class="flex items-center gap-3">
-        <div class="relative">
+      <div slot="actions" class="flex items-center gap-2 flex-wrap">
+        <!-- Search: hidden on mobile, visible md+ -->
+        <div class="relative hidden md:block">
           <span class="absolute left-3 top-1/2 -translate-y-1/2 text-(--color-muted-fg) text-sm">🔍</span>
           <input
             placeholder="Search teams, players..."
-            class="h-9 pl-9 pr-4 rounded-md border border-(--color-border) bg-(--color-surface) text-sm w-64 focus:outline-none focus:ring-2 focus:ring-(--color-primary) focus:ring-offset-1"
+            class="h-9 pl-9 pr-4 rounded-md border border-(--color-border) bg-(--color-surface) text-sm w-56 focus:outline-none focus:ring-2 focus:ring-(--color-primary) focus:ring-offset-1"
           />
         </div>
         <button class={cn(buttonVariants({ variant: "outline" }), "h-9 px-3")}>Export</button>
-        <a href="/tournaments/new" class="h-9 px-4 rounded-md bg-(--color-primary) text-white text-sm font-semibold flex items-center hover:bg-(--color-primary-hover) transition-colors">+ New Tournament</a>
+        <a href="/tournaments/new" class="h-9 px-4 rounded-md bg-(--color-primary) text-white text-sm font-semibold flex items-center hover:bg-(--color-primary-hover) transition-colors whitespace-nowrap">+ New Tournament</a>
       </div>
     </PageHeader>
 
-    <!-- Stat cards -->
-    <div class="grid grid-cols-4 gap-4 mb-6">
+    <!-- Stat cards: 2 cols on mobile, 4 on lg+ -->
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
       {[
         { icon: "🛡️", value: "128",    label: "Registered Teams", trend: "▲ 12 this week", trendColor: "text-(--color-primary)", badge: "Live", badgeVariant: "live" },
         { icon: "👥", value: "1,940",  label: "Total Players",     trend: "▲ 184 this week", trendColor: "text-(--color-primary)" },
@@ -50,8 +51,8 @@ import MatchCard from "@/components/MatchCard.astro";
       ))}
     </div>
 
-    <!-- Main content grid -->
-    <div class="grid grid-cols-[1fr_320px] gap-5">
+    <!-- Main content grid: single column on mobile/tablet, side panel at xl+ -->
+    <div class="grid grid-cols-1 xl:grid-cols-[1fr_320px] gap-5">
       <div class="space-y-5">
         <!-- Pending approvals -->
         <SectionCard title="Pending Approvals">
@@ -59,9 +60,13 @@ import MatchCard from "@/components/MatchCard.astro";
           <table class="w-full">
             <thead>
               <tr class="border-b border-(--color-border)">
-                {["Team", "Division", "Roster", "Payment", ""].map((h) => (
-                  <th class="text-left text-xs font-semibold uppercase tracking-wider text-(--color-muted-fg) px-6 py-3">{h}</th>
-                ))}
+                <th class="text-left text-xs font-semibold uppercase tracking-wider text-(--color-muted-fg) px-6 py-3">Team</th>
+                <!-- Division: hidden on mobile -->
+                <th class="hidden sm:table-cell text-left text-xs font-semibold uppercase tracking-wider text-(--color-muted-fg) px-6 py-3">Division</th>
+                <!-- Roster: hidden on mobile -->
+                <th class="hidden sm:table-cell text-left text-xs font-semibold uppercase tracking-wider text-(--color-muted-fg) px-6 py-3">Roster</th>
+                <th class="text-left text-xs font-semibold uppercase tracking-wider text-(--color-muted-fg) px-6 py-3">Payment</th>
+                <th class="text-left text-xs font-semibold uppercase tracking-wider text-(--color-muted-fg) px-6 py-3"></th>
               </tr>
             </thead>
             <tbody>
@@ -78,8 +83,8 @@ import MatchCard from "@/components/MatchCard.astro";
                       <span class="font-semibold text-sm text-(--color-foreground)">{row.name}</span>
                     </div>
                   </td>
-                  <td class="px-6 py-3.5 text-sm text-(--color-muted)">{row.division}</td>
-                  <td class="px-6 py-3.5">
+                  <td class="hidden sm:table-cell px-6 py-3.5 text-sm text-(--color-muted)">{row.division}</td>
+                  <td class="hidden sm:table-cell px-6 py-3.5">
                     <span class={badgeVariants({ variant: row.rosterV as any })}>{row.roster}</span>
                   </td>
                   <td class="px-6 py-3.5">
@@ -126,7 +131,7 @@ import MatchCard from "@/components/MatchCard.astro";
                   badge={m.badge ?? undefined}
                   badgeVariant={m.badgeVariant as any ?? undefined}
                   info={m.info}
-                  class="bg-(--color-background) px-6 py-4 rounded-lg border border-(--color-border)"
+                  class="bg-(--color-background) px-4 sm:px-6 py-4 rounded-lg border border-(--color-border)"
                 />
               </div>
             ))}
