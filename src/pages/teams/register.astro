@@ -1,0 +1,126 @@
+---
+import AppLayout from "@/layouts/AppLayout.astro";
+import { buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+---
+
+<AppLayout title="Register Team" activeNav="teams">
+  <div class="p-8 max-w-3xl">
+    <div class="mb-8">
+      <p class="text-xs font-semibold uppercase tracking-widest text-(--color-primary) mb-1">Spring Invitational Cup</p>
+      <h1 class="font-display text-2xl font-bold text-(--color-foreground)">Register a Team</h1>
+      <p class="text-sm text-(--color-muted) mt-1">Complete the steps below to enter your team into the tournament.</p>
+    </div>
+
+    <!-- Step bar -->
+    <div class="flex items-center mb-8">
+      {[
+        { n: "✓", label: "Team Info", done: true, active: false },
+        { n: "2", label: "Division", done: false, active: true },
+        { n: "3", label: "Roster", done: false, active: false },
+        { n: "4", label: "Payment", done: false, active: false },
+      ].map((step, i) => (
+        <div class="flex items-center flex-1 last:flex-none">
+          <div class="flex items-center gap-2.5 shrink-0">
+            <div class={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold border-2 ${
+              step.done
+                ? "bg-(--color-primary) border-(--color-primary) text-white"
+                : step.active
+                ? "border-(--color-primary) text-(--color-primary) bg-transparent"
+                : "border-(--color-border) text-(--color-muted-fg) bg-transparent"
+            }`}>{step.n}</div>
+            <span class={`text-sm font-semibold ${step.done || step.active ? "text-(--color-foreground)" : "text-(--color-muted-fg)"}`}>{step.label}</span>
+          </div>
+          {i < 3 && (
+            <div class={`flex-1 h-0.5 mx-3 ${step.done ? "bg-(--color-primary)" : "bg-(--color-border)"}`}></div>
+          )}
+        </div>
+      ))}
+    </div>
+
+    <!-- Form card -->
+    <div class="rounded-xl border border-(--color-border) bg-(--color-card) p-7">
+      <h2 class="font-display text-lg font-semibold text-(--color-foreground) mb-1">Team Details</h2>
+      <p class="text-sm text-(--color-muted) mb-6">Tell us about your team. This info appears on schedules and the public bracket.</p>
+
+      <div class="grid grid-cols-2 gap-4 mb-4">
+        <div>
+          <label class="block text-sm font-medium text-(--color-foreground) mb-1.5">Team name <span class="text-(--color-accent)">*</span></label>
+          <input value="FC Velocity" class="w-full h-10 px-3 rounded-md border border-(--color-border) bg-(--color-surface) text-sm focus:outline-none focus:ring-2 focus:ring-(--color-primary) focus:ring-offset-1" />
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-(--color-foreground) mb-1.5">Short code <span class="text-(--color-accent)">*</span></label>
+          <input value="FV" maxlength="3" class="w-full h-10 px-3 rounded-md border border-(--color-border) bg-(--color-surface) text-sm focus:outline-none focus:ring-2 focus:ring-(--color-primary) focus:ring-offset-1" />
+          <p class="text-xs text-(--color-muted-fg) mt-1">Up to 3 letters, shown on match cards.</p>
+        </div>
+      </div>
+
+      <!-- Crest color picker -->
+      <div class="mb-4">
+        <label class="block text-sm font-medium text-(--color-foreground) mb-2">Team crest color</label>
+        <div class="flex gap-2.5">
+          {[
+            { label: "FV", class: "from-emerald-500 to-emerald-700", active: true },
+            { label: "FV", class: "from-violet-600 to-violet-900", active: false },
+            { label: "FV", class: "from-red-500 to-red-800", active: false },
+            { label: "FV", class: "from-sky-500 to-blue-700", active: false },
+            { label: "FV", class: "from-amber-400 to-amber-600", active: false },
+          ].map((c) => (
+            <div class={`w-11 h-11 rounded-[10px] flex items-center justify-center text-sm font-bold text-white bg-gradient-to-br ${c.class} cursor-pointer border-2 ${c.active ? "border-(--color-foreground)" : "border-transparent"}`}>{c.label}</div>
+          ))}
+          <div class="w-11 h-11 rounded-[10px] flex items-center justify-center text-(--color-muted-fg) border-2 border-dashed border-(--color-border) cursor-pointer hover:border-(--color-primary) text-lg">+</div>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-2 gap-4 mb-4">
+        <div>
+          <label class="block text-sm font-medium text-(--color-foreground) mb-1.5">Home city</label>
+          <input value="Austin, TX" class="w-full h-10 px-3 rounded-md border border-(--color-border) bg-(--color-surface) text-sm focus:outline-none focus:ring-2 focus:ring-(--color-primary) focus:ring-offset-1" />
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-(--color-foreground) mb-1.5">Head coach <span class="text-(--color-accent)">*</span></label>
+          <input value="Alex Morgan" class="w-full h-10 px-3 rounded-md border border-(--color-border) bg-(--color-surface) text-sm focus:outline-none focus:ring-2 focus:ring-(--color-primary) focus:ring-offset-1" />
+        </div>
+      </div>
+
+      <div class="mb-6">
+        <label class="block text-sm font-medium text-(--color-foreground) mb-1.5">Team bio</label>
+        <textarea class="w-full px-3 py-2 rounded-md border border-(--color-border) bg-(--color-surface) text-sm resize-none focus:outline-none focus:ring-2 focus:ring-(--color-primary) focus:ring-offset-1 min-h-[80px]">Two-time regional finalists returning for another run at the cup. Fast, physical, and organized.</textarea>
+      </div>
+
+      <div class="h-px bg-(--color-border) mb-6"></div>
+
+      <h3 class="font-display font-semibold text-(--color-foreground) mb-4">Select Division <span class="text-(--color-accent)">*</span></h3>
+      <div class="grid grid-cols-2 gap-3 mb-8">
+        {[
+          { label: "U18 Men's", fill: "30/32", price: "$300 entry", selected: true },
+          { label: "Open Women's", fill: "24/32", price: "$300 entry", selected: false },
+          { label: "U16 Boys", fill: "28/32", price: "$250 entry", selected: false },
+          { label: "U16 Girls", fill: "18/32", price: "$250 entry", selected: false, hot: true },
+        ].map((d) => (
+          <label class={`rounded-lg border p-4 cursor-pointer transition-colors ${
+            d.selected
+              ? "border-(--color-primary) bg-(--color-primary-subtle)"
+              : "border-(--color-border) hover:border-(--color-primary)/40"
+          }`}>
+            <div class="flex justify-between items-center mb-1">
+              <span class="font-semibold text-sm text-(--color-foreground)">{d.label}</span>
+              {d.selected
+                ? <span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-(--color-primary-subtle) text-(--color-primary) border border-(--color-primary)/30">Selected</span>
+                : d.hot
+                ? <span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-(--color-warn-subtle) text-(--color-warn) border border-(--color-warn)/30">Filling up</span>
+                : <span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-(--color-border-soft) text-(--color-muted) border border-(--color-border)">{d.fill}</span>
+              }
+            </div>
+            <p class="text-xs text-(--color-muted)">11v11 · {d.fill} teams · {d.price}</p>
+          </label>
+        ))}
+      </div>
+
+      <div class="flex justify-between">
+        <button class={cn(buttonVariants({ variant: "outline" }))}>← Back</button>
+        <button class={cn(buttonVariants({ variant: "default" }), "px-5")}>Continue to Roster →</button>
+      </div>
+    </div>
+  </div>
+</AppLayout>

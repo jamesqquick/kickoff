@@ -1,0 +1,11 @@
+{
+  // Kickoff — Soccer Tournament Manager
+  // https://developers.cloudflare.com/workers/wrangler/configuration/
+  "name": "kickoff",
+  "compatibility_date": "2025-01-01",
+  "compatibility_flags": ["nodejs_compat"],
+  "pages_build_output_dir": "./dist",
+  "placement": {
+    "mode": "smart"
+  }
+}

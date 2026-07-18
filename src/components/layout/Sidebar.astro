@@ -1,0 +1,162 @@
+---
+interface Props {
+  activeNav?: string;
+}
+const { activeNav = "dashboard" } = Astro.props;
+
+function getIcon(name: string) {
+  const icons: Record<string, string> = {
+    "grid-2x2": "▦",
+    trophy: "🏆",
+    shield: "🛡️",
+    users: "👥",
+    calendar: "📅",
+    "map-pin": "📍",
+    scale: "⚖️",
+    "credit-card": "💳",
+    user: "👤",
+    settings: "⚙️",
+  };
+  return icons[name] ?? "·";
+}
+
+const navMain = [
+  { id: "dashboard", label: "Dashboard", href: "/dashboard", icon: "grid-2x2" },
+  { id: "tournaments", label: "Tournaments", href: "/tournaments", icon: "trophy", count: "3" },
+  { id: "teams", label: "Teams", href: "/teams", icon: "shield", count: "128" },
+  { id: "players", label: "Players", href: "/players", icon: "users", count: "1.9k" },
+];
+
+const navLogistics = [
+  { id: "schedule", label: "Schedule", href: "/teams/1/schedule", icon: "calendar" },
+  { id: "venues", label: "Venues & Fields", href: "/venues", icon: "map-pin" },
+  { id: "referees", label: "Referees", href: "/referees", icon: "scale" },
+  { id: "payments", label: "Payments", href: "/payments", icon: "credit-card" },
+];
+
+const navAccount = [
+  { id: "profile", label: "My Profile", href: "/users/1/profile", icon: "user" },
+  { id: "settings", label: "Settings", href: "/settings", icon: "settings" },
+];
+---
+
+<aside
+  class="w-[248px] shrink-0 flex flex-col bg-(--color-surface) border-r border-(--color-border) min-h-screen sticky top-0"
+>
+  <!-- Brand -->
+  <div class="flex items-center gap-2.5 px-5 py-5 border-b border-(--color-border)">
+    <div
+      class="w-8 h-8 rounded-[9px] flex items-center justify-center font-display font-extrabold text-sm text-white"
+      style="background: linear-gradient(135deg, #059669, #047857); box-shadow: 0 0 16px rgba(5,150,105,0.3);"
+    >
+      K
+    </div>
+    <span class="font-display font-bold text-[17px] text-(--color-foreground)">Kickoff</span>
+  </div>
+
+  <!-- Nav -->
+  <nav class="flex-1 px-3 py-4 overflow-y-auto">
+    <div class="mb-1">
+      <p class="px-3 py-2 text-[11px] font-semibold uppercase tracking-wider text-(--color-muted-fg)">
+        Overview
+      </p>
+      {
+        navMain.map((item) => (
+          <a
+            href={item.href}
+            class:list={[
+              "flex items-center gap-3 px-3 py-2 rounded-[8px] text-sm font-medium mb-0.5 transition-colors group",
+              activeNav === item.id
+                ? "bg-(--color-primary-subtle) text-(--color-primary)"
+                : "text-(--color-muted) hover:bg-(--color-border-soft) hover:text-(--color-foreground)",
+            ]}
+          >
+            <span class="text-base leading-none">{getIcon(item.icon)}</span>
+            <span class="flex-1">{item.label}</span>
+            {item.count && (
+              <span class="text-[11px] bg-(--color-border-soft) text-(--color-muted) px-1.5 py-0.5 rounded-full">
+                {item.count}
+              </span>
+            )}
+          </a>
+        ))
+      }
+    </div>
+
+    <div class="mb-1">
+      <p class="px-3 py-2 text-[11px] font-semibold uppercase tracking-wider text-(--color-muted-fg) mt-3">
+        Logistics
+      </p>
+      {
+        navLogistics.map((item) => (
+          <a
+            href={item.href}
+            class:list={[
+              "flex items-center gap-3 px-3 py-2 rounded-[8px] text-sm font-medium mb-0.5 transition-colors",
+              activeNav === item.id
+                ? "bg-(--color-primary-subtle) text-(--color-primary)"
+                : "text-(--color-muted) hover:bg-(--color-border-soft) hover:text-(--color-foreground)",
+            ]}
+          >
+            <span class="text-base leading-none">{getIcon(item.icon)}</span>
+            <span>{item.label}</span>
+          </a>
+        ))
+      }
+    </div>
+
+    <div class="mb-1">
+      <p class="px-3 py-2 text-[11px] font-semibold uppercase tracking-wider text-(--color-muted-fg) mt-3">
+        Account
+      </p>
+      {
+        navAccount.map((item) => (
+          <a
+            href={item.href}
+            class:list={[
+              "flex items-center gap-3 px-3 py-2 rounded-[8px] text-sm font-medium mb-0.5 transition-colors",
+              activeNav === item.id
+                ? "bg-(--color-primary-subtle) text-(--color-primary)"
+                : "text-(--color-muted) hover:bg-(--color-border-soft) hover:text-(--color-foreground)",
+            ]}
+          >
+            <span class="text-base leading-none">{getIcon(item.icon)}</span>
+            <span>{item.label}</span>
+          </a>
+        ))
+      }
+    </div>
+  </nav>
+
+  <!-- User footer -->
+  <div class="p-3 border-t border-(--color-border)">
+    <div class="flex items-center gap-3 px-3 py-2.5 rounded-[8px] bg-(--color-background)">
+      <div
+        class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white shrink-0"
+        style="background: linear-gradient(135deg, #ea580c, #c2410c);"
+      >
+        AM
+      </div>
+      <div class="min-w-0">
+        <p class="text-sm font-semibold text-(--color-foreground) truncate">Alex Morgan</p>
+        <p class="text-xs text-(--color-muted) truncate">Organizer</p>
+      </div>
+    </div>
+  </div>
+</aside>
+
+<script>
+  // Highlight current page nav item based on URL
+  document.addEventListener("DOMContentLoaded", () => {
+    const path = window.location.pathname;
+    document.querySelectorAll("aside a").forEach((a) => {
+      const href = a.getAttribute("href");
+      if (href && path.startsWith(href) && href !== "/") {
+        a.classList.add("bg-(--color-primary-subtle)", "text-(--color-primary)");
+        a.classList.remove("text-(--color-muted)");
+      }
+    });
+  });
+</script>
+
+

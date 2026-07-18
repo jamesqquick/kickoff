@@ -1,0 +1,19 @@
+---
+import BaseLayout from "./BaseLayout.astro";
+import Sidebar from "@/components/layout/Sidebar.astro";
+
+interface Props {
+  title?: string;
+  activeNav?: string;
+}
+const { title, activeNav } = Astro.props;
+---
+
+<BaseLayout title={title}>
+  <div class="flex min-h-screen">
+    <Sidebar activeNav={activeNav} />
+    <main class="flex-1 overflow-auto">
+      <slot />
+    </main>
+  </div>
+</BaseLayout>
