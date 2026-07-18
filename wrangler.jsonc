@@ -2,9 +2,14 @@
   // Kickoff — Soccer Tournament Manager
   // https://developers.cloudflare.com/workers/wrangler/configuration/
   "name": "kickoff",
+  "account_id": "4426cbeacb457b1ca1b865d6c36ced0d",
   "compatibility_date": "2025-01-01",
   "compatibility_flags": ["nodejs_compat"],
-  "pages_build_output_dir": "./dist",
+  "main": "./dist/server/entry.mjs",
+  "assets": {
+    "directory": "./dist/client",
+    "binding": "ASSETS"
+  },
   "placement": {
     "mode": "smart"
   }
