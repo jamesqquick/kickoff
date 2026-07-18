@@ -1,29 +1,31 @@
 ---
 import AppLayout from "@/layouts/AppLayout.astro";
 import { buttonVariants } from "@/components/ui/button";
+import { badgeVariants } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import PageHeader from "@/components/PageHeader.astro";
+import SectionCard from "@/components/SectionCard.astro";
+import TeamCrest from "@/components/TeamCrest.astro";
+import FormField from "@/components/FormField.astro";
 const { id } = Astro.params;
 // Static mockup — real data would use `id` to fetch user profile
 ---
 
 <AppLayout title="My Profile" activeNav="profile">
   <div class="p-8">
-    <div class="flex items-start justify-between mb-8">
-      <div>
-        <h1 class="font-display text-2xl font-bold text-(--color-foreground)">My Profile</h1>
-        <p class="text-sm text-(--color-muted) mt-1">Manage your account, address, and preferences.</p>
-      </div>
-      <button class={cn(buttonVariants({ variant: "default" }), "h-9 px-4")}>Save Changes</button>
-    </div>
+    <PageHeader title="My Profile" subtitle="Manage your account, address, and preferences.">
+      <button slot="actions" class={cn(buttonVariants({ variant: "default" }), "h-9 px-4")}>Save Changes</button>
+    </PageHeader>
 
     <div class="grid grid-cols-[1fr_360px] gap-6">
       <!-- Left: personal info -->
       <div class="space-y-5">
-        <div class="rounded-xl border border-(--color-border) bg-(--color-card) p-6">
+        <SectionCard class="p-6">
           <h3 class="font-display font-semibold text-(--color-foreground) mb-5">Personal Information</h3>
 
           <!-- Avatar upload -->
           <div class="flex items-center gap-4 mb-6">
+            <!-- User avatar is circular (person), not a team crest -->
             <div class="w-[72px] h-[72px] rounded-full flex items-center justify-center text-[26px] font-bold text-white bg-gradient-to-br from-orange-500 to-orange-700 shrink-0">AM</div>
             <div>
               <button class={cn(buttonVariants({ variant: "outline" }), "h-8 px-3")}>Upload photo</button>
@@ -32,125 +34,81 @@ const { id } = Astro.params;
           </div>
 
           <div class="grid grid-cols-2 gap-4 mb-4">
-            <div>
-              <label class="block text-sm font-medium text-(--color-foreground) mb-1.5">First name</label>
-              <input value="Alex" class="w-full h-10 px-3 rounded-md border border-(--color-border) bg-(--color-surface) text-sm focus:outline-none focus:ring-2 focus:ring-(--color-primary) focus:ring-offset-1" />
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-(--color-foreground) mb-1.5">Last name</label>
-              <input value="Morgan" class="w-full h-10 px-3 rounded-md border border-(--color-border) bg-(--color-surface) text-sm focus:outline-none focus:ring-2 focus:ring-(--color-primary) focus:ring-offset-1" />
-            </div>
+            <FormField label="First name" value="Alex" />
+            <FormField label="Last name"  value="Morgan" />
           </div>
-          <div class="mb-4">
-            <label class="block text-sm font-medium text-(--color-foreground) mb-1.5">Email</label>
-            <input type="email" value="alex.morgan@fcvelocity.com" class="w-full h-10 px-3 rounded-md border border-(--color-border) bg-(--color-surface) text-sm focus:outline-none focus:ring-2 focus:ring-(--color-primary) focus:ring-offset-1" />
-          </div>
+          <FormField label="Email" type="email" value="alex.morgan@fcvelocity.com" class="mb-4" />
           <div class="grid grid-cols-2 gap-4">
-            <div>
-              <label class="block text-sm font-medium text-(--color-foreground) mb-1.5">Phone</label>
-              <input value="(512) 555-0148" class="w-full h-10 px-3 rounded-md border border-(--color-border) bg-(--color-surface) text-sm focus:outline-none focus:ring-2 focus:ring-(--color-primary) focus:ring-offset-1" />
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-(--color-foreground) mb-1.5">Date of birth</label>
-              <input type="date" value="2007-04-12" class="w-full h-10 px-3 rounded-md border border-(--color-border) bg-(--color-surface) text-sm focus:outline-none focus:ring-2 focus:ring-(--color-primary) focus:ring-offset-1" />
-            </div>
+            <FormField label="Phone"         value="(512) 555-0148" />
+            <FormField label="Date of birth" type="date" value="2007-04-12" />
           </div>
 
-          <div class="h-px bg-(--color-border) my-5"></div>
+          <div class="h-px bg-(--color-border) my-5" />
           <h4 class="text-sm font-semibold text-(--color-foreground) mb-4">Address</h4>
 
-          <div class="mb-4">
-            <label class="block text-sm font-medium text-(--color-foreground) mb-1.5">Street address</label>
-            <input value="1204 South Lamar Blvd" class="w-full h-10 px-3 rounded-md border border-(--color-border) bg-(--color-surface) text-sm focus:outline-none focus:ring-2 focus:ring-(--color-primary) focus:ring-offset-1" />
-          </div>
-          <div class="mb-4">
-            <label class="block text-sm font-medium text-(--color-foreground) mb-1.5">Apt / Suite / Unit</label>
-            <input placeholder="Optional" class="w-full h-10 px-3 rounded-md border border-(--color-border) bg-(--color-surface) text-sm text-(--color-foreground) placeholder:text-(--color-muted-fg) focus:outline-none focus:ring-2 focus:ring-(--color-primary) focus:ring-offset-1" />
-          </div>
+          <FormField label="Street address" value="1204 South Lamar Blvd" class="mb-4" />
+          <FormField label="Apt / Suite / Unit" placeholder="Optional" class="mb-4" />
           <div class="grid grid-cols-2 gap-4 mb-4">
-            <div>
-              <label class="block text-sm font-medium text-(--color-foreground) mb-1.5">City</label>
-              <input value="Austin" class="w-full h-10 px-3 rounded-md border border-(--color-border) bg-(--color-surface) text-sm focus:outline-none focus:ring-2 focus:ring-(--color-primary) focus:ring-offset-1" />
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-(--color-foreground) mb-1.5">State</label>
-              <input value="TX" class="w-full h-10 px-3 rounded-md border border-(--color-border) bg-(--color-surface) text-sm focus:outline-none focus:ring-2 focus:ring-(--color-primary) focus:ring-offset-1" />
-            </div>
+            <FormField label="City"  value="Austin" />
+            <FormField label="State" value="TX" />
           </div>
           <div class="grid grid-cols-2 gap-4">
-            <div>
-              <label class="block text-sm font-medium text-(--color-foreground) mb-1.5">ZIP code</label>
-              <input value="78704" class="w-full h-10 px-3 rounded-md border border-(--color-border) bg-(--color-surface) text-sm focus:outline-none focus:ring-2 focus:ring-(--color-primary) focus:ring-offset-1" />
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-(--color-foreground) mb-1.5">Country</label>
+            <FormField label="ZIP code" value="78704" />
+            <FormField label="Country">
               <select class="w-full h-10 px-3 rounded-md border border-(--color-border) bg-(--color-surface) text-sm focus:outline-none focus:ring-2 focus:ring-(--color-primary) focus:ring-offset-1">
                 <option>United States</option>
                 <option>Canada</option>
                 <option>Mexico</option>
               </select>
-            </div>
+            </FormField>
           </div>
-        </div>
+        </SectionCard>
       </div>
 
       <!-- Right: teams, security, notifications -->
       <div class="space-y-5">
         <!-- My teams -->
-        <div class="rounded-xl border border-(--color-border) bg-(--color-card) p-5">
+        <SectionCard class="p-5">
           <div class="flex items-center justify-between mb-4">
             <h3 class="font-display font-semibold text-(--color-foreground)">My Teams</h3>
             <button class={cn(buttonVariants({ variant: "outline" }), "h-7 px-3 text-xs")}>+ Join team</button>
           </div>
           <div class="space-y-3">
             {[
-              { initials: "FV", grad: "from-emerald-500 to-emerald-700", name: "FC Velocity", meta: "Captain · U18 Men's · Spring Invitational Cup", status: "Active", sClass: "success" },
-              { initials: "OB", grad: "from-slate-400 to-slate-600", name: "Old Boys United", meta: "Player · Rec League · 2024", status: "Past", sClass: "muted" },
+              { initials: "FV", gradient: "from-emerald-500 to-emerald-700", name: "FC Velocity",    meta: "Captain · U18 Men's · Spring Invitational Cup", statusV: "success", status: "Active" },
+              { initials: "OB", gradient: "from-slate-400 to-slate-600",     name: "Old Boys United", meta: "Player · Rec League · 2024",                   statusV: "secondary", status: "Past" },
             ].map((t) => (
               <div class="flex items-center gap-3">
-                <div class={`w-10 h-10 rounded-[10px] flex items-center justify-center text-sm font-bold text-white bg-gradient-to-br ${t.grad} shrink-0`}>{t.initials}</div>
+                <TeamCrest initials={t.initials} gradient={t.gradient} size="lg" />
                 <div class="flex-1 min-w-0">
                   <p class="text-sm font-semibold text-(--color-foreground)">{t.name}</p>
                   <p class="text-xs text-(--color-muted) truncate">{t.meta}</p>
                 </div>
-                <span class={`text-xs font-semibold px-2.5 py-0.5 rounded-full border shrink-0 ${
-                  t.sClass === "success"
-                    ? "bg-(--color-primary-subtle) text-(--color-primary) border-(--color-primary)/30"
-                    : "bg-(--color-border-soft) text-(--color-muted) border-(--color-border)"
-                }`}>{t.status}</span>
+                <span class:list={[badgeVariants({ variant: t.statusV as any }), "shrink-0"]}>{t.status}</span>
               </div>
             ))}
           </div>
-        </div>
+        </SectionCard>
 
         <!-- Account & security -->
-        <div class="rounded-xl border border-(--color-border) bg-(--color-card) p-5">
+        <SectionCard class="p-5">
           <h3 class="font-display font-semibold text-(--color-foreground) mb-4">Account &amp; Security</h3>
           <div class="space-y-4">
-            <div>
-              <label class="block text-sm font-medium text-(--color-foreground) mb-1.5">Current password</label>
-              <input type="password" placeholder="••••••••" class="w-full h-10 px-3 rounded-md border border-(--color-border) bg-(--color-surface) text-sm placeholder:text-(--color-muted-fg) focus:outline-none focus:ring-2 focus:ring-(--color-primary) focus:ring-offset-1" />
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-(--color-foreground) mb-1.5">New password</label>
-              <input type="password" placeholder="••••••••" class="w-full h-10 px-3 rounded-md border border-(--color-border) bg-(--color-surface) text-sm placeholder:text-(--color-muted-fg) focus:outline-none focus:ring-2 focus:ring-(--color-primary) focus:ring-offset-1" />
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-(--color-foreground) mb-1.5">Confirm new password</label>
-              <input type="password" placeholder="••••••••" class="w-full h-10 px-3 rounded-md border border-(--color-border) bg-(--color-surface) text-sm placeholder:text-(--color-muted-fg) focus:outline-none focus:ring-2 focus:ring-(--color-primary) focus:ring-offset-1" />
-            </div>
+            <FormField label="Current password" type="password" placeholder="••••••••" />
+            <FormField label="New password"      type="password" placeholder="••••••••" />
+            <FormField label="Confirm new password" type="password" placeholder="••••••••" />
             <button class={cn(buttonVariants({ variant: "outline" }), "h-8 px-3")}>Update password</button>
           </div>
-        </div>
+        </SectionCard>
 
         <!-- Notifications -->
-        <div class="rounded-xl border border-(--color-border) bg-(--color-card) p-5">
+        <SectionCard class="p-5">
           <h3 class="font-display font-semibold text-(--color-foreground) mb-4">Notifications</h3>
           <div class="divide-y divide-(--color-border-soft)">
             {[
-              { label: "Match reminders", checked: true },
-              { label: "Roster changes", checked: true },
-              { label: "Payment receipts", checked: false },
+              { label: "Match reminders",    checked: true },
+              { label: "Roster changes",     checked: true },
+              { label: "Payment receipts",   checked: false },
               { label: "Weekly digest email", checked: true },
             ].map((n) => (
               <label class="flex justify-between items-center py-3 cursor-pointer">
@@ -159,7 +117,7 @@ const { id } = Astro.params;
               </label>
             ))}
           </div>
-        </div>
+        </SectionCard>
       </div>
     </div>
   </div>

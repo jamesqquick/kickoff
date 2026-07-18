@@ -1,0 +1,58 @@
+---
+/**
+ * A label + input wrapper. Provide a `<slot>` child to override the default
+ * input (e.g. for textarea, select, or a custom component).
+ *
+ * Examples:
+ *   <FormField label="Email" type="email" name="email" />
+ *   <FormField label="Bio">
+ *     <textarea name="bio" class="...">...</textarea>
+ *   </FormField>
+ *
+ * Omit `label` when you need a custom label row (e.g. one with a sibling
+ * link). Render the label yourself and pass only the input via FormField.
+ */
+interface Props {
+  label?: string;
+  name?: string;
+  type?: string;
+  placeholder?: string;
+  value?: string;
+  hint?: string;
+  required?: boolean;
+  class?: string;
+}
+
+const {
+  label,
+  name,
+  type = "text",
+  placeholder,
+  value,
+  hint,
+  required,
+  class: className,
+} = Astro.props;
+
+const hasSlot = Astro.slots.has("default");
+---
+
+<div class:list={[className]}>
+  {label && (
+    <label class="block text-sm font-medium text-(--color-foreground) mb-1.5">
+      {label}{required && <span class="text-(--color-accent) ml-0.5">*</span>}
+    </label>
+  )}
+  {hasSlot ? (
+    <slot />
+  ) : (
+    <input
+      name={name}
+      type={type}
+      placeholder={placeholder}
+      value={value}
+      class="w-full h-10 px-3 rounded-md border border-(--color-border) bg-(--color-surface) text-sm text-(--color-foreground) placeholder:text-(--color-muted-fg) focus:outline-none focus:ring-2 focus:ring-(--color-primary) focus:ring-offset-1"
+    />
+  )}
+  {hint && <p class="text-xs text-(--color-muted-fg) mt-1">{hint}</p>}
+</div>

@@ -1,0 +1,19 @@
+---
+interface Props {
+  /** "sm" = 32px (sidebar), "md" = 36px (sign-in page) */
+  size?: "sm" | "md";
+}
+
+const { size = "sm" } = Astro.props;
+const sizeClass = size === "md" ? "w-9 h-9 rounded-[10px] text-base" : "w-8 h-8 rounded-[9px] text-sm";
+---
+
+<div
+  class:list={[
+    "flex items-center justify-center font-display font-extrabold text-white",
+    sizeClass,
+  ]}
+  style="background: linear-gradient(135deg, #059669, #047857); box-shadow: 0 0 16px rgba(5,150,105,0.3);"
+>
+  K
+</div>

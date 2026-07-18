@@ -1,0 +1,67 @@
+---
+import TeamCrest from "@/components/TeamCrest.astro";
+import { badgeVariants } from "@/components/ui/badge";
+import type { VariantProps } from "class-variance-authority";
+
+type BadgeVariant = VariantProps<typeof badgeVariants>["variant"];
+type CrestSize = "xs" | "sm" | "md" | "lg" | "xl" | "2xl";
+
+interface Team {
+  name: string;
+  initials: string;
+  gradient: string;
+}
+
+interface Props {
+  home: Team;
+  away: Team;
+  /** Score string ("2 – 1") or time string ("4:30 PM") */
+  score: string;
+  badge?: string;
+  badgeVariant?: BadgeVariant;
+  /** Secondary info line, e.g. "Field 3" */
+  info?: string | null;
+  /** Crest size — "sm" (w-8) for compact rows, "lg" (w-10) for cards */
+  crestSize?: CrestSize;
+  /** When true, renders score at text-lg instead of text-xl */
+  compact?: boolean;
+  class?: string;
+}
+
+const {
+  home,
+  away,
+  score,
+  badge,
+  badgeVariant = "secondary",
+  info,
+  crestSize = "sm",
+  compact = false,
+  class: className,
+} = Astro.props;
+---
+
+<div class:list={["grid grid-cols-[1fr_auto_1fr] items-center gap-4", className]}>
+  <!-- Home team -->
+  <div class="flex items-center gap-2.5 justify-end">
+    <span class="text-sm font-semibold text-(--color-foreground)">{home.name}</span>
+    <TeamCrest initials={home.initials} gradient={home.gradient} size={crestSize} />
+  </div>
+
+  <!-- Center: badge / score -->
+  <div class="text-center">
+    {badge && (
+      <div class:list={[badgeVariants({ variant: badgeVariant }), "mb-1"]}>{badge}</div>
+    )}
+    {info && <div class="text-xs text-(--color-muted) mb-0.5">{info}</div>}
+    <div class:list={["font-display font-bold text-(--color-foreground)", compact ? "text-lg" : "text-xl"]}>
+      {score}
+    </div>
+  </div>
+
+  <!-- Away team -->
+  <div class="flex items-center gap-2.5">
+    <TeamCrest initials={away.initials} gradient={away.gradient} size={crestSize} />
+    <span class="text-sm font-semibold text-(--color-foreground)">{away.name}</span>
+  </div>
+</div>

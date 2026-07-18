@@ -1,85 +1,78 @@
 ---
 import AppLayout from "@/layouts/AppLayout.astro";
 import { buttonVariants } from "@/components/ui/button";
+import { badgeVariants } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import PageHeader from "@/components/PageHeader.astro";
+import SectionCard from "@/components/SectionCard.astro";
+import StatCard from "@/components/StatCard.astro";
+import TeamCrest from "@/components/TeamCrest.astro";
+import MatchCard from "@/components/MatchCard.astro";
 const { id } = Astro.params;
 // Static mockup — real data would use `id` to fetch team schedule
 ---
 
 <AppLayout title="Schedule" activeNav="schedule">
   <div class="p-8">
-    <div class="flex items-start justify-between mb-7">
-      <div>
-        <p class="text-xs font-semibold uppercase tracking-widest text-(--color-primary) mb-1">FC Velocity</p>
-        <h1 class="font-display text-2xl font-bold text-(--color-foreground)">Match Schedule</h1>
-        <p class="text-sm text-(--color-muted) mt-1">Group B · Spring Invitational Cup</p>
-      </div>
-      <div class="flex items-center gap-3">
+    <PageHeader eyebrow="FC Velocity" title="Match Schedule" subtitle="Group B · Spring Invitational Cup" class="mb-7">
+      <div slot="actions" class="flex items-center gap-3">
         <button class={cn(buttonVariants({ variant: "outline" }), "h-9 px-4")}>📅 Add to Calendar</button>
         <div class="flex gap-1 p-1 rounded-lg border border-(--color-border) bg-(--color-border-soft)">
           <button class={cn(buttonVariants({ variant: "ghost" }), "h-7 px-3 bg-white shadow-sm text-(--color-foreground)")}>List</button>
           <button class={cn(buttonVariants({ variant: "ghost" }), "h-7 px-3 text-(--color-muted)")}>Calendar</button>
         </div>
       </div>
-    </div>
+    </PageHeader>
 
     <!-- Record summary -->
     <div class="grid grid-cols-5 gap-4 mb-7">
       {[
-        { val: "4", lbl: "Wins", color: "text-(--color-primary)" },
-        { val: "1", lbl: "Draws", color: "text-(--color-foreground)" },
-        { val: "0", lbl: "Losses", color: "text-(--color-danger)" },
-        { val: "2", lbl: "Upcoming", color: "text-(--color-foreground)" },
-        { val: "13", lbl: "Points", color: "text-(--color-accent)" },
+        { val: "4",  lbl: "Wins",     color: "text-(--color-primary)" },
+        { val: "1",  lbl: "Draws" },
+        { val: "0",  lbl: "Losses",   color: "text-(--color-danger)" },
+        { val: "2",  lbl: "Upcoming" },
+        { val: "13", lbl: "Points",   color: "text-(--color-accent)" },
       ].map((s) => (
-        <div class="rounded-xl border border-(--color-border) bg-(--color-card) p-5">
-          <p class={`font-display text-3xl font-bold ${s.color}`}>{s.val}</p>
-          <p class="text-sm text-(--color-muted) mt-2">{s.lbl}</p>
-        </div>
+        <StatCard value={s.val} label={s.lbl} color={s.color} />
       ))}
     </div>
 
     <div class="grid grid-cols-[1fr_300px] gap-5">
       <div class="space-y-5">
-        <!-- Upcoming -->
+        <!-- Upcoming matches -->
         <div>
           <div class="flex items-center justify-between mb-3">
             <h3 class="font-display font-semibold text-(--color-foreground)">Upcoming</h3>
-            <span class="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-(--color-primary-subtle) text-(--color-primary) border border-(--color-primary)/30">2 matches</span>
+            <span class={badgeVariants({ variant: "success" })}>2 matches</span>
           </div>
           <div class="space-y-3">
-            <!-- Match 1 - Quarterfinal -->
+            <!-- Match 1: Quarterfinal -->
             <div class="rounded-xl border border-(--color-border) bg-(--color-card) overflow-hidden">
               <div class="px-5 py-2.5 bg-(--color-border-soft) text-xs font-semibold text-(--color-muted-fg)">SAT · MARCH 18 · 4:30 PM</div>
-              <div class="grid grid-cols-[1fr_auto_1fr] items-center gap-4 px-6 py-5">
-                <div class="flex items-center justify-end gap-3">
-                  <span class="font-semibold text-sm text-(--color-foreground)">FC Velocity</span>
-                  <div class="w-10 h-10 rounded-[10px] flex items-center justify-center text-sm font-bold text-white bg-gradient-to-br from-emerald-500 to-emerald-700">FV</div>
-                </div>
-                <div class="text-center">
-                  <div class="inline-flex text-xs font-semibold px-2.5 py-0.5 rounded-full bg-(--color-accent-subtle) text-(--color-accent) border border-(--color-accent)/30 mb-2">Quarterfinal</div>
-                  <div class="font-display font-bold text-2xl text-(--color-muted-fg)">VS</div>
-                </div>
-                <div class="flex items-center gap-3">
-                  <div class="w-10 h-10 rounded-[10px] flex items-center justify-center text-sm font-bold text-white bg-gradient-to-br from-red-500 to-red-800">TF</div>
-                  <span class="font-semibold text-sm text-(--color-foreground)">Toro FC</span>
-                </div>
-              </div>
+              <MatchCard
+                home={{ name: "FC Velocity", initials: "FV", gradient: "from-emerald-500 to-emerald-700" }}
+                away={{ name: "Toro FC",     initials: "TF", gradient: "from-red-500 to-red-800" }}
+                score="VS"
+                badge="Quarterfinal"
+                badgeVariant="accent"
+                crestSize="lg"
+                class="px-6 py-5"
+              />
               <div class="px-5 py-2.5 border-t border-(--color-border-soft) flex gap-5 text-xs text-(--color-muted)">
                 <span>📍 Field 3 · North Complex</span>
                 <span>⚖️ Ref: M. Johnson</span>
               </div>
             </div>
-            <!-- Match 2 - Semifinal TBD -->
+            <!-- Match 2: Semifinal TBD -->
             <div class="rounded-xl border border-(--color-border) bg-(--color-card) overflow-hidden">
               <div class="px-5 py-2.5 bg-(--color-border-soft) text-xs font-semibold text-(--color-muted-fg)">TUE · MARCH 21 · 6:00 PM</div>
               <div class="grid grid-cols-[1fr_auto_1fr] items-center gap-4 px-6 py-5">
                 <div class="flex items-center justify-end gap-3">
                   <span class="font-semibold text-sm text-(--color-foreground)">FC Velocity</span>
-                  <div class="w-10 h-10 rounded-[10px] flex items-center justify-center text-sm font-bold text-white bg-gradient-to-br from-emerald-500 to-emerald-700">FV</div>
+                  <TeamCrest initials="FV" gradient="from-emerald-500 to-emerald-700" size="lg" />
                 </div>
                 <div class="text-center">
-                  <div class="inline-flex text-xs font-semibold px-2.5 py-0.5 rounded-full bg-(--color-border-soft) text-(--color-muted) border border-(--color-border) mb-2">If advanced</div>
+                  <span class:list={[badgeVariants({ variant: "secondary" }), "mb-2 block"]}>If advanced</span>
                   <div class="font-display font-bold text-2xl text-(--color-muted-fg)">VS</div>
                 </div>
                 <div class="flex items-center gap-3">
@@ -97,40 +90,28 @@ const { id } = Astro.params;
             <h3 class="font-display font-semibold text-(--color-foreground)">Results</h3>
             <span class="text-xs text-(--color-muted)">Group stage</span>
           </div>
-          <div class="rounded-xl border border-(--color-border) bg-(--color-card) divide-y divide-(--color-border-soft)">
+          <SectionCard>
             {[
-              { home: "FC Velocity", homeC: "FV", homeGrad: "from-emerald-500 to-emerald-700", away: "Sun Bears", awayC: "SB", awayGrad: "from-amber-400 to-amber-600", score: "3 – 1", result: "W" },
-              { home: "FC Velocity", homeC: "FV", homeGrad: "from-emerald-500 to-emerald-700", away: "Atlas City", awayC: "AC", awayGrad: "from-sky-500 to-blue-700", score: "2 – 2", result: "D" },
-              { home: "FC Velocity", homeC: "FV", homeGrad: "from-emerald-500 to-emerald-700", away: "Real Valley", awayC: "RV", awayGrad: "from-violet-600 to-violet-900", score: "4 – 0", result: "W" },
+              { home: { name: "FC Velocity", initials: "FV", gradient: "from-emerald-500 to-emerald-700" }, away: { name: "Sun Bears",  initials: "SB", gradient: "from-amber-400 to-amber-600"   }, score: "3 – 1", result: "W" },
+              { home: { name: "FC Velocity", initials: "FV", gradient: "from-emerald-500 to-emerald-700" }, away: { name: "Atlas City", initials: "AC", gradient: "from-sky-500 to-blue-700"       }, score: "2 – 2", result: "D" },
+              { home: { name: "FC Velocity", initials: "FV", gradient: "from-emerald-500 to-emerald-700" }, away: { name: "Real Valley", initials: "RV", gradient: "from-violet-600 to-violet-900" }, score: "4 – 0", result: "W" },
             ].map((m) => (
-              <div class="grid grid-cols-[1fr_auto_1fr] items-center gap-4 px-6 py-4">
-                <div class="flex items-center justify-end gap-2.5">
-                  <span class="text-sm font-semibold text-(--color-foreground)">{m.home}</span>
-                  <div class={`w-8 h-8 rounded-[8px] flex items-center justify-center text-xs font-bold text-white bg-gradient-to-br ${m.homeGrad}`}>{m.homeC}</div>
-                </div>
-                <div class="text-center">
-                  <span class={`inline-flex text-xs font-semibold px-2 py-0.5 rounded-full border mb-1 ${
-                    m.result === "W"
-                      ? "bg-(--color-primary-subtle) text-(--color-primary) border-(--color-primary)/30"
-                      : "bg-(--color-border-soft) text-(--color-muted) border-(--color-border)"
-                  }`}>{m.result}</span>
-                  <div class="font-display font-bold text-lg text-(--color-foreground)">{m.score}</div>
-                </div>
-                <div class="flex items-center gap-2.5">
-                  <div class={`w-8 h-8 rounded-[8px] flex items-center justify-center text-xs font-bold text-white bg-gradient-to-br ${m.awayGrad}`}>{m.awayC}</div>
-                  <span class="text-sm font-semibold text-(--color-foreground)">{m.away}</span>
-                </div>
-              </div>
+              <MatchCard
+                home={m.home}
+                away={m.away}
+                score={m.score}
+                badge={m.result}
+                badgeVariant={m.result === "W" ? "success" : "secondary"}
+                compact
+                class="px-6 py-4 border-b border-(--color-border-soft) last:border-0"
+              />
             ))}
-          </div>
+          </SectionCard>
         </div>
       </div>
 
       <!-- Group standings -->
-      <div class="rounded-xl border border-(--color-border) bg-(--color-card) self-start">
-        <div class="px-5 py-4 border-b border-(--color-border)">
-          <h3 class="font-display font-semibold text-(--color-foreground)">Group B Standings</h3>
-        </div>
+      <SectionCard title="Group B Standings" class="self-start">
         <table class="w-full">
           <thead>
             <tr class="border-b border-(--color-border)">
@@ -141,17 +122,17 @@ const { id } = Astro.params;
           </thead>
           <tbody>
             {[
-              { pos: 1, initials: "AC", grad: "from-sky-500 to-blue-700", name: "Atlas City", p: 5, w: 4, d: 1, l: 0, pts: 13, current: false },
-              { pos: 2, initials: "FV", grad: "from-emerald-500 to-emerald-700", name: "FC Velocity", p: 5, w: 4, d: 1, l: 0, pts: 13, current: true },
-              { pos: 3, initials: "SB", grad: "from-amber-400 to-amber-600", name: "Sun Bears", p: 5, w: 2, d: 1, l: 2, pts: 7, current: false },
-              { pos: 4, initials: "RV", grad: "from-violet-600 to-violet-900", name: "Real Valley", p: 5, w: 0, d: 1, l: 4, pts: 1, current: false },
+              { pos: 1, initials: "AC", gradient: "from-sky-500 to-blue-700",        name: "Atlas City",  p: 5, w: 4, d: 1, l: 0, pts: 13, current: false },
+              { pos: 2, initials: "FV", gradient: "from-emerald-500 to-emerald-700", name: "FC Velocity", p: 5, w: 4, d: 1, l: 0, pts: 13, current: true },
+              { pos: 3, initials: "SB", gradient: "from-amber-400 to-amber-600",     name: "Sun Bears",   p: 5, w: 2, d: 1, l: 2, pts: 7,  current: false },
+              { pos: 4, initials: "RV", gradient: "from-violet-600 to-violet-900",   name: "Real Valley", p: 5, w: 0, d: 1, l: 4, pts: 1,  current: false },
             ].map((r) => (
-              <tr class={`border-b border-(--color-border-soft) last:border-0 ${r.current ? "bg-(--color-primary-subtle)" : "hover:bg-(--color-background)"} transition-colors`}>
+              <tr class:list={["border-b border-(--color-border-soft) last:border-0 transition-colors", r.current ? "bg-(--color-primary-subtle)" : "hover:bg-(--color-background)"]}>
                 <td class="px-4 py-3 text-sm text-(--color-muted)">{r.pos}</td>
                 <td class="px-4 py-3">
                   <div class="flex items-center gap-2">
-                    <div class={`w-6 h-6 rounded-[6px] flex items-center justify-center text-[10px] font-bold text-white bg-gradient-to-br ${r.grad}`}>{r.initials}</div>
-                    <span class={`text-sm ${r.current ? "font-bold text-(--color-foreground)" : "font-medium text-(--color-foreground)"}`}>{r.name}</span>
+                    <TeamCrest initials={r.initials} gradient={r.gradient} size="xs" />
+                    <span class:list={["text-sm", r.current ? "font-bold text-(--color-foreground)" : "font-medium text-(--color-foreground)"]}>{r.name}</span>
                   </div>
                 </td>
                 <td class="px-4 py-3 text-sm text-(--color-muted)">{r.p}</td>
@@ -166,7 +147,7 @@ const { id } = Astro.params;
         <div class="px-4 py-3 m-4 rounded-lg bg-(--color-primary-subtle) text-xs font-medium text-(--color-primary)">
           ✓ Top 2 advance to knockout stage
         </div>
-      </div>
+      </SectionCard>
     </div>
   </div>
 </AppLayout>

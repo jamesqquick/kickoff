@@ -1,0 +1,25 @@
+---
+interface Props {
+  eyebrow?: string;
+  title: string;
+  subtitle?: string;
+  class?: string;
+}
+
+const { eyebrow, title, subtitle, class: className } = Astro.props;
+---
+
+<div class:list={["flex items-start justify-between mb-8", className]}>
+  <div>
+    {eyebrow && (
+      <p class="text-xs font-semibold uppercase tracking-widest text-(--color-primary) mb-1">
+        {eyebrow}
+      </p>
+    )}
+    <h1 class="font-display text-2xl font-bold text-(--color-foreground)">{title}</h1>
+    {subtitle && (
+      <p class="text-sm text-(--color-muted) mt-1">{subtitle}</p>
+    )}
+  </div>
+  <slot name="actions" />
+</div>

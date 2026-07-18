@@ -1,7 +1,9 @@
 ---
 import AppLayout from "@/layouts/AppLayout.astro";
 import { buttonVariants } from "@/components/ui/button";
+import { badgeVariants } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import TeamCrest from "@/components/TeamCrest.astro";
 // Static mockup — real data would come from a DB lookup on Astro.params.id
 ---
 
@@ -19,25 +21,23 @@ import { cn } from "@/lib/utils";
       class="relative rounded-xl border border-(--color-border) overflow-hidden p-7 mb-6 flex items-center gap-6"
       style="background: radial-gradient(circle at 15% 30%, rgba(5,150,105,0.18), transparent 40%), radial-gradient(circle at 85% 70%, rgba(234,88,12,0.12), transparent 45%), #ffffff;"
     >
-      <!-- Crest -->
-      <div class="w-24 h-24 rounded-[20px] flex items-center justify-center text-[34px] font-bold text-white bg-gradient-to-br from-emerald-500 to-emerald-700 shrink-0 shadow-lg">FV</div>
-      <!-- Info -->
+      <TeamCrest initials="FV" gradient="from-emerald-500 to-emerald-700" size="2xl" class="shadow-lg" />
       <div class="flex-1 min-w-0">
         <div class="flex items-center gap-3 mb-1">
           <h1 class="font-display text-3xl font-bold text-(--color-foreground)">FC Velocity</h1>
-          <span class="inline-flex text-xs font-semibold px-2.5 py-0.5 rounded-full bg-(--color-primary-subtle) text-(--color-primary) border border-(--color-primary)/30">● Approved</span>
+          <span class={badgeVariants({ variant: "success" })}>● Approved</span>
         </div>
         <p class="text-sm text-(--color-muted)">Austin, TX · U18 Men's Division · Coach Alex Morgan</p>
         <div class="flex gap-7 mt-4">
           {[
-            { val: "18", lbl: "Players" },
-            { val: "4-1-0", lbl: "W-D-L", color: "text-(--color-primary)" },
-            { val: "13", lbl: "Goals For" },
-            { val: "3", lbl: "Goals Against" },
-            { val: "2nd", lbl: "Group B", color: "text-(--color-accent)" },
+            { val: "18",    lbl: "Players" },
+            { val: "4-1-0", lbl: "W-D-L",        color: "text-(--color-primary)" },
+            { val: "13",    lbl: "Goals For" },
+            { val: "3",     lbl: "Goals Against" },
+            { val: "2nd",   lbl: "Group B",       color: "text-(--color-accent)" },
           ].map((s) => (
             <div>
-              <p class={`font-display text-2xl font-bold ${s.color ?? "text-(--color-foreground)"}`}>{s.val}</p>
+              <p class:list={["font-display text-2xl font-bold", s.color ?? "text-(--color-foreground)"]}>{s.val}</p>
               <p class="text-xs text-(--color-muted) mt-0.5">{s.lbl}</p>
             </div>
           ))}
@@ -49,7 +49,11 @@ import { cn } from "@/lib/utils";
       </div>
     </div>
 
-    <!-- Roster table (full width, no formation) -->
+    <!--
+      Roster table — SectionCard isn't used here because the header contains
+      both a title and a compound action (search + button), which doesn't fit
+      the simple title + single-action slot pattern.
+    -->
     <div class="rounded-xl border border-(--color-border) bg-(--color-card)">
       <div class="flex items-center justify-between px-6 py-4 border-b border-(--color-border)">
         <h3 class="font-display font-semibold text-(--color-foreground)">
@@ -73,43 +77,40 @@ import { cn } from "@/lib/utils";
         </thead>
         <tbody>
           {[
-            { num: 1, initials: "MK", name: "Marco Keller", email: "marco@fcvelocity.com", grad: "from-amber-400 to-amber-600", pos: "GK", posClass: "bg-(--color-warn-subtle) text-(--color-warn) border-(--color-warn)/30", age: 17, g: 0, a: 0, status: "Active", sClass: "success" },
-            { num: 4, initials: "DS", name: "Diego Santos", email: "diego@fcvelocity.com", grad: "from-sky-500 to-blue-700", pos: "DEF", posClass: "bg-(--color-info-subtle) text-(--color-info) border-(--color-info)/30", age: 18, g: 1, a: 2, status: "Active", sClass: "success" },
-            { num: 5, initials: "TW", name: "Tom Weber", email: "tom@fcvelocity.com", grad: "from-sky-500 to-blue-700", pos: "DEF", posClass: "bg-(--color-info-subtle) text-(--color-info) border-(--color-info)/30", age: 17, g: 0, a: 1, status: "Active", sClass: "success" },
-            { num: 8, initials: "LR", name: "Luis Rivera", email: "luis@fcvelocity.com", grad: "from-emerald-500 to-emerald-700", pos: "MID", posClass: "bg-(--color-primary-subtle) text-(--color-primary) border-(--color-primary)/30", age: 18, g: 3, a: 4, status: "Active", sClass: "success" },
-            { num: 10, initials: "JC", name: "Jordan Cole", email: "jordan@fcvelocity.com", grad: "from-emerald-500 to-emerald-700", pos: "MID", posClass: "bg-(--color-primary-subtle) text-(--color-primary) border-(--color-primary)/30", age: 18, g: 5, a: 3, status: "Active", sClass: "success", captain: true },
-            { num: 9, initials: "FN", name: "Femi Nwosu", email: "femi@fcvelocity.com", grad: "from-orange-500 to-orange-700", pos: "FWD", posClass: "bg-(--color-danger-subtle) text-(--color-danger) border-(--color-danger)/30", age: 17, g: 4, a: 1, status: "Yellow card", sClass: "warning" },
-            { num: 11, initials: "KP", name: "Kai Peterson", email: "kai@fcvelocity.com", grad: "from-orange-500 to-orange-700", pos: "FWD", posClass: "bg-(--color-danger-subtle) text-(--color-danger) border-(--color-danger)/30", age: 18, g: 0, a: 0, status: "Injured", sClass: "destructive" },
+            { num: 1,  initials: "MK", name: "Marco Keller",  email: "marco@fcvelocity.com",  gradient: "from-amber-400 to-amber-600",     pos: "GK",  posV: "warning",     age: 17, g: 0, a: 0, status: "Active",      statusV: "success" },
+            { num: 4,  initials: "DS", name: "Diego Santos",  email: "diego@fcvelocity.com",  gradient: "from-sky-500 to-blue-700",        pos: "DEF", posV: "info",        age: 18, g: 1, a: 2, status: "Active",      statusV: "success" },
+            { num: 5,  initials: "TW", name: "Tom Weber",     email: "tom@fcvelocity.com",    gradient: "from-sky-500 to-blue-700",        pos: "DEF", posV: "info",        age: 17, g: 0, a: 1, status: "Active",      statusV: "success" },
+            { num: 8,  initials: "LR", name: "Luis Rivera",   email: "luis@fcvelocity.com",   gradient: "from-emerald-500 to-emerald-700", pos: "MID", posV: "success",     age: 18, g: 3, a: 4, status: "Active",      statusV: "success" },
+            { num: 10, initials: "JC", name: "Jordan Cole",   email: "jordan@fcvelocity.com", gradient: "from-emerald-500 to-emerald-700", pos: "MID", posV: "success",     age: 18, g: 5, a: 3, status: "Active",      statusV: "success", captain: true },
+            { num: 9,  initials: "FN", name: "Femi Nwosu",    email: "femi@fcvelocity.com",   gradient: "from-orange-500 to-orange-700",   pos: "FWD", posV: "destructive", age: 17, g: 4, a: 1, status: "Yellow card", statusV: "warning" },
+            { num: 11, initials: "KP", name: "Kai Peterson",  email: "kai@fcvelocity.com",    gradient: "from-orange-500 to-orange-700",   pos: "FWD", posV: "destructive", age: 18, g: 0, a: 0, status: "Injured",     statusV: "destructive" },
           ].map((p) => (
             <tr class="border-b border-(--color-border-soft) last:border-0 hover:bg-(--color-background) transition-colors">
               <td class="px-5 py-3.5 font-semibold text-sm text-(--color-foreground)">{p.num}</td>
               <td class="px-5 py-3.5">
                 <div class="flex items-center gap-3">
-                  <div class={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white bg-gradient-to-br ${p.grad} shrink-0`}>{p.initials}</div>
+                  <!-- Player avatars are circular (person), not team crests (square) -->
+                  <div class={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white bg-gradient-to-br ${p.gradient} shrink-0`}>{p.initials}</div>
                   <div>
                     <div class="flex items-center gap-1.5">
                       <span class="text-sm font-semibold text-(--color-foreground)">{p.name}</span>
-                      {p.captain && <span class="text-xs font-semibold px-1.5 py-0.5 rounded-full bg-(--color-accent-subtle) text-(--color-accent) border border-(--color-accent)/30">C</span>}
+                      {p.captain && <span class={badgeVariants({ variant: "accent" })}>C</span>}
                     </div>
                     <p class="text-xs text-(--color-muted)">{p.email}</p>
                   </div>
                 </div>
               </td>
               <td class="px-5 py-3.5">
-                <span class={`inline-flex text-xs font-semibold px-2.5 py-0.5 rounded-full border ${p.posClass}`}>{p.pos}</span>
+                <span class={badgeVariants({ variant: p.posV as any })}>{p.pos}</span>
               </td>
               <td class="px-5 py-3.5 text-sm text-(--color-muted)">{p.age}</td>
               <td class="px-5 py-3.5 text-sm text-(--color-foreground)">{p.g}</td>
               <td class="px-5 py-3.5 text-sm text-(--color-foreground)">{p.a}</td>
               <td class="px-5 py-3.5">
-                <span class={`inline-flex text-xs font-semibold px-2.5 py-0.5 rounded-full border ${
-                  p.sClass === "success" ? "bg-(--color-primary-subtle) text-(--color-primary) border-(--color-primary)/30"
-                  : p.sClass === "warning" ? "bg-(--color-warn-subtle) text-(--color-warn) border-(--color-warn)/30"
-                  : "bg-(--color-danger-subtle) text-(--color-danger) border-(--color-danger)/30"
-                }`}>{p.status}</span>
+                <span class={badgeVariants({ variant: p.statusV as any })}>{p.status}</span>
               </td>
               <td class="px-5 py-3.5">
-                 <button class={cn(buttonVariants({ variant: "outline" }), "h-7 px-2 text-xs")}>···</button>
+                <button class={cn(buttonVariants({ variant: "outline" }), "h-7 px-2 text-xs")}>···</button>
               </td>
             </tr>
           ))}

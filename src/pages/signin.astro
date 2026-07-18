@@ -2,6 +2,9 @@
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import BrandMark from "@/components/BrandMark.astro";
+import FormField from "@/components/FormField.astro";
+import GoogleAuthButton from "@/components/GoogleAuthButton.astro";
 ---
 
 <BaseLayout title="Sign In">
@@ -11,20 +14,11 @@ import { cn } from "@/lib/utils";
       class="relative flex flex-col justify-between p-14 border-r border-(--color-border) overflow-hidden"
       style="background: radial-gradient(circle at 30% 20%, rgba(5,150,105,0.16), transparent 45%), radial-gradient(circle at 80% 80%, rgba(234,88,12,0.12), transparent 45%), #ffffff;"
     >
-      <!-- Decorative circle -->
-      <div
-        class="absolute -bottom-32 -right-20 w-[340px] h-[340px] rounded-full"
-        style="border: 2px solid rgba(5,150,105,0.12);"
-      ></div>
+      <div class="absolute -bottom-32 -right-20 w-[340px] h-[340px] rounded-full" style="border: 2px solid rgba(5,150,105,0.12);" />
 
       <!-- Logo -->
       <div class="flex items-center gap-2.5 relative z-10">
-        <div
-          class="w-9 h-9 rounded-[10px] flex items-center justify-center font-display font-extrabold text-white"
-          style="background: linear-gradient(135deg, #059669, #047857); box-shadow: 0 0 20px rgba(5,150,105,0.3);"
-        >
-          K
-        </div>
+        <BrandMark size="md" />
         <span class="font-display font-bold text-xl text-(--color-foreground)">Kickoff</span>
       </div>
 
@@ -42,89 +36,53 @@ import { cn } from "@/lib/utils";
         </p>
       </div>
 
-      <p class="text-xs text-(--color-muted-fg) relative z-10">
-        © 2026 Kickoff · Spring Invitational Cup
-      </p>
+      <p class="text-xs text-(--color-muted-fg) relative z-10">© 2026 Kickoff · Spring Invitational Cup</p>
     </div>
 
     <!-- Right: form panel -->
     <div class="flex items-center justify-center p-10 bg-(--color-background)">
       <div class="w-full max-w-[400px]">
         <!-- Tab switcher -->
-        <div
-          id="tab-bar"
-          class="flex gap-1 p-1 rounded-lg border border-(--color-border) bg-[#eef2f7] mb-7"
-        >
+        <div id="tab-bar" class="flex gap-1 p-1 rounded-lg border border-(--color-border) bg-[#eef2f7] mb-7">
           <button
             id="tab-signin"
             onclick="switchTab('signin')"
             class={cn(buttonVariants({ variant: "ghost" }), "flex-1 bg-white text-(--color-foreground) shadow-sm")}
-          >
-            Sign In
-          </button>
+          >Sign In</button>
           <button
             id="tab-signup"
             onclick="switchTab('signup')"
             class={cn(buttonVariants({ variant: "ghost" }), "flex-1 bg-[#e8ecf2] text-(--color-muted)")}
-          >
-            Sign Up
-          </button>
+          >Sign Up</button>
         </div>
 
         <!-- ── SIGN IN ── -->
         <div id="panel-signin">
-          <h2 class="font-display text-2xl font-semibold text-(--color-foreground) mb-1">
-            Welcome back
-          </h2>
+          <h2 class="font-display text-2xl font-semibold text-(--color-foreground) mb-1">Welcome back</h2>
           <p class="text-sm text-(--color-muted) mb-6">Sign in to manage your teams and tournaments.</p>
 
-          <!-- Google button -->
-          <button
-            class={cn(buttonVariants({ variant: "outline" }), "w-full bg-white border-[#dadce0] text-[#3c4043] font-medium mb-5 hover:bg-[#f8faff] hover:border-[#c6c9cc] hover:shadow-sm")}
-          >
-            <svg width="18" height="18" viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg">
-              <path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z" fill="#4285F4"/>
-              <path d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z" fill="#34A853"/>
-              <path d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332z" fill="#FBBC05"/>
-              <path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 6.29C4.672 4.163 6.656 3.58 9 3.58z" fill="#EA4335"/>
-            </svg>
-            Continue with Google
-          </button>
+          <GoogleAuthButton label="Continue with Google" />
 
           <div class="flex items-center gap-3 my-5 text-sm text-(--color-muted)">
-            <span class="flex-1 h-px bg-[#c5cdd9]"></span>
+            <span class="flex-1 h-px bg-[#c5cdd9]" />
             or sign in with email
-            <span class="flex-1 h-px bg-[#c5cdd9]"></span>
+            <span class="flex-1 h-px bg-[#c5cdd9]" />
           </div>
 
           <div class="space-y-4">
-            <div>
-              <label class="block text-sm font-medium text-(--color-foreground) mb-1.5">Email</label>
-              <input
-                type="email"
-                value="alex.morgan@fcvelocity.com"
-                class="w-full h-10 px-3 rounded-md border border-(--color-border) bg-white text-sm text-(--color-foreground) placeholder:text-(--color-muted-fg) focus:outline-none focus:ring-2 focus:ring-(--color-primary) focus:ring-offset-1"
-              />
-            </div>
+            <FormField label="Email" type="email" value="alex.morgan@fcvelocity.com" />
             <div>
               <div class="flex justify-between items-center mb-1.5">
                 <label class="text-sm font-medium text-(--color-foreground)">Password</label>
                 <a href="#" class="text-xs text-(--color-muted) hover:text-(--color-primary)">Forgot?</a>
               </div>
-              <input
-                type="password"
-                value="password123"
-                class="w-full h-10 px-3 rounded-md border border-(--color-border) bg-white text-sm text-(--color-foreground) placeholder:text-(--color-muted-fg) focus:outline-none focus:ring-2 focus:ring-(--color-primary) focus:ring-offset-1"
-              />
+              <FormField type="password" value="password123" />
             </div>
             <label class="flex items-center gap-2 text-sm text-(--color-muted) cursor-pointer">
               <input type="checkbox" checked class="w-4 h-4 accent-(--color-primary)" />
               Keep me signed in
             </label>
-            <a
-              href="/dashboard"
-              class={cn(buttonVariants({ variant: "default", size: "xl" }), "w-full")}
-            >
+            <a href="/dashboard" class={cn(buttonVariants({ variant: "default", size: "xl" }), "w-full")}>
               Sign In →
             </a>
           </div>
@@ -132,50 +90,25 @@ import { cn } from "@/lib/utils";
 
         <!-- ── SIGN UP ── -->
         <div id="panel-signup" class="hidden">
-          <h2 class="font-display text-2xl font-semibold text-(--color-foreground) mb-1">
-            Create an account
-          </h2>
+          <h2 class="font-display text-2xl font-semibold text-(--color-foreground) mb-1">Create an account</h2>
           <p class="text-sm text-(--color-muted) mb-6">Join Kickoff to manage teams and tournaments.</p>
 
-          <button
-            class={cn(buttonVariants({ variant: "outline" }), "w-full bg-white border-[#dadce0] text-[#3c4043] font-medium mb-5 hover:bg-[#f8faff] hover:border-[#c6c9cc] hover:shadow-sm")}
-          >
-            <svg width="18" height="18" viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg">
-              <path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z" fill="#4285F4"/>
-              <path d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z" fill="#34A853"/>
-              <path d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332z" fill="#FBBC05"/>
-              <path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 6.29C4.672 4.163 6.656 3.58 9 3.58z" fill="#EA4335"/>
-            </svg>
-            Sign up with Google
-          </button>
+          <GoogleAuthButton label="Sign up with Google" />
 
           <div class="flex items-center gap-3 my-5 text-sm text-(--color-muted)">
-            <span class="flex-1 h-px bg-[#c5cdd9]"></span>
+            <span class="flex-1 h-px bg-[#c5cdd9]" />
             or create an account
-            <span class="flex-1 h-px bg-[#c5cdd9]"></span>
+            <span class="flex-1 h-px bg-[#c5cdd9]" />
           </div>
 
           <div class="space-y-4">
             <div class="grid grid-cols-2 gap-3">
-              <div>
-                <label class="block text-sm font-medium text-(--color-foreground) mb-1.5">First name</label>
-                <input type="text" placeholder="Alex" class="w-full h-10 px-3 rounded-md border border-(--color-border) bg-white text-sm focus:outline-none focus:ring-2 focus:ring-(--color-primary) focus:ring-offset-1" />
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-(--color-foreground) mb-1.5">Last name</label>
-                <input type="text" placeholder="Morgan" class="w-full h-10 px-3 rounded-md border border-(--color-border) bg-white text-sm focus:outline-none focus:ring-2 focus:ring-(--color-primary) focus:ring-offset-1" />
-              </div>
+              <FormField label="First name" type="text" placeholder="Alex" />
+              <FormField label="Last name"  type="text" placeholder="Morgan" />
             </div>
-            <div>
-              <label class="block text-sm font-medium text-(--color-foreground) mb-1.5">Email</label>
-              <input type="email" placeholder="you@email.com" class="w-full h-10 px-3 rounded-md border border-(--color-border) bg-white text-sm focus:outline-none focus:ring-2 focus:ring-(--color-primary) focus:ring-offset-1" />
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-(--color-foreground) mb-1.5">Password</label>
-              <input type="password" placeholder="Create a password" class="w-full h-10 px-3 rounded-md border border-(--color-border) bg-white text-sm focus:outline-none focus:ring-2 focus:ring-(--color-primary) focus:ring-offset-1" />
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-(--color-foreground) mb-1.5">I am a…</label>
+            <FormField label="Email"    type="email"    placeholder="you@email.com" />
+            <FormField label="Password" type="password" placeholder="Create a password" />
+            <FormField label="I am a…">
               <div class="relative">
                 <select class="w-full h-10 pl-3 pr-9 appearance-none rounded-md border border-(--color-border) bg-white text-sm cursor-pointer focus:outline-none focus:ring-2 focus:ring-(--color-primary) focus:ring-offset-1">
                   <option>Coach / Team Manager</option>
@@ -185,18 +118,16 @@ import { cn } from "@/lib/utils";
                 </select>
                 <div class="absolute inset-y-0 right-3 flex items-center pointer-events-none">
                   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-[#94a1b8]">
-                    <polyline points="6 9 12 15 18 9"></polyline>
+                    <polyline points="6 9 12 15 18 9" />
                   </svg>
                 </div>
               </div>
-            </div>
+            </FormField>
             <label class="flex items-start gap-2 text-sm text-(--color-muted) cursor-pointer">
               <input type="checkbox" class="w-4 h-4 accent-(--color-primary) mt-0.5 shrink-0" />
               I agree to the Terms of Service and Privacy Policy
             </label>
-            <button
-              class={cn(buttonVariants({ variant: "default", size: "xl" }), "w-full")}
-            >
+            <button class={cn(buttonVariants({ variant: "default", size: "xl" }), "w-full")}>
               Create Account →
             </button>
           </div>

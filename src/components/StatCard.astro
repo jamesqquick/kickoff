@@ -1,0 +1,58 @@
+---
+import { badgeVariants } from "@/components/ui/badge";
+import type { VariantProps } from "class-variance-authority";
+
+type BadgeVariant = VariantProps<typeof badgeVariants>["variant"];
+
+interface Props {
+  value: string;
+  label: string;
+  /** Tailwind text color class for the value, e.g. "text-(--color-primary)" */
+  color?: string;
+  /** Emoji icon shown in a subtle circle above the value */
+  icon?: string;
+  /** Small trend / sub-label below the main label */
+  trend?: string;
+  /** Tailwind text color class for the trend */
+  trendColor?: string;
+  /** Optional badge in the top-right corner */
+  badge?: string;
+  badgeVariant?: BadgeVariant;
+  class?: string;
+}
+
+const {
+  value,
+  label,
+  color = "text-(--color-foreground)",
+  icon,
+  trend,
+  trendColor = "text-(--color-muted)",
+  badge,
+  badgeVariant = "default",
+  class: className,
+} = Astro.props;
+---
+
+<div class:list={["relative overflow-hidden rounded-xl border border-(--color-border) bg-(--color-card) p-5", className]}>
+  {(icon || badge) && (
+    <div class="flex items-start justify-between mb-3">
+      {icon && (
+        <div class="w-9 h-9 rounded-[10px] flex items-center justify-center bg-(--color-primary-subtle) text-lg">
+          {icon}
+        </div>
+      )}
+      {badge && (
+        <span class={badgeVariants({ variant: badgeVariant })}>{badge}</span>
+      )}
+    </div>
+  )}
+  <p class:list={["font-display text-3xl font-bold leading-none", color]}>{value}</p>
+  <p class="text-sm text-(--color-muted) mt-2">{label}</p>
+  {trend && (
+    <p class:list={["text-xs font-semibold mt-2", trendColor]}>{trend}</p>
+  )}
+  {icon && (
+    <div class="absolute -right-6 -bottom-6 w-24 h-24 rounded-full bg-(--color-primary-subtle) opacity-60" />
+  )}
+</div>

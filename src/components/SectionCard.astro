@@ -1,0 +1,33 @@
+---
+/**
+ * A standard card container with an optional header row (border-b separated).
+ *
+ * Usage — with header:
+ *   <SectionCard title="Pending Approvals">
+ *     <span slot="header-action">badge here</span>
+ *     <table>...</table>
+ *   </SectionCard>
+ *
+ * Usage — padded, no header:
+ *   <SectionCard class="p-5">
+ *     <h3>...</h3>
+ *     ...content...
+ *   </SectionCard>
+ */
+interface Props {
+  title?: string;
+  class?: string;
+}
+
+const { title, class: className } = Astro.props;
+---
+
+<div class:list={["rounded-xl border border-(--color-border) bg-(--color-card)", className]}>
+  {title && (
+    <div class="flex items-center justify-between px-6 py-4 border-b border-(--color-border)">
+      <h3 class="font-display font-semibold text-(--color-foreground)">{title}</h3>
+      <slot name="header-action" />
+    </div>
+  )}
+  <slot />
+</div>

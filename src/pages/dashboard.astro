@@ -1,19 +1,23 @@
 ---
 import AppLayout from "@/layouts/AppLayout.astro";
 import { buttonVariants } from "@/components/ui/button";
+import { badgeVariants } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import PageHeader from "@/components/PageHeader.astro";
+import SectionCard from "@/components/SectionCard.astro";
+import StatCard from "@/components/StatCard.astro";
+import TeamCrest from "@/components/TeamCrest.astro";
+import MatchCard from "@/components/MatchCard.astro";
 ---
 
 <AppLayout title="Dashboard" activeNav="dashboard">
   <div class="p-8">
-    <!-- Top bar -->
-    <div class="flex items-start justify-between mb-8">
-      <div>
-        <p class="text-xs font-semibold uppercase tracking-widest text-(--color-primary) mb-1">Spring Invitational Cup</p>
-        <h1 class="font-display text-2xl font-bold text-(--color-foreground)">Tournament Dashboard</h1>
-        <p class="text-sm text-(--color-muted) mt-1">March 14–22, 2026 · Live now</p>
-      </div>
-      <div class="flex items-center gap-3">
+    <PageHeader
+      eyebrow="Spring Invitational Cup"
+      title="Tournament Dashboard"
+      subtitle="March 14–22, 2026 · Live now"
+    >
+      <div slot="actions" class="flex items-center gap-3">
         <div class="relative">
           <span class="absolute left-3 top-1/2 -translate-y-1/2 text-(--color-muted-fg) text-sm">🔍</span>
           <input
@@ -24,26 +28,25 @@ import { cn } from "@/lib/utils";
         <button class={cn(buttonVariants({ variant: "outline" }), "h-9 px-3")}>Export</button>
         <a href="/tournaments/new" class="h-9 px-4 rounded-md bg-(--color-primary) text-white text-sm font-semibold flex items-center hover:bg-(--color-primary-hover) transition-colors">+ New Tournament</a>
       </div>
-    </div>
+    </PageHeader>
 
     <!-- Stat cards -->
     <div class="grid grid-cols-4 gap-4 mb-6">
       {[
-        { icon: "🛡️", value: "128", label: "Registered Teams", trend: "▲ 12 this week", trendColor: "text-(--color-primary)", badge: "Live", badgeClass: "bg-(--color-primary-subtle) text-(--color-primary) border border-(--color-primary)/30" },
-        { icon: "👥", value: "1,940", label: "Total Players", trend: "▲ 184 this week", trendColor: "text-(--color-primary)" },
-        { icon: "⚽", value: "312", label: "Matches Scheduled", trend: "48 completed", trendColor: "text-(--color-muted)" },
-        { icon: "💰", value: "$38.4k", label: "Revenue", trend: "7 payments pending", trendColor: "text-(--color-warn)" },
+        { icon: "🛡️", value: "128",    label: "Registered Teams", trend: "▲ 12 this week", trendColor: "text-(--color-primary)", badge: "Live", badgeVariant: "live" },
+        { icon: "👥", value: "1,940",  label: "Total Players",     trend: "▲ 184 this week", trendColor: "text-(--color-primary)" },
+        { icon: "⚽", value: "312",    label: "Matches Scheduled", trend: "48 completed",    trendColor: "text-(--color-muted)" },
+        { icon: "💰", value: "$38.4k", label: "Revenue",           trend: "7 payments pending", trendColor: "text-(--color-warn)" },
       ].map((s) => (
-        <div class="relative overflow-hidden rounded-xl border border-(--color-border) bg-(--color-card) p-5">
-          <div class="flex items-start justify-between mb-3">
-            <div class="w-9 h-9 rounded-[10px] flex items-center justify-center bg-(--color-primary-subtle) text-lg">{s.icon}</div>
-            {s.badge && <span class={`text-xs font-semibold px-2 py-0.5 rounded-full ${s.badgeClass}`}>{s.badge}</span>}
-          </div>
-          <p class="font-display text-3xl font-bold text-(--color-foreground) leading-none">{s.value}</p>
-          <p class="text-sm text-(--color-muted) mt-2">{s.label}</p>
-          <p class={`text-xs font-semibold mt-2 ${s.trendColor}`}>{s.trend}</p>
-          <div class="absolute -right-6 -bottom-6 w-24 h-24 rounded-full bg-(--color-primary-subtle) opacity-60"></div>
-        </div>
+        <StatCard
+          icon={s.icon}
+          value={s.value}
+          label={s.label}
+          trend={s.trend}
+          trendColor={s.trendColor}
+          badge={s.badge}
+          badgeVariant={s.badgeVariant as any}
+        />
       ))}
     </div>
 
@@ -51,11 +54,8 @@ import { cn } from "@/lib/utils";
     <div class="grid grid-cols-[1fr_320px] gap-5">
       <div class="space-y-5">
         <!-- Pending approvals -->
-        <div class="rounded-xl border border-(--color-border) bg-(--color-card)">
-          <div class="flex items-center justify-between px-6 py-4 border-b border-(--color-border)">
-            <h3 class="font-display font-semibold text-(--color-foreground)">Pending Approvals</h3>
-            <span class="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-(--color-warn-subtle) text-(--color-warn) border border-(--color-warn)/30">7 awaiting review</span>
-          </div>
+        <SectionCard title="Pending Approvals">
+          <span slot="header-action" class={badgeVariants({ variant: "warning" })}>7 awaiting review</span>
           <table class="w-full">
             <thead>
               <tr class="border-b border-(--color-border)">
@@ -66,34 +66,24 @@ import { cn } from "@/lib/utils";
             </thead>
             <tbody>
               {[
-                { initials: "RV", name: "Real Valley", color: "from-violet-600 to-violet-900", division: "U18 Men's", roster: "18/18", rosterV: "success", payment: "Paid", payV: "success" },
-                { initials: "AC", name: "Atlas City", color: "from-sky-500 to-blue-700", division: "Open Women's", roster: "14/18", rosterV: "warning", payment: "Paid", payV: "success" },
-                { initials: "TF", name: "Toro FC", color: "from-red-500 to-red-800", division: "U16 Boys", roster: "20/22", rosterV: "success", payment: "Unpaid", payV: "destructive" },
-                { initials: "GS", name: "Green Storm", color: "from-emerald-500 to-emerald-800", division: "U18 Men's", roster: "19/18", rosterV: "success", payment: "Partial", payV: "warning" },
+                { initials: "RV", name: "Real Valley",  gradient: "from-violet-600 to-violet-900", division: "U18 Men's",     roster: "18/18", rosterV: "success",     payment: "Paid",    payV: "success" },
+                { initials: "AC", name: "Atlas City",   gradient: "from-sky-500 to-blue-700",      division: "Open Women's",  roster: "14/18", rosterV: "warning",     payment: "Paid",    payV: "success" },
+                { initials: "TF", name: "Toro FC",      gradient: "from-red-500 to-red-800",       division: "U16 Boys",      roster: "20/22", rosterV: "success",     payment: "Unpaid",  payV: "destructive" },
+                { initials: "GS", name: "Green Storm",  gradient: "from-emerald-500 to-emerald-800", division: "U18 Men's",   roster: "19/18", rosterV: "success",     payment: "Partial", payV: "warning" },
               ].map((row, i) => (
                 <tr class="border-b border-(--color-border-soft) last:border-0 hover:bg-(--color-background) transition-colors">
                   <td class="px-6 py-3.5">
                     <div class="flex items-center gap-3">
-                      <div class={`w-9 h-9 rounded-[9px] flex items-center justify-center text-xs font-bold text-white bg-gradient-to-br ${row.color}`}>{row.initials}</div>
+                      <TeamCrest initials={row.initials} gradient={row.gradient} size="md" />
                       <span class="font-semibold text-sm text-(--color-foreground)">{row.name}</span>
                     </div>
                   </td>
                   <td class="px-6 py-3.5 text-sm text-(--color-muted)">{row.division}</td>
                   <td class="px-6 py-3.5">
-                    <span class={`inline-flex text-xs font-semibold px-2.5 py-0.5 rounded-full border ${
-                      row.rosterV === "success"
-                        ? "bg-(--color-primary-subtle) text-(--color-primary) border-(--color-primary)/30"
-                        : "bg-(--color-warn-subtle) text-(--color-warn) border-(--color-warn)/30"
-                    }`}>{row.roster}</span>
+                    <span class={badgeVariants({ variant: row.rosterV as any })}>{row.roster}</span>
                   </td>
                   <td class="px-6 py-3.5">
-                    <span class={`inline-flex text-xs font-semibold px-2.5 py-0.5 rounded-full border ${
-                      row.payV === "success"
-                        ? "bg-(--color-primary-subtle) text-(--color-primary) border-(--color-primary)/30"
-                        : row.payV === "warning"
-                        ? "bg-(--color-warn-subtle) text-(--color-warn) border-(--color-warn)/30"
-                        : "bg-(--color-danger-subtle) text-(--color-danger) border-(--color-danger)/30"
-                    }`}>{row.payment}</span>
+                    <span class={badgeVariants({ variant: row.payV as any })}>{row.payment}</span>
                   </td>
                   <td class="px-6 py-3.5 text-right">
                     {i === 0
@@ -105,51 +95,56 @@ import { cn } from "@/lib/utils";
               ))}
             </tbody>
           </table>
-        </div>
+        </SectionCard>
 
         <!-- Today's matches -->
-        <div class="rounded-xl border border-(--color-border) bg-(--color-card)">
-          <div class="flex items-center justify-between px-6 py-4 border-b border-(--color-border)">
-            <h3 class="font-display font-semibold text-(--color-foreground)">Today's Matches</h3>
-            <a href="/teams/1/schedule" class="text-xs text-(--color-muted) hover:text-(--color-primary)">View schedule →</a>
-          </div>
+        <SectionCard title="Today's Matches">
+          <a slot="header-action" href="/teams/1/schedule" class="text-xs text-(--color-muted) hover:text-(--color-primary)">View schedule →</a>
           <div class="divide-y divide-(--color-border-soft)">
             {[
-              { home: "FC Velocity", homeC: "FV", homeGrad: "from-emerald-500 to-emerald-700", away: "Sun Bears", awayC: "SB", awayGrad: "from-amber-400 to-amber-600", score: "2 – 1", badge: "● LIVE 63'", badgeClass: "bg-(--color-danger-subtle) text-(--color-danger) border-(--color-danger)/30", info: null },
-              { home: "Real Valley", homeC: "RV", homeGrad: "from-violet-600 to-violet-900", away: "Toro FC", awayC: "TF", awayGrad: "from-red-500 to-red-800", score: "4:30 PM", badge: null, info: "Field 3" },
-              { home: "Atlas City", homeC: "AC", homeGrad: "from-sky-500 to-blue-700", away: "Green Storm", awayC: "GS", awayGrad: "from-emerald-500 to-emerald-800", score: "6:00 PM", badge: null, info: "Field 1" },
+              {
+                home: { name: "FC Velocity", initials: "FV", gradient: "from-emerald-500 to-emerald-700" },
+                away: { name: "Sun Bears",   initials: "SB", gradient: "from-amber-400 to-amber-600" },
+                score: "2 – 1", badge: "● LIVE 63'", badgeVariant: "live", info: null,
+              },
+              {
+                home: { name: "Real Valley", initials: "RV", gradient: "from-violet-600 to-violet-900" },
+                away: { name: "Toro FC",     initials: "TF", gradient: "from-red-500 to-red-800" },
+                score: "4:30 PM", badge: null, badgeVariant: null, info: "Field 3",
+              },
+              {
+                home: { name: "Atlas City",  initials: "AC", gradient: "from-sky-500 to-blue-700" },
+                away: { name: "Green Storm", initials: "GS", gradient: "from-emerald-500 to-emerald-800" },
+                score: "6:00 PM", badge: null, badgeVariant: null, info: "Field 1",
+              },
             ].map((m) => (
-              <div class="grid grid-cols-[1fr_auto_1fr] items-center gap-4 px-6 py-4 bg-(--color-background) mx-4 my-3 rounded-lg border border-(--color-border)">
-                <div class="flex items-center gap-2.5 justify-end">
-                  <span class="text-sm font-semibold text-(--color-foreground)">{m.home}</span>
-                  <div class={`w-8 h-8 rounded-[8px] flex items-center justify-center text-xs font-bold text-white bg-gradient-to-br ${m.homeGrad}`}>{m.homeC}</div>
-                </div>
-                <div class="text-center">
-                  {m.badge && <div class={`inline-flex text-xs font-semibold px-2 py-0.5 rounded-full border mb-1 ${m.badgeClass}`}>{m.badge}</div>}
-                  {m.info && <div class="text-xs text-(--color-muted) mb-0.5">{m.info}</div>}
-                  <div class="font-display font-bold text-xl text-(--color-foreground)">{m.score}</div>
-                </div>
-                <div class="flex items-center gap-2.5">
-                  <div class={`w-8 h-8 rounded-[8px] flex items-center justify-center text-xs font-bold text-white bg-gradient-to-br ${m.awayGrad}`}>{m.awayC}</div>
-                  <span class="text-sm font-semibold text-(--color-foreground)">{m.away}</span>
-                </div>
+              <div class="px-4 py-3">
+                <MatchCard
+                  home={m.home}
+                  away={m.away}
+                  score={m.score}
+                  badge={m.badge ?? undefined}
+                  badgeVariant={m.badgeVariant as any ?? undefined}
+                  info={m.info}
+                  class="bg-(--color-background) px-6 py-4 rounded-lg border border-(--color-border)"
+                />
               </div>
             ))}
           </div>
-        </div>
+        </SectionCard>
       </div>
 
       <!-- Right column -->
       <div class="space-y-5">
         <!-- Division capacity -->
-        <div class="rounded-xl border border-(--color-border) bg-(--color-card) p-5">
+        <SectionCard class="p-5">
           <h3 class="font-display font-semibold text-(--color-foreground) mb-4">Division Capacity</h3>
           <div class="space-y-4">
             {[
-              { label: "U18 Men's", val: "30/32", pct: 94 },
+              { label: "U18 Men's",    val: "30/32", pct: 94 },
               { label: "Open Women's", val: "24/32", pct: 75 },
-              { label: "U16 Boys", val: "28/32", pct: 87 },
-              { label: "U16 Girls", val: "18/32", pct: 56 },
+              { label: "U16 Boys",     val: "28/32", pct: 87 },
+              { label: "U16 Girls",    val: "18/32", pct: 56 },
             ].map((d) => (
               <div>
                 <div class="flex justify-between text-sm mb-1.5">
@@ -157,22 +152,22 @@ import { cn } from "@/lib/utils";
                   <span class="text-(--color-muted)">{d.val}</span>
                 </div>
                 <div class="h-2 rounded-full bg-(--color-border-soft) overflow-hidden">
-                  <div class="h-full rounded-full bg-(--color-primary)" style={`width: ${d.pct}%`}></div>
+                  <div class="h-full rounded-full bg-(--color-primary)" style={`width: ${d.pct}%`} />
                 </div>
               </div>
             ))}
           </div>
-        </div>
+        </SectionCard>
 
         <!-- Recent activity -->
-        <div class="rounded-xl border border-(--color-border) bg-(--color-card) p-5">
+        <SectionCard class="p-5">
           <h3 class="font-display font-semibold text-(--color-foreground) mb-4">Recent Activity</h3>
           <div class="space-y-3">
             {[
               { initials: "RV", grad: "from-violet-600 to-violet-900", text: "Real Valley completed registration", time: "12 min ago" },
-              { initials: "JD", grad: "from-amber-400 to-amber-600", text: "J. Diaz added to Sun Bears roster", time: "40 min ago" },
-              { initials: "$", grad: "from-sky-500 to-blue-700", text: "Payment received — Atlas City ($300)", time: "1 hr ago" },
-              { initials: "⚽", grad: "from-emerald-500 to-emerald-700", text: "Match result posted — Field 2", time: "2 hr ago" },
+              { initials: "JD", grad: "from-amber-400 to-amber-600",   text: "J. Diaz added to Sun Bears roster", time: "40 min ago" },
+              { initials: "$",  grad: "from-sky-500 to-blue-700",      text: "Payment received — Atlas City ($300)", time: "1 hr ago" },
+              { initials: "⚽", grad: "from-emerald-500 to-emerald-700", text: "Match result posted — Field 2",    time: "2 hr ago" },
             ].map((a) => (
               <div class="flex items-center gap-3">
                 <div class={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white bg-gradient-to-br ${a.grad} shrink-0`}>{a.initials}</div>
@@ -183,7 +178,7 @@ import { cn } from "@/lib/utils";
               </div>
             ))}
           </div>
-        </div>
+        </SectionCard>
       </div>
     </div>
   </div>
