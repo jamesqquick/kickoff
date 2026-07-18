@@ -1,0 +1,19 @@
+src/layouts/AppLayout.astro
+  s_d89abaab01c9ce::t_a0750619a8189e 4,14-39,42-43,48-77
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "08b4df4f9c4117db1662dd21169b6db50283f553",
+  "prompts": {},
+  "sessions": {
+    "s_d89abaab01c9ce": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_08ef03ae4ffekCEYY6ruhdoBfk",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "James Quick <jquick@cloudflare.com>"
+    }
+  }
+}
