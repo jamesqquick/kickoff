@@ -1,0 +1,19 @@
+src/styles/globals.css
+  s_d89abaab01c9ce::t_5db21b7d4cfbfc 1-120
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "4702190ab240c771a88f1f370fd35cdf3a4ca49e",
+  "prompts": {},
+  "sessions": {
+    "s_d89abaab01c9ce": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_08ef03ae4ffekCEYY6ruhdoBfk",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "James Quick <jquick@cloudflare.com>"
+    }
+  }
+}
