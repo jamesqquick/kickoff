@@ -57,49 +57,32 @@ import MatchCard from "@/components/MatchCard.astro";
         <!-- Pending approvals -->
         <SectionCard title="Pending Approvals">
           <span slot="header-action" class={badgeVariants({ variant: "warning" })}>7 awaiting review</span>
-          <table class="w-full">
-            <thead>
-              <tr class="border-b border-(--color-border)">
-                <th class="text-left text-xs font-semibold uppercase tracking-wider text-(--color-muted-fg) px-6 py-3">Team</th>
-                <!-- Division: hidden on mobile -->
-                <th class="hidden sm:table-cell text-left text-xs font-semibold uppercase tracking-wider text-(--color-muted-fg) px-6 py-3">Division</th>
-                <!-- Roster: hidden on mobile -->
-                <th class="hidden sm:table-cell text-left text-xs font-semibold uppercase tracking-wider text-(--color-muted-fg) px-6 py-3">Roster</th>
-                <th class="text-left text-xs font-semibold uppercase tracking-wider text-(--color-muted-fg) px-6 py-3">Payment</th>
-                <th class="text-left text-xs font-semibold uppercase tracking-wider text-(--color-muted-fg) px-6 py-3"></th>
-              </tr>
-            </thead>
-            <tbody>
-              {[
-                { initials: "RV", name: "Real Valley",  gradient: "from-violet-600 to-violet-900", division: "U18 Men's",     roster: "18/18", rosterV: "success",     payment: "Paid",    payV: "success" },
-                { initials: "AC", name: "Atlas City",   gradient: "from-sky-500 to-blue-700",      division: "Open Women's",  roster: "14/18", rosterV: "warning",     payment: "Paid",    payV: "success" },
-                { initials: "TF", name: "Toro FC",      gradient: "from-red-500 to-red-800",       division: "U16 Boys",      roster: "20/22", rosterV: "success",     payment: "Unpaid",  payV: "destructive" },
-                { initials: "GS", name: "Green Storm",  gradient: "from-emerald-500 to-emerald-800", division: "U18 Men's",   roster: "19/18", rosterV: "success",     payment: "Partial", payV: "warning" },
-              ].map((row, i) => (
-                <tr class="border-b border-(--color-border-soft) last:border-0 hover:bg-(--color-background) transition-colors">
-                  <td class="px-6 py-3.5">
-                    <div class="flex items-center gap-3">
-                      <TeamCrest initials={row.initials} gradient={row.gradient} size="md" />
-                      <span class="font-semibold text-sm text-(--color-foreground)">{row.name}</span>
-                    </div>
-                  </td>
-                  <td class="hidden sm:table-cell px-6 py-3.5 text-sm text-(--color-muted)">{row.division}</td>
-                  <td class="hidden sm:table-cell px-6 py-3.5">
-                    <span class={badgeVariants({ variant: row.rosterV as any })}>{row.roster}</span>
-                  </td>
-                  <td class="px-6 py-3.5">
-                    <span class={badgeVariants({ variant: row.payV as any })}>{row.payment}</span>
-                  </td>
-                  <td class="px-6 py-3.5 text-right">
-                    {i === 0
-                      ? <button class={cn(buttonVariants({ variant: "default" }), "h-7 px-3 text-xs")}>Approve</button>
-                      : <button class={cn(buttonVariants({ variant: "outline" }), "h-7 px-3 text-xs")}>Review</button>
-                    }
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+
+          {[
+            { initials: "RV", name: "Real Valley",  gradient: "from-violet-600 to-violet-900", division: "U18 Men's",     roster: "18/18", rosterV: "success",     payment: "Paid",    payV: "success" },
+            { initials: "AC", name: "Atlas City",   gradient: "from-sky-500 to-blue-700",      division: "Open Women's",  roster: "14/18", rosterV: "warning",     payment: "Paid",    payV: "success" },
+            { initials: "TF", name: "Toro FC",      gradient: "from-red-500 to-red-800",       division: "U16 Boys",      roster: "20/22", rosterV: "success",     payment: "Unpaid",  payV: "destructive" },
+            { initials: "GS", name: "Green Storm",  gradient: "from-emerald-500 to-emerald-800", division: "U18 Men's",   roster: "19/18", rosterV: "success",     payment: "Partial", payV: "warning" },
+          ].map((row, i) => (
+            <div class="flex items-center gap-3 px-4 sm:px-6 py-3.5 border-b border-(--color-border-soft) last:border-0 hover:bg-(--color-background) transition-colors">
+              <!-- Crest + name: flex-1 so name never gets squeezed -->
+              <div class="flex items-center gap-3 flex-1 min-w-0">
+                <TeamCrest initials={row.initials} gradient={row.gradient} size="md" />
+                <div class="min-w-0">
+                  <span class="font-semibold text-sm text-(--color-foreground) truncate block">{row.name}</span>
+                  <!-- Division + roster: visible on sm+ as secondary line -->
+                  <span class="hidden sm:block text-xs text-(--color-muted) truncate">{row.division} · {row.roster}</span>
+                </div>
+              </div>
+              <!-- Payment badge -->
+              <span class={badgeVariants({ variant: row.payV as any })}>{row.payment}</span>
+              <!-- Action button -->
+              {i === 0
+                ? <button class={cn(buttonVariants({ variant: "default" }), "h-7 px-3 text-xs shrink-0")}>Approve</button>
+                : <button class={cn(buttonVariants({ variant: "outline" }), "h-7 px-3 text-xs shrink-0")}>Review</button>
+              }
+            </div>
+          ))}
         </SectionCard>
 
         <!-- Today's matches -->
