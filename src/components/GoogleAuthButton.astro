@@ -4,12 +4,14 @@ import { cn } from "@/lib/utils";
 
 interface Props {
   label: string;
+  href: string;
 }
 
-const { label } = Astro.props;
+const { label, href } = Astro.props;
 ---
 
-<button
+<a
+  href={href}
   class={cn(
     buttonVariants({ variant: "outline" }),
     "w-full bg-white border-[#dadce0] text-[#3c4043] font-medium hover:bg-[#f8faff] hover:border-[#c6c9cc] hover:shadow-sm"
@@ -22,4 +24,4 @@ const { label } = Astro.props;
     <path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 6.29C4.672 4.163 6.656 3.58 9 3.58z" fill="#EA4335"/>
   </svg>
   {label}
-</button>
+</a>

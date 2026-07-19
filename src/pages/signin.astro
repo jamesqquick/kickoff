@@ -5,6 +5,40 @@ import { cn } from "@/lib/utils";
 import BrandMark from "@/components/BrandMark.astro";
 import FormField from "@/components/FormField.astro";
 import GoogleAuthButton from "@/components/GoogleAuthButton.astro";
+import { actions, isInputError } from "astro:actions";
+
+const GOOGLE_OAUTH_URL = "/api/auth/signin/google";
+
+// Process action results
+const signInResult = Astro.getActionResult(actions.auth.signIn);
+const signUpResult = Astro.getActionResult(actions.auth.signUp);
+
+// Redirect on success — Better Auth sets the session cookie before the action
+// returns, so the middleware will hydrate locals on the next request.
+if (signInResult?.data?.success || signUpResult?.data?.success) {
+  return Astro.redirect("/dashboard");
+}
+
+// Field-level validation errors
+const signInErrors = isInputError(signInResult?.error)
+  ? signInResult.error.fields
+  : null;
+const signUpErrors = isInputError(signUpResult?.error)
+  ? signUpResult.error.fields
+  : null;
+
+// Server/auth errors (wrong password, email already exists, etc.)
+const signInServerError =
+  signInResult?.error && !isInputError(signInResult.error)
+    ? signInResult.error.message
+    : null;
+const signUpServerError =
+  signUpResult?.error && !isInputError(signUpResult.error)
+    ? signUpResult.error.message
+    : null;
+
+// Keep the active tab after a failed submit
+const activeTab = signUpResult ? "signup" : "signin";
 ---
 
 <BaseLayout title="Sign In">
@@ -47,21 +81,33 @@ import GoogleAuthButton from "@/components/GoogleAuthButton.astro";
           <button
             id="tab-signin"
             onclick="switchTab('signin')"
-            class={cn(buttonVariants({ variant: "ghost" }), "flex-1 bg-white text-(--color-foreground) shadow-sm")}
+            class={cn(
+              buttonVariants({ variant: "ghost" }),
+              "flex-1",
+              activeTab === "signin"
+                ? "bg-white text-(--color-foreground) shadow-sm"
+                : "bg-[#e8ecf2] text-(--color-muted)"
+            )}
           >Sign In</button>
           <button
             id="tab-signup"
             onclick="switchTab('signup')"
-            class={cn(buttonVariants({ variant: "ghost" }), "flex-1 bg-[#e8ecf2] text-(--color-muted)")}
+            class={cn(
+              buttonVariants({ variant: "ghost" }),
+              "flex-1",
+              activeTab === "signup"
+                ? "bg-white text-(--color-foreground) shadow-sm"
+                : "bg-[#e8ecf2] text-(--color-muted)"
+            )}
           >Sign Up</button>
         </div>
 
         <!-- ── SIGN IN ── -->
-        <div id="panel-signin">
+        <div id="panel-signin" class={activeTab === "signup" ? "hidden" : ""}>
           <h2 class="font-display text-2xl font-semibold text-(--color-foreground) mb-1">Welcome back</h2>
           <p class="text-sm text-(--color-muted) mb-6">Sign in to manage your teams and tournaments.</p>
 
-          <GoogleAuthButton label="Continue with Google" />
+          <GoogleAuthButton label="Continue with Google" href={GOOGLE_OAUTH_URL} />
 
           <div class="flex items-center gap-3 my-5 text-sm text-(--color-muted)">
             <span class="flex-1 h-px bg-[#c5cdd9]" />
@@ -69,31 +115,48 @@ import GoogleAuthButton from "@/components/GoogleAuthButton.astro";
             <span class="flex-1 h-px bg-[#c5cdd9]" />
           </div>
 
-          <div class="space-y-4">
-            <FormField label="Email" type="email" value="alex.morgan@fcvelocity.com" />
-            <div>
-              <div class="flex justify-between items-center mb-1.5">
-                <label class="text-sm font-medium text-(--color-foreground)">Password</label>
-                <a href="#" class="text-xs text-(--color-muted) hover:text-(--color-primary)">Forgot?</a>
+          <form method="POST" action={actions.auth.signIn}>
+            {signInServerError && (
+              <p class="text-sm text-red-600 mb-4 p-3 rounded-md bg-red-50 border border-red-200">
+                {signInServerError}
+              </p>
+            )}
+            <div class="space-y-4">
+              <FormField
+                label="Email"
+                type="email"
+                name="email"
+                placeholder="you@email.com"
+                error={signInErrors?.email?.[0]}
+              />
+              <div>
+                <div class="flex justify-between items-center mb-1.5">
+                  <label class="text-sm font-medium text-(--color-foreground)">Password</label>
+                  <a href="#" class="text-xs text-(--color-muted) hover:text-(--color-primary)">Forgot?</a>
+                </div>
+                <FormField
+                  type="password"
+                  name="password"
+                  placeholder="Your password"
+                  error={signInErrors?.password?.[0]}
+                />
               </div>
-              <FormField type="password" value="password123" />
+              <button
+                type="submit"
+                class={cn(buttonVariants({ variant: "default", size: "xl" }), "w-full")}
+              >
+                Sign In →
+              </button>
             </div>
-            <label class="flex items-center gap-2 text-sm text-(--color-muted) cursor-pointer">
-              <input type="checkbox" checked class="w-4 h-4 accent-(--color-primary)" />
-              Keep me signed in
-            </label>
-            <a href="/dashboard" class={cn(buttonVariants({ variant: "default", size: "xl" }), "w-full")}>
-              Sign In →
-            </a>
-          </div>
+          </form>
         </div>
 
         <!-- ── SIGN UP ── -->
-        <div id="panel-signup" class="hidden">
+        <div id="panel-signup" class={activeTab === "signin" ? "hidden" : ""}>
           <h2 class="font-display text-2xl font-semibold text-(--color-foreground) mb-1">Create an account</h2>
           <p class="text-sm text-(--color-muted) mb-6">Join Kickoff to manage teams and tournaments.</p>
 
-          <GoogleAuthButton label="Sign up with Google" />
+          <GoogleAuthButton label="Sign up with Google" href={GOOGLE_OAUTH_URL} />
 
           <div class="flex items-center gap-3 my-5 text-sm text-(--color-muted)">
             <span class="flex-1 h-px bg-[#c5cdd9]" />
@@ -101,36 +164,76 @@ import GoogleAuthButton from "@/components/GoogleAuthButton.astro";
             <span class="flex-1 h-px bg-[#c5cdd9]" />
           </div>
 
-          <div class="space-y-4">
-            <div class="grid grid-cols-2 gap-3">
-              <FormField label="First name" type="text" placeholder="Alex" />
-              <FormField label="Last name"  type="text" placeholder="Morgan" />
-            </div>
-            <FormField label="Email"    type="email"    placeholder="you@email.com" />
-            <FormField label="Password" type="password" placeholder="Create a password" />
-            <FormField label="I am a…">
-              <div class="relative">
-                <select class="w-full h-10 pl-3 pr-9 appearance-none rounded-md border border-(--color-border) bg-white text-sm cursor-pointer focus:outline-none focus:ring-2 focus:ring-(--color-primary) focus:ring-offset-1">
-                  <option>Coach / Team Manager</option>
-                  <option>Player</option>
-                  <option>Tournament Organizer</option>
-                  <option>Referee</option>
-                </select>
-                <div class="absolute inset-y-0 right-3 flex items-center pointer-events-none">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-[#94a1b8]">
-                    <polyline points="6 9 12 15 18 9" />
-                  </svg>
-                </div>
+          <form method="POST" action={actions.auth.signUp}>
+            {signUpServerError && (
+              <p class="text-sm text-red-600 mb-4 p-3 rounded-md bg-red-50 border border-red-200">
+                {signUpServerError}
+              </p>
+            )}
+            <div class="space-y-4">
+              <div class="grid grid-cols-2 gap-3">
+                <FormField
+                  label="First name"
+                  type="text"
+                  name="firstName"
+                  placeholder="Alex"
+                  error={signUpErrors?.firstName?.[0]}
+                />
+                <FormField
+                  label="Last name"
+                  type="text"
+                  name="lastName"
+                  placeholder="Morgan"
+                  error={signUpErrors?.lastName?.[0]}
+                />
               </div>
-            </FormField>
-            <label class="flex items-start gap-2 text-sm text-(--color-muted) cursor-pointer">
-              <input type="checkbox" class="w-4 h-4 accent-(--color-primary) mt-0.5 shrink-0" />
-              I agree to the Terms of Service and Privacy Policy
-            </label>
-            <button class={cn(buttonVariants({ variant: "default", size: "xl" }), "w-full")}>
-              Create Account →
-            </button>
-          </div>
+              <FormField
+                label="Email"
+                type="email"
+                name="email"
+                placeholder="you@email.com"
+                error={signUpErrors?.email?.[0]}
+              />
+              <FormField
+                label="Password"
+                type="password"
+                name="password"
+                placeholder="Create a password (min. 8 chars)"
+                error={signUpErrors?.password?.[0]}
+              />
+              <FormField label="I am a…">
+                <div class="relative">
+                  <select
+                    name="role"
+                    class="w-full h-10 pl-3 pr-9 appearance-none rounded-md border border-(--color-border) bg-white text-sm cursor-pointer focus:outline-none focus:ring-2 focus:ring-(--color-primary) focus:ring-offset-1"
+                  >
+                    <option value="coach">Coach / Team Manager</option>
+                    <option value="player">Player</option>
+                    <option value="organizer">Tournament Organizer</option>
+                    <option value="referee">Referee</option>
+                  </select>
+                  <div class="absolute inset-y-0 right-3 flex items-center pointer-events-none">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-[#94a1b8]">
+                      <polyline points="6 9 12 15 18 9" />
+                    </svg>
+                  </div>
+                </div>
+              </FormField>
+              {signUpErrors?.role?.[0] && (
+                <p class="text-xs text-red-600">{signUpErrors.role[0]}</p>
+              )}
+              <label class="flex items-start gap-2 text-sm text-(--color-muted) cursor-pointer">
+                <input type="checkbox" class="w-4 h-4 accent-(--color-primary) mt-0.5 shrink-0" />
+                I agree to the Terms of Service and Privacy Policy
+              </label>
+              <button
+                type="submit"
+                class={cn(buttonVariants({ variant: "default", size: "xl" }), "w-full")}
+              >
+                Create Account →
+              </button>
+            </div>
+          </form>
         </div>
       </div>
     </div>

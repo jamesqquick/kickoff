@@ -19,6 +19,7 @@ interface Props {
   placeholder?: string;
   value?: string;
   hint?: string;
+  error?: string;
   required?: boolean;
   class?: string;
 }
@@ -30,6 +31,7 @@ const {
   placeholder,
   value,
   hint,
+  error,
   required,
   class: className,
 } = Astro.props;
@@ -55,4 +57,5 @@ const hasSlot = Astro.slots.has("default");
     />
   )}
   {hint && <p class="text-xs text-(--color-muted-fg) mt-1">{hint}</p>}
+  {error && <p class="text-xs text-red-600 mt-1">{error}</p>}
 </div>
