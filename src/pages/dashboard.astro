@@ -11,27 +11,28 @@ import MatchCard from "@/components/MatchCard.astro";
 ---
 
 <AppLayout title="Dashboard" activeNav="dashboard">
-  <div class="p-8">
+  <div class="p-4 sm:p-6 lg:p-8">
     <PageHeader
       eyebrow="Spring Invitational Cup"
       title="Tournament Dashboard"
       subtitle="March 14–22, 2026 · Live now"
     >
-      <div slot="actions" class="flex items-center gap-3">
-        <div class="relative">
+      <div slot="actions" class="flex items-center gap-2 flex-wrap">
+        <!-- Search: hidden on mobile, visible md+ -->
+        <div class="relative hidden md:block">
           <span class="absolute left-3 top-1/2 -translate-y-1/2 text-(--color-muted-fg) text-sm">🔍</span>
           <input
             placeholder="Search teams, players..."
-            class="h-9 pl-9 pr-4 rounded-md border border-(--color-border) bg-(--color-surface) text-sm w-64 focus:outline-none focus:ring-2 focus:ring-(--color-primary) focus:ring-offset-1"
+            class="h-9 pl-9 pr-4 rounded-md border border-(--color-border) bg-(--color-surface) text-sm w-56 focus:outline-none focus:ring-2 focus:ring-(--color-primary) focus:ring-offset-1"
           />
         </div>
         <button class={cn(buttonVariants({ variant: "outline" }), "h-9 px-3")}>Export</button>
-        <a href="/tournaments/new" class="h-9 px-4 rounded-md bg-(--color-primary) text-white text-sm font-semibold flex items-center hover:bg-(--color-primary-hover) transition-colors">+ New Tournament</a>
+        <a href="/tournaments/new" class="h-9 px-4 rounded-md bg-(--color-primary) text-white text-sm font-semibold flex items-center hover:bg-(--color-primary-hover) transition-colors whitespace-nowrap">+ New Tournament</a>
       </div>
     </PageHeader>
 
-    <!-- Stat cards -->
-    <div class="grid grid-cols-4 gap-4 mb-6">
+    <!-- Stat cards: 2 cols on mobile, 4 on lg+ -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
       {[
         { icon: "🛡️", value: "128",    label: "Registered Teams", trend: "▲ 12 this week", trendColor: "text-(--color-primary)", badge: "Live", badgeVariant: "live" },
         { icon: "👥", value: "1,940",  label: "Total Players",     trend: "▲ 184 this week", trendColor: "text-(--color-primary)" },
@@ -50,51 +51,38 @@ import MatchCard from "@/components/MatchCard.astro";
       ))}
     </div>
 
-    <!-- Main content grid -->
-    <div class="grid grid-cols-[1fr_320px] gap-5">
+    <!-- Main content grid: single column on mobile/tablet, side panel at xl+ -->
+    <div class="grid grid-cols-1 xl:grid-cols-[1fr_320px] gap-5">
       <div class="space-y-5">
         <!-- Pending approvals -->
         <SectionCard title="Pending Approvals">
           <span slot="header-action" class={badgeVariants({ variant: "warning" })}>7 awaiting review</span>
-          <table class="w-full">
-            <thead>
-              <tr class="border-b border-(--color-border)">
-                {["Team", "Division", "Roster", "Payment", ""].map((h) => (
-                  <th class="text-left text-xs font-semibold uppercase tracking-wider text-(--color-muted-fg) px-6 py-3">{h}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {[
-                { initials: "RV", name: "Real Valley",  gradient: "from-violet-600 to-violet-900", division: "U18 Men's",     roster: "18/18", rosterV: "success",     payment: "Paid",    payV: "success" },
-                { initials: "AC", name: "Atlas City",   gradient: "from-sky-500 to-blue-700",      division: "Open Women's",  roster: "14/18", rosterV: "warning",     payment: "Paid",    payV: "success" },
-                { initials: "TF", name: "Toro FC",      gradient: "from-red-500 to-red-800",       division: "U16 Boys",      roster: "20/22", rosterV: "success",     payment: "Unpaid",  payV: "destructive" },
-                { initials: "GS", name: "Green Storm",  gradient: "from-emerald-500 to-emerald-800", division: "U18 Men's",   roster: "19/18", rosterV: "success",     payment: "Partial", payV: "warning" },
-              ].map((row, i) => (
-                <tr class="border-b border-(--color-border-soft) last:border-0 hover:bg-(--color-background) transition-colors">
-                  <td class="px-6 py-3.5">
-                    <div class="flex items-center gap-3">
-                      <TeamCrest initials={row.initials} gradient={row.gradient} size="md" />
-                      <span class="font-semibold text-sm text-(--color-foreground)">{row.name}</span>
-                    </div>
-                  </td>
-                  <td class="px-6 py-3.5 text-sm text-(--color-muted)">{row.division}</td>
-                  <td class="px-6 py-3.5">
-                    <span class={badgeVariants({ variant: row.rosterV as any })}>{row.roster}</span>
-                  </td>
-                  <td class="px-6 py-3.5">
-                    <span class={badgeVariants({ variant: row.payV as any })}>{row.payment}</span>
-                  </td>
-                  <td class="px-6 py-3.5 text-right">
-                    {i === 0
-                      ? <button class={cn(buttonVariants({ variant: "default" }), "h-7 px-3 text-xs")}>Approve</button>
-                      : <button class={cn(buttonVariants({ variant: "outline" }), "h-7 px-3 text-xs")}>Review</button>
-                    }
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+
+          {[
+            { initials: "RV", name: "Real Valley",  gradient: "from-violet-600 to-violet-900", division: "U18 Men's",     roster: "18/18", rosterV: "success",     payment: "Paid",    payV: "success" },
+            { initials: "AC", name: "Atlas City",   gradient: "from-sky-500 to-blue-700",      division: "Open Women's",  roster: "14/18", rosterV: "warning",     payment: "Paid",    payV: "success" },
+            { initials: "TF", name: "Toro FC",      gradient: "from-red-500 to-red-800",       division: "U16 Boys",      roster: "20/22", rosterV: "success",     payment: "Unpaid",  payV: "destructive" },
+            { initials: "GS", name: "Green Storm",  gradient: "from-emerald-500 to-emerald-800", division: "U18 Men's",   roster: "19/18", rosterV: "success",     payment: "Partial", payV: "warning" },
+          ].map((row, i) => (
+            <div class="flex items-center gap-3 px-4 sm:px-6 py-3.5 border-b border-(--color-border-soft) last:border-0 hover:bg-(--color-background) transition-colors">
+              <!-- Crest + name: flex-1 so name never gets squeezed -->
+              <div class="flex items-center gap-3 flex-1 min-w-0">
+                <TeamCrest initials={row.initials} gradient={row.gradient} size="md" />
+                <div class="min-w-0">
+                  <span class="font-semibold text-sm text-(--color-foreground) truncate block">{row.name}</span>
+                  <!-- Division + roster: visible on sm+ as secondary line -->
+                  <span class="hidden sm:block text-xs text-(--color-muted) truncate">{row.division} · {row.roster}</span>
+                </div>
+              </div>
+              <!-- Payment badge -->
+              <span class={badgeVariants({ variant: row.payV as any })}>{row.payment}</span>
+              <!-- Action button -->
+              {i === 0
+                ? <button class={cn(buttonVariants({ variant: "default" }), "h-7 px-3 text-xs shrink-0")}>Approve</button>
+                : <button class={cn(buttonVariants({ variant: "outline" }), "h-7 px-3 text-xs shrink-0")}>Review</button>
+              }
+            </div>
+          ))}
         </SectionCard>
 
         <!-- Today's matches -->
@@ -126,7 +114,7 @@ import MatchCard from "@/components/MatchCard.astro";
                   badge={m.badge ?? undefined}
                   badgeVariant={m.badgeVariant as any ?? undefined}
                   info={m.info}
-                  class="bg-(--color-background) px-6 py-4 rounded-lg border border-(--color-border)"
+                  class="bg-(--color-background) px-4 sm:px-6 py-4 rounded-lg border border-(--color-border)"
                 />
               </div>
             ))}
@@ -169,7 +157,7 @@ import MatchCard from "@/components/MatchCard.astro";
               { initials: "$",  grad: "from-sky-500 to-blue-700",      text: "Payment received — Atlas City ($300)", time: "1 hr ago" },
               { initials: "⚽", grad: "from-emerald-500 to-emerald-700", text: "Match result posted — Field 2",    time: "2 hr ago" },
             ].map((a) => (
-              <div class="flex items-center gap-3">
+              <div class="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
                 <div class={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white bg-gradient-to-br ${a.grad} shrink-0`}>{a.initials}</div>
                 <div class="min-w-0">
                   <p class="text-sm font-medium text-(--color-foreground) leading-snug">{a.text}</p>
