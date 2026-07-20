@@ -1,0 +1,23 @@
+migrations/0000_sturdy_masque.sql
+  s_92ae808618eb80::t_de6bfc1b965669 1-10
+migrations/meta/0000_snapshot.json
+  s_92ae808618eb80::t_d3af854b817e3d 1-85
+migrations/meta/_journal.json
+  s_92ae808618eb80::t_648a6609e101fc 1-13
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "ef7234a827aaae7d5f183a9682fcb4fbb571edc3",
+  "prompts": {},
+  "sessions": {
+    "s_92ae808618eb80": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_07fbc9158ffeAxbCCjFa2ZWhGS",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "James Quick <jquick@cloudflare.com>"
+    }
+  }
+}
