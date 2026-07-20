@@ -1,34 +1,47 @@
 ---
 import AppLayout from "@/layouts/AppLayout.astro";
 import { buttonVariants } from "@/components/ui/button";
-import { badgeVariants } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import PageHeader from "@/components/PageHeader.astro";
 import SectionCard from "@/components/SectionCard.astro";
-import TeamCrest from "@/components/TeamCrest.astro";
 import FormField from "@/components/FormField.astro";
 import { SaveProfileButton } from "@/components/SaveProfileButton";
 import { UpdatePasswordButton } from "@/components/UpdatePasswordButton";
-const { id } = Astro.params;
-// Static mockup — real data would use `id` to fetch user profile
+
+const user = Astro.locals.user;
+if (!user) return Astro.redirect("/");
+
+// Split the stored name into first / last for the form fields.
+const nameParts = (user.name ?? "").trim().split(/\s+/);
+const firstName = nameParts[0] ?? "";
+const lastName = nameParts.slice(1).join(" ");
 ---
 
 <AppLayout title="My Profile" activeNav="profile">
   <div class="p-4 sm:p-6 lg:p-8">
-    <PageHeader title="My Profile" subtitle="Manage your account, address, and preferences.">
+    <PageHeader title="My Profile" subtitle="Manage your account and preferences.">
       <SaveProfileButton slot="actions" client:load />
     </PageHeader>
 
-    <!-- Single column on mobile/tablet, side panel at xl+ -->
     <div class="grid grid-cols-1 xl:grid-cols-[1fr_360px] gap-6">
       <!-- Left: personal info -->
       <div class="space-y-5">
         <SectionCard class="p-5 sm:p-6">
           <h3 class="font-display font-semibold text-(--color-foreground) mb-5">Personal Information</h3>
 
-          <!-- Avatar upload -->
+          <!-- Avatar -->
           <div class="flex items-center gap-4 mb-6">
-            <div class="w-[72px] h-[72px] rounded-full flex items-center justify-center text-[26px] font-bold text-white bg-gradient-to-br from-orange-500 to-orange-700 shrink-0">AM</div>
+            {user.image ? (
+              <img
+                src={user.image}
+                alt={user.name ?? ""}
+                class="w-[72px] h-[72px] rounded-full object-cover shrink-0"
+              />
+            ) : (
+              <div class="w-[72px] h-[72px] rounded-full flex items-center justify-center text-[26px] font-bold text-white bg-gradient-to-br from-orange-500 to-orange-700 shrink-0">
+                {(firstName[0] ?? "").toUpperCase()}{(lastName[0] ?? "").toUpperCase()}
+              </div>
+            )}
             <div>
               <button class={cn(buttonVariants({ variant: "outline" }), "h-8 px-3")}>Upload photo</button>
               <p class="text-xs text-(--color-muted-fg) mt-1.5">JPG or PNG, max 2MB.</p>
@@ -36,26 +49,26 @@ const { id } = Astro.params;
           </div>
 
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-            <FormField label="First name" value="Alex" />
-            <FormField label="Last name"  value="Morgan" />
+            <FormField label="First name" value={firstName} />
+            <FormField label="Last name"  value={lastName} />
           </div>
-          <FormField label="Email" type="email" value="alex.morgan@fcvelocity.com" class="mb-4" />
+          <FormField label="Email" type="email" value={user.email} class="mb-4" />
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <FormField label="Phone"         value="(512) 555-0148" />
-            <FormField label="Date of birth" type="date" value="2007-04-12" />
+            <FormField label="Phone"         placeholder="(512) 555-0000" />
+            <FormField label="Date of birth" type="date" />
           </div>
 
           <div class="h-px bg-(--color-border) my-5" />
           <h4 class="text-sm font-semibold text-(--color-foreground) mb-4">Address</h4>
 
-          <FormField label="Street address" value="1204 South Lamar Blvd" class="mb-4" />
+          <FormField label="Street address" placeholder="" class="mb-4" />
           <FormField label="Apt / Suite / Unit" placeholder="Optional" class="mb-4" />
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-            <FormField label="City"  value="Austin" />
-            <FormField label="State" value="TX" />
+            <FormField label="City"  placeholder="" />
+            <FormField label="State" placeholder="" />
           </div>
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <FormField label="ZIP code" value="78704" />
+            <FormField label="ZIP code" placeholder="" />
             <FormField label="Country">
               <select class="w-full h-10 px-3 rounded-md border border-(--color-border) bg-(--color-surface) text-sm focus:outline-none focus:ring-2 focus:ring-(--color-primary) focus:ring-offset-1">
                 <option>United States</option>
@@ -67,38 +80,26 @@ const { id } = Astro.params;
         </SectionCard>
       </div>
 
-      <!-- Right: teams, security, notifications -->
+      <!-- Right: security, notifications -->
       <div class="space-y-5">
-        <!-- My teams -->
+        <!-- My Teams — placeholder until roster slice is implemented -->
         <SectionCard class="p-5">
           <div class="flex items-center justify-between mb-4">
             <h3 class="font-display font-semibold text-(--color-foreground)">My Teams</h3>
             <button class={cn(buttonVariants({ variant: "outline" }), "h-7 px-3 text-xs")}>+ Join team</button>
           </div>
-          <div class="space-y-3">
-            {[
-              { initials: "FV", gradient: "from-emerald-500 to-emerald-700", name: "FC Velocity",    meta: "Captain · U18 Men's · Spring Invitational Cup", statusV: "success", status: "Active" },
-              { initials: "OB", gradient: "from-slate-400 to-slate-600",     name: "Old Boys United", meta: "Player · Rec League · 2024",                   statusV: "secondary", status: "Past" },
-            ].map((t) => (
-              <div class="flex items-center gap-3">
-                <TeamCrest initials={t.initials} gradient={t.gradient} size="lg" />
-                <div class="flex-1 min-w-0">
-                  <p class="text-sm font-semibold text-(--color-foreground)">{t.name}</p>
-                  <p class="text-xs text-(--color-muted) truncate">{t.meta}</p>
-                </div>
-                <span class:list={[badgeVariants({ variant: t.statusV as any }), "shrink-0"]}>{t.status}</span>
-              </div>
-            ))}
-          </div>
+          <p class="text-sm text-(--color-muted) text-center py-4">
+            Team assignment coming soon. <!-- TODO: player_teams slice -->
+          </p>
         </SectionCard>
 
         <!-- Account & security -->
         <SectionCard class="p-5">
           <h3 class="font-display font-semibold text-(--color-foreground) mb-4">Account &amp; Security</h3>
           <div class="space-y-4">
-            <FormField label="Current password" name="currentPassword" type="password" placeholder="••••••••" />
-            <FormField label="New password"      name="newPassword"     type="password" placeholder="••••••••" />
-            <FormField label="Confirm new password" name="confirmPassword" type="password" placeholder="••••••••" />
+            <FormField label="Current password"     name="currentPassword"  type="password" placeholder="••••••••" />
+            <FormField label="New password"         name="newPassword"      type="password" placeholder="••••••••" />
+            <FormField label="Confirm new password" name="confirmPassword"  type="password" placeholder="••••••••" />
             <UpdatePasswordButton client:load />
           </div>
         </SectionCard>
@@ -108,8 +109,8 @@ const { id } = Astro.params;
           <h3 class="font-display font-semibold text-(--color-foreground) mb-4">Notifications</h3>
           <div class="divide-y divide-(--color-border-soft)">
             {[
-              { label: "Match reminders",    checked: true },
-              { label: "Roster changes",     checked: true },
+              { label: "Match reminders",    checked: true  },
+              { label: "Roster changes",     checked: true  },
               { label: "Payment receipts",   checked: false },
               { label: "Weekly digest email", checked: true },
             ].map((n) => (
