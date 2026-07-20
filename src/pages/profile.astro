@@ -26,8 +26,10 @@ const profileData = await makeProfileService().getProfile(user.id);
       <SaveProfileButton slot="actions" client:load />
     </PageHeader>
 
-    <div class="max-w-2xl">
-      <SectionCard class="p-5 sm:p-6">
+    <div class="grid grid-cols-1 xl:grid-cols-[1fr_360px] gap-6">
+      <!-- Left: personal info -->
+      <div class="space-y-5">
+        <SectionCard class="p-5 sm:p-6">
           <h3 class="font-display font-semibold text-(--color-foreground) mb-5">Personal Information</h3>
 
           <!-- Avatar -->
@@ -81,7 +83,22 @@ const profileData = await makeProfileService().getProfile(user.id);
               </select>
             </FormField>
           </div>
-      </SectionCard>
+        </SectionCard>
+      </div>
+
+      <!-- Right rail -->
+      <div class="space-y-5">
+        <!-- My Teams — placeholder until roster slice is implemented -->
+        <SectionCard class="p-5">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="font-display font-semibold text-(--color-foreground)">My Teams</h3>
+            <button class={cn(buttonVariants({ variant: "outline" }), "h-7 px-3 text-xs")}>+ Join team</button>
+          </div>
+          <p class="text-sm text-(--color-muted) text-center py-4">
+            Team assignment coming soon. <!-- TODO: player_teams slice -->
+          </p>
+        </SectionCard>
+      </div>
     </div>
   </div>
 </AppLayout>
