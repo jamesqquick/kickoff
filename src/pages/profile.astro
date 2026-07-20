@@ -7,6 +7,10 @@ import SectionCard from "@/components/SectionCard.astro";
 import FormField from "@/components/FormField.astro";
 import { SaveProfileButton } from "@/components/SaveProfileButton";
 import { makeProfileService } from "@/services/profile-service";
+import { makePlayerTeamService } from "@/services/player-team-service";
+import { PlayerRepository } from "@/repositories/player-repository";
+import { getDb } from "@/lib/db";
+import { badgeVariants } from "@/components/ui/badge";
 
 const user = Astro.locals.user;
 if (!user) return Astro.redirect("/");
@@ -18,6 +22,12 @@ const lastName = nameParts.slice(1).join(" ");
 
 // Load extended profile (may be null for new users — form renders empty).
 const profileData = await makeProfileService().getProfile(user.id);
+
+// Load the player's team memberships for the My Teams section.
+const player = await new PlayerRepository(getDb()).findByUserId(user.id);
+const myTeams = player
+  ? await makePlayerTeamService().listByPlayer(player.id)
+  : [];
 ---
 
 <AppLayout title="My Profile" activeNav="profile">
@@ -88,15 +98,40 @@ const profileData = await makeProfileService().getProfile(user.id);
 
       <!-- Right rail -->
       <div class="space-y-5">
-        <!-- My Teams — placeholder until roster slice is implemented -->
+        <!-- My Teams -->
         <SectionCard class="p-5">
           <div class="flex items-center justify-between mb-4">
             <h3 class="font-display font-semibold text-(--color-foreground)">My Teams</h3>
-            <button class={cn(buttonVariants({ variant: "outline" }), "h-7 px-3 text-xs")}>+ Join team</button>
+            <a href="/teams" class={cn(buttonVariants({ variant: "outline" }), "h-7 px-3 text-xs")}>+ Join a Team</a>
           </div>
-          <p class="text-sm text-(--color-muted) text-center py-4">
-            Team assignment coming soon. <!-- TODO: player_teams slice -->
-          </p>
+
+          {myTeams.length === 0 ? (
+            <div class="text-center py-4">
+              <p class="text-sm text-(--color-muted) mb-3">You haven't joined a team yet.</p>
+              <a href="/teams" class={cn(buttonVariants({ variant: "default" }), "h-8 px-4 text-xs")}>
+                Browse Teams
+              </a>
+            </div>
+          ) : (
+            <div class="space-y-2">
+              {myTeams.map((membership) => (
+                <div class="flex items-center justify-between gap-3 rounded-lg border border-(--color-border-soft) px-3 py-2.5 hover:bg-(--color-background) transition-colors">
+                  <div class="min-w-0">
+                    <a
+                      href={`/teams/${membership.teamId}`}
+                      class="font-medium text-sm text-(--color-foreground) hover:text-(--color-primary) truncate block"
+                    >
+                      {membership.teamName}
+                    </a>
+                    <p class="text-xs text-(--color-muted) truncate">{membership.teamDivision} · {membership.teamCity}</p>
+                  </div>
+                  <span class={badgeVariants({ variant: membership.status === "approved" ? "success" : "warning" })}>
+                    {membership.status === "approved" ? "Active" : "Pending"}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
         </SectionCard>
       </div>
     </div>

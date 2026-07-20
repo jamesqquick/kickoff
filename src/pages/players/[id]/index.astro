@@ -3,6 +3,7 @@ import AppLayout from "@/layouts/AppLayout.astro";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { makePlayerService } from "@/services/player-service";
+import { makePlayerTeamService } from "@/services/player-team-service";
 import { NotFoundError } from "@/lib/errors";
 
 const { id } = Astro.params;
@@ -22,6 +23,9 @@ const joinedDate = new Date(player.createdAt).toLocaleDateString("en-US", {
   month: "long",
   day: "numeric",
 });
+
+const playerTeamsList = await makePlayerTeamService().listByPlayer(player.id);
+const activeTeam = playerTeamsList.find((pt) => pt.status === "approved") ?? null;
 ---
 
 <AppLayout title={player.name} activeNav="players">
@@ -67,14 +71,28 @@ const joinedDate = new Date(player.createdAt).toLocaleDateString("en-US", {
       </div>
     </div>
 
-    <!-- Team assignment — placeholder until roster slice is implemented -->
+    <!-- Team assignment -->
     <div class="rounded-xl border border-(--color-border) bg-(--color-card)">
       <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between px-4 sm:px-6 py-4 gap-3 border-b border-(--color-border)">
         <h3 class="font-display font-semibold text-(--color-foreground)">Team</h3>
       </div>
-      <div class="px-6 py-8 text-center text-sm text-(--color-muted)">
-        Team assignment coming soon. <!-- TODO: player_teams slice -->
-      </div>
+      {activeTeam ? (
+        <div class="px-6 py-5">
+          <a
+            href={`/teams/${activeTeam.teamId}`}
+            class="font-semibold text-(--color-foreground) hover:text-(--color-primary) transition-colors"
+          >
+            {activeTeam.teamName}
+          </a>
+          <p class="text-sm text-(--color-muted) mt-0.5">
+            {activeTeam.teamDivision} · {activeTeam.teamCity}
+          </p>
+        </div>
+      ) : (
+        <div class="px-6 py-8 text-center text-sm text-(--color-muted)">
+          Not currently on a team.
+        </div>
+      )}
     </div>
   </div>
 </AppLayout>

@@ -5,10 +5,17 @@ import { badgeVariants } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import TeamCrest from "@/components/TeamCrest.astro";
 import { makeTeamService } from "@/services/team-service";
+import { makePlayerTeamService } from "@/services/player-team-service";
+import { PlayerTeamRepository } from "@/repositories/player-team-repository";
+import { PlayerRepository } from "@/repositories/player-repository";
+import { getDb } from "@/lib/db";
 import { NotFoundError } from "@/lib/errors";
 import { teamStatusVariant } from "@/lib/utils";
+import { JoinTeamButton } from "@/components/JoinTeamButton";
+import { PendingRequestActions } from "@/components/PendingRequestActions";
 
 const { id } = Astro.params;
+const user = Astro.locals.user;
 
 let team;
 try {
@@ -19,6 +26,34 @@ try {
   }
   throw err;
 }
+
+const isCoachOrAdmin =
+  user?.role === "admin" || user?.id === team.coachId;
+
+const roster = await makePlayerTeamService().listByTeam(id!);
+const pendingRequests = isCoachOrAdmin
+  ? await makePlayerTeamService().listPendingByTeam(id!, user!)
+  : [];
+
+// Resolve the current user's join status to seed the island's initial state.
+type JoinStatus = "none" | "pending" | "approved";
+let myStatus: JoinStatus = "none";
+if (user) {
+  const db = getDb();
+  const player = await new PlayerRepository(db).findByUserId(user.id);
+  if (player) {
+    const existing = await new PlayerTeamRepository(db).findByPlayerAndTeam(
+      player.id,
+      team.id,
+    );
+    if (existing) {
+      myStatus = existing.status as JoinStatus;
+    }
+  }
+}
+
+const joinedFormat = (ts: number) =>
+  new Date(ts).toLocaleDateString("en-US", { month: "short", year: "numeric" });
 ---
 
 <AppLayout title={team.name} activeNav="teams">
@@ -54,22 +89,102 @@ try {
         </p>
       </div>
       <div class="flex sm:flex-col gap-2 shrink-0">
-        <button class={cn(buttonVariants({ variant: "default" }), "h-9 px-4")}>Edit Team</button>
-        <button class={cn(buttonVariants({ variant: "outline" }), "h-9 px-4")}>Share Profile</button>
+        {isCoachOrAdmin ? (
+          <>
+            <button class={cn(buttonVariants({ variant: "default" }), "h-9 px-4")}>Edit Team</button>
+            <button class={cn(buttonVariants({ variant: "outline" }), "h-9 px-4")}>Share Profile</button>
+          </>
+        ) : user ? (
+          <JoinTeamButton client:load teamId={team.id} initialStatus={myStatus} />
+        ) : (
+          <a href="/signin" class={cn(buttonVariants({ variant: "default" }), "h-9 px-4")}>
+            Sign in to Join
+          </a>
+        )}
       </div>
     </div>
 
-    <!-- Roster table — static until Players slice is implemented -->
+    <!-- Pending join requests — coaches/admins only -->
+    {isCoachOrAdmin && pendingRequests.length > 0 && (
+      <div class="rounded-xl border border-(--color-border) bg-(--color-card) mb-5">
+        <div class="flex items-center justify-between px-4 sm:px-6 py-4 border-b border-(--color-border)">
+          <h3 class="font-display font-semibold text-(--color-foreground)">
+            Join Requests
+          </h3>
+          <span class={badgeVariants({ variant: "warning" })}>{pendingRequests.length} pending</span>
+        </div>
+        <div>
+          {pendingRequests.map((req) => (
+            <PendingRequestActions
+              client:load
+              playerId={req.playerId}
+              teamId={req.teamId}
+              playerName={req.playerName}
+              playerImage={req.playerImage}
+              requestedAt={req.createdAt}
+            />
+          ))}
+        </div>
+      </div>
+    )}
+
+    <!-- Roster table -->
     <div class="rounded-xl border border-(--color-border) bg-(--color-card)">
       <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between px-4 sm:px-6 py-4 gap-3 border-b border-(--color-border)">
         <h3 class="font-display font-semibold text-(--color-foreground)">
-          Squad Roster <span class="font-normal text-sm text-(--color-muted)"><!-- TODO: PlayerService --></span>
+          Squad Roster
+          <span class="font-normal text-sm text-(--color-muted) ml-1">{roster.length} player{roster.length !== 1 ? "s" : ""}</span>
         </h3>
-        <button class={cn(buttonVariants({ variant: "default" }), "h-8 px-3 text-xs shrink-0")}>+ Add Player</button>
+        {isCoachOrAdmin && (
+          <button class={cn(buttonVariants({ variant: "default" }), "h-8 px-3 text-xs shrink-0")}>
+            + Add Player
+          </button>
+        )}
       </div>
-      <div class="px-6 py-8 text-center text-sm text-(--color-muted)">
-        Roster management coming soon. <!-- TODO: PlayerService + PlayerRepository -->
-      </div>
+
+      {roster.length === 0 ? (
+        <div class="px-6 py-8 text-center text-sm text-(--color-muted)">
+          No players on the roster yet.
+        </div>
+      ) : (
+        <table class="w-full">
+          <thead>
+            <tr class="border-b border-(--color-border)">
+              <th class="text-left text-xs font-semibold uppercase tracking-wider text-(--color-muted-fg) px-5 py-3">Player</th>
+              <th class="hidden sm:table-cell text-left text-xs font-semibold uppercase tracking-wider text-(--color-muted-fg) px-5 py-3">#</th>
+              <th class="hidden sm:table-cell text-left text-xs font-semibold uppercase tracking-wider text-(--color-muted-fg) px-5 py-3">Joined</th>
+            </tr>
+          </thead>
+          <tbody>
+            {roster.map((member) => (
+              <tr class="border-b border-(--color-border-soft) last:border-0 hover:bg-(--color-background) transition-colors">
+                <td class="px-5 py-3.5">
+                  <div class="flex items-center gap-3">
+                    {member.playerImage ? (
+                      <img
+                        src={member.playerImage}
+                        alt={member.playerName}
+                        class="w-8 h-8 rounded-full object-cover shrink-0"
+                      />
+                    ) : (
+                      <div class="w-8 h-8 rounded-full bg-(--color-primary) flex items-center justify-center text-white text-xs font-bold shrink-0">
+                        {member.playerName.slice(0, 2).toUpperCase()}
+                      </div>
+                    )}
+                    <span class="font-medium text-sm text-(--color-foreground)">{member.playerName}</span>
+                  </div>
+                </td>
+                <td class="hidden sm:table-cell px-5 py-3.5 text-sm text-(--color-muted)">
+                  {member.jerseyNumber ?? "—"}
+                </td>
+                <td class="hidden sm:table-cell px-5 py-3.5 text-sm text-(--color-muted)">
+                  {joinedFormat(member.createdAt)}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
     </div>
   </div>
 </AppLayout>

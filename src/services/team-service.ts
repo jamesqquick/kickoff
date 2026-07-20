@@ -22,6 +22,10 @@ export class TeamService {
     return this.teams.list();
   }
 
+  async listApprovedTeams(): Promise<Team[]> {
+    return this.teams.listApproved();
+  }
+
   async getTeam(id: string): Promise<Team> {
     const team = await this.teams.findById(id);
     if (!team) {
