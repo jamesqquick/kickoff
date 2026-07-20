@@ -1,0 +1,19 @@
+src/pages/teams/index.astro
+  s_4dbc83b8066a6d::t_f97ad19fbd15a8 1-79
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "23b994fa23c6b97b194c60e8e70bcd133b9ce915",
+  "prompts": {},
+  "sessions": {
+    "s_4dbc83b8066a6d": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_07fb7bd7effedmFui3o2fCMbfr",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "James Quick <jquick@cloudflare.com>"
+    }
+  }
+}
