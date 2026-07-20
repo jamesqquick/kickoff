@@ -1,5 +1,6 @@
 import type { APIRoute } from "astro";
 import { getAuth } from "@/lib/auth";
+import { redirectWithError } from "@/lib/http";
 
 // Starts the Google OAuth flow. Better Auth's social sign-in is a POST to
 // `/sign-in/social` that returns the provider URL as JSON — it has no
@@ -14,7 +15,7 @@ export const GET: APIRoute = async ({ request }) => {
   });
 
   if (!response?.url) {
-    return new Response("Failed to start Google sign-in", { status: 500 });
+    return redirectWithError("/signin", "Could not start Google sign-in");
   }
 
   headers.set("Location", response.url);

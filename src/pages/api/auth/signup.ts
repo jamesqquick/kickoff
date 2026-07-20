@@ -1,18 +1,22 @@
 import type { APIRoute } from "astro";
 import { getAuth } from "@/lib/auth";
+import { redirectWithError } from "@/lib/http";
 
 export const POST: APIRoute = async ({ request }) => {
   const form = await request.formData();
-  const firstName = (form.get("firstName") as string).trim();
-  const lastName = (form.get("lastName") as string).trim();
-  const email = form.get("email") as string;
-  const password = form.get("password") as string;
-  const role = form.get("role") as string;
+  const firstName = String(form.get("firstName")).trim();
+  const lastName = String(form.get("lastName")).trim();
 
   try {
     // Better Auth forwards unknown body fields to the database at runtime.
-    // The base signUpEmail type doesn't include custom fields, so we cast.
-    const body = { name: `${firstName} ${lastName}`, email, password, role } as {
+    // The base signUpEmail type doesn't include custom fields (e.g. `role`),
+    // so we cast the body rather than duplicating the type.
+    const body = {
+      name: `${firstName} ${lastName}`,
+      email: String(form.get("email")),
+      password: String(form.get("password")),
+      role: String(form.get("role")),
+    } as {
       name: string;
       email: string;
       password: string;
@@ -20,8 +24,8 @@ export const POST: APIRoute = async ({ request }) => {
 
     const { headers } = await getAuth().api.signUpEmail({
       body,
-      headers: request.headers,
-      returnHeaders: true,
+      headers: request.headers, // forward incoming cookies
+      returnHeaders: true, // capture Better Auth's Set-Cookie
     });
 
     headers.set("Location", "/dashboard");
@@ -31,10 +35,6 @@ export const POST: APIRoute = async ({ request }) => {
       err instanceof Error
         ? err.message
         : "Could not create account. The email may already be in use.";
-    const params = new URLSearchParams({ tab: "signup", error: message });
-    return new Response(null, {
-      status: 302,
-      headers: { Location: `/signin?${params}` },
-    });
+    return redirectWithError("/signin", message, { tab: "signup" });
   }
 };
