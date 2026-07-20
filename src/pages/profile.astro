@@ -8,6 +8,7 @@ import FormField from "@/components/FormField.astro";
 import { SaveProfileButton } from "@/components/SaveProfileButton";
 import { UpdatePasswordButton } from "@/components/UpdatePasswordButton";
 import { makeProfileService } from "@/services/profile-service";
+import { getAuth } from "@/lib/auth";
 
 const user = Astro.locals.user;
 if (!user) return Astro.redirect("/");
@@ -19,6 +20,15 @@ const lastName = nameParts.slice(1).join(" ");
 
 // Load extended profile (may be null for new users — form renders empty).
 const profileData = await makeProfileService().getProfile(user.id);
+
+// Determine whether the user has an email/password credential.
+// Google-only users see a "managed by Google" note instead of password fields.
+const accounts = await getAuth().api.listUserAccounts({
+  headers: Astro.request.headers,
+});
+const hasPassword = accounts.some(
+  (a: { providerId: string }) => a.providerId === "credential",
+);
 ---
 
 <AppLayout title="My Profile" activeNav="profile">
@@ -103,12 +113,26 @@ const profileData = await makeProfileService().getProfile(user.id);
         <!-- Account & security -->
         <SectionCard class="p-5">
           <h3 class="font-display font-semibold text-(--color-foreground) mb-4">Account &amp; Security</h3>
-          <div class="space-y-4">
-            <FormField label="Current password"     name="currentPassword"  type="password" placeholder="••••••••" />
-            <FormField label="New password"         name="newPassword"      type="password" placeholder="••••••••" />
-            <FormField label="Confirm new password" name="confirmPassword"  type="password" placeholder="••••••••" />
-            <UpdatePasswordButton client:load />
-          </div>
+          {hasPassword ? (
+            <div class="space-y-4">
+              <FormField label="Current password"     name="currentPassword"  type="password" placeholder="••••••••" />
+              <FormField label="New password"         name="newPassword"      type="password" placeholder="••••••••" />
+              <FormField label="Confirm new password" name="confirmPassword"  type="password" placeholder="••••••••" />
+              <UpdatePasswordButton client:load />
+            </div>
+          ) : (
+            <p class="text-sm text-(--color-muted-fg)">
+              Your account is managed through Google. To update your password, visit{" "}
+              <a
+                href="https://myaccount.google.com/security"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="text-(--color-primary) underline underline-offset-2"
+              >
+                Google Account Security
+              </a>.
+            </p>
+          )}
         </SectionCard>
 
         <!-- Notifications -->
