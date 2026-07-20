@@ -3,7 +3,7 @@ import { TeamService } from "./team-service";
 import { NotFoundError, ForbiddenError } from "@/lib/errors";
 import type { TeamRepository } from "@/repositories/team-repository";
 import type { Team } from "@/lib/schema";
-import type { User } from "better-auth";
+import type { AppUser } from "@/lib/auth";
 
 // Minimal fake repo — only the methods TeamService calls need to be implemented.
 function makeFakeRepo(teams: Team[] = []): TeamRepository {
@@ -25,8 +25,8 @@ const baseTeam: Team = {
   updatedAt: 1000,
 };
 
-const adminUser = { id: "user-1", role: "admin" } as User & { role: string };
-const playerUser = { id: "user-2", role: "player" } as User & { role: string };
+const adminUser = { id: "user-1", role: "admin" } as unknown as AppUser;
+const playerUser = { id: "user-2", role: "player" } as unknown as AppUser;
 
 describe("TeamService.getTeam", () => {
   it("returns the team when found", async () => {

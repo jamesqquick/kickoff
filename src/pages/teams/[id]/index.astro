@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 import TeamCrest from "@/components/TeamCrest.astro";
 import { makeTeamService } from "@/services/team-service";
 import { NotFoundError } from "@/lib/errors";
+import { teamStatusVariant } from "@/lib/utils";
 
 const { id } = Astro.params;
 
@@ -43,9 +44,7 @@ try {
       <div class="flex-1 min-w-0">
         <div class="flex items-center gap-3 mb-1">
           <h1 class="font-display text-2xl sm:text-3xl font-bold text-(--color-foreground)">{team.name}</h1>
-          <span class={badgeVariants({
-            variant: team.status === "approved" ? "success" : team.status === "rejected" ? "destructive" : "warning",
-          })}>
+          <span class={badgeVariants({ variant: teamStatusVariant(team.status) })}>
             ● {team.status.charAt(0).toUpperCase() + team.status.slice(1)}
           </span>
         </div>

@@ -1,4 +1,4 @@
-import type { User } from "better-auth";
+import type { AppUser } from "@/lib/auth";
 import { ForbiddenError, NotFoundError } from "@/lib/errors";
 import { getDb } from "@/lib/db";
 import { TeamRepository } from "@/repositories/team-repository";
@@ -30,9 +30,8 @@ export class TeamService {
     return team;
   }
 
-  async createTeam(input: CreateTeamInput, currentUser: User): Promise<Team> {
-    const role = (currentUser as User & { role: string }).role;
-    if (!TEAM_CREATE_ROLES.has(role)) {
+  async createTeam(input: CreateTeamInput, currentUser: AppUser): Promise<Team> {
+    if (!TEAM_CREATE_ROLES.has(currentUser.role)) {
       throw new ForbiddenError("createTeam");
     }
 

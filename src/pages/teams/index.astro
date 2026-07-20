@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 import PageHeader from "@/components/PageHeader.astro";
 import TeamCrest from "@/components/TeamCrest.astro";
 import { makeTeamService } from "@/services/team-service";
+import { teamStatusVariant } from "@/lib/utils";
 
 const teams = await makeTeamService().listTeams();
 ---
@@ -55,9 +56,7 @@ const teams = await makeTeamService().listTeams();
                 <td class="hidden sm:table-cell px-5 py-3.5 text-sm text-(--color-muted)">{team.division}</td>
                 <td class="hidden sm:table-cell px-5 py-3.5 text-sm text-(--color-muted)">{team.city}</td>
                 <td class="px-5 py-3.5">
-                  <span class={badgeVariants({
-                    variant: team.status === "approved" ? "success" : team.status === "rejected" ? "destructive" : "warning",
-                  })}>
+                  <span class={badgeVariants({ variant: teamStatusVariant(team.status) })}>
                     {team.status}
                   </span>
                 </td>

@@ -1,4 +1,5 @@
 import { betterAuth } from "better-auth";
+import type { User } from "better-auth";
 import { D1Dialect } from "kysely-d1";
 import { env } from "cloudflare:workers";
 import {
@@ -7,6 +8,13 @@ import {
   GOOGLE_CLIENT_ID,
   GOOGLE_CLIENT_SECRET,
 } from "astro:env/server";
+
+// Extends Better Auth's base User with our custom additionalFields.
+// Use this everywhere instead of `User` from "better-auth" + a cast.
+export type UserRole = "admin" | "coach" | "referee" | "player";
+export interface AppUser extends User {
+  role: UserRole;
+}
 
 // Lazy singleton — created on first request so env bindings are available.
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

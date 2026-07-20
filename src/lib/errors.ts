@@ -1,5 +1,5 @@
 // Domain errors — thrown by services, never by repositories or pages.
-// Actions map these to ActionError via toActionError() in src/actions/index.ts.
+// Map to ActionError in action handlers using toActionError() from src/actions/utils.ts.
 
 export class AppError extends Error {
   constructor(message: string) {

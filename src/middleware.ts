@@ -1,5 +1,6 @@
 import { defineMiddleware } from "astro:middleware";
 import { getAuth } from "@/lib/auth";
+import type { AppUser } from "@/lib/auth";
 
 // Routes that don't require authentication
 const PUBLIC_ROUTES = new Set(["/signin", "/"]);
@@ -18,7 +19,9 @@ export const onRequest = defineMiddleware(async (context, next) => {
     headers: request.headers,
   });
 
-  locals.user = session?.user ?? null;
+  // Cast to AppUser: Better Auth returns the base User type but our schema
+  // always includes `role` via additionalFields — the cast is safe at runtime.
+  locals.user = (session?.user ?? null) as AppUser | null;
   locals.session = session?.session ?? null;
 
   // Redirect unauthenticated users away from protected routes
