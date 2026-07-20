@@ -7,7 +7,7 @@ import PageHeader from "@/components/PageHeader.astro";
 import SectionCard from "@/components/SectionCard.astro";
 import TeamCrest from "@/components/TeamCrest.astro";
 import FormField from "@/components/FormField.astro";
-import { ContinueToRosterButton } from "@/components/ContinueToRosterButton";
+import { RegisterTeamButton } from "@/components/RegisterTeamButton";
 ---
 
 <AppLayout title="Register Team" activeNav="teams">
@@ -115,7 +115,15 @@ import { ContinueToRosterButton } from "@/components/ContinueToRosterButton";
 
       <div class="flex justify-between">
         <button class={cn(buttonVariants({ variant: "outline" }))}>← Back</button>
-        <ContinueToRosterButton client:load />
+        <!-- Props are hardcoded placeholders; the form will be made
+             interactive (controlled React state) in a follow-up. The island
+             already wires the real Action + Sonner toast pattern. -->
+        <RegisterTeamButton
+          client:load
+          name="FC Velocity"
+          city="Austin, TX"
+          division="U18 Men's"
+        />
       </div>
     </SectionCard>
   </div>

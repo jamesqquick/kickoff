@@ -4,16 +4,30 @@ import { buttonVariants } from "@/components/ui/button";
 import { badgeVariants } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import TeamCrest from "@/components/TeamCrest.astro";
-// Static mockup — real data would come from a DB lookup on Astro.params.id
+import { makeTeamService } from "@/services/team-service";
+import { NotFoundError } from "@/lib/errors";
+import { teamStatusVariant } from "@/lib/utils";
+
+const { id } = Astro.params;
+
+let team;
+try {
+  team = await makeTeamService().getTeam(id!);
+} catch (err) {
+  if (err instanceof NotFoundError) {
+    return Astro.redirect("/teams");
+  }
+  throw err;
+}
 ---
 
-<AppLayout title="FC Velocity" activeNav="teams">
+<AppLayout title={team.name} activeNav="teams">
   <div class="p-4 sm:p-6 lg:p-8">
     <!-- Breadcrumb -->
     <p class="text-sm text-(--color-muted) mb-5">
       <a href="/teams" class="hover:text-(--color-primary)">Teams</a>
       <span class="mx-2">/</span>
-      <span class="text-(--color-foreground)">FC Velocity</span>
+      <span class="text-(--color-foreground)">{team.name}</span>
     </p>
 
     <!-- Hero banner -->
@@ -21,112 +35,40 @@ import TeamCrest from "@/components/TeamCrest.astro";
       class="relative rounded-xl border border-(--color-border) overflow-hidden p-5 sm:p-7 mb-6 flex flex-col sm:flex-row items-start sm:items-center gap-5 sm:gap-6"
       style="background: radial-gradient(circle at 15% 30%, rgba(5,150,105,0.18), transparent 40%), radial-gradient(circle at 85% 70%, rgba(234,88,12,0.12), transparent 45%), #ffffff;"
     >
-      <TeamCrest initials="FV" gradient="from-emerald-500 to-emerald-700" size="2xl" class="shadow-lg shrink-0" />
+      <TeamCrest
+        initials={team.name.slice(0, 2).toUpperCase()}
+        gradient="from-emerald-500 to-emerald-700"
+        size="2xl"
+        class="shadow-lg shrink-0"
+      />
       <div class="flex-1 min-w-0">
         <div class="flex items-center gap-3 mb-1">
-          <h1 class="font-display text-2xl sm:text-3xl font-bold text-(--color-foreground)">FC Velocity</h1>
-          <span class={badgeVariants({ variant: "success" })}>● Approved</span>
+          <h1 class="font-display text-2xl sm:text-3xl font-bold text-(--color-foreground)">{team.name}</h1>
+          <span class={badgeVariants({ variant: teamStatusVariant(team.status) })}>
+            ● {team.status.charAt(0).toUpperCase() + team.status.slice(1)}
+          </span>
         </div>
-        <p class="text-sm text-(--color-muted)">Austin, TX · U18 Men's Division · Coach Alex Morgan</p>
-        <!-- Stats: wrap on small screens -->
-        <div class="flex flex-wrap gap-x-6 gap-y-3 mt-4">
-          {[
-            { val: "18",    lbl: "Players" },
-            { val: "4-1-0", lbl: "W-D-L",        color: "text-(--color-primary)" },
-            { val: "13",    lbl: "Goals For" },
-            { val: "3",     lbl: "Goals Against" },
-            { val: "2nd",   lbl: "Group B",       color: "text-(--color-accent)" },
-          ].map((s) => (
-            <div>
-              <p class:list={["font-display text-2xl font-bold", s.color ?? "text-(--color-foreground)"]}>{s.val}</p>
-              <p class="text-xs text-(--color-muted) mt-0.5">{s.lbl}</p>
-            </div>
-          ))}
-        </div>
+        <p class="text-sm text-(--color-muted)">
+          {team.city} · {team.division}
+          <!-- TODO: resolve coach name via User/Player slice -->
+        </p>
       </div>
-      <!-- Action buttons: row on all sizes, pushed to end of flex -->
       <div class="flex sm:flex-col gap-2 shrink-0">
         <button class={cn(buttonVariants({ variant: "default" }), "h-9 px-4")}>Edit Team</button>
         <button class={cn(buttonVariants({ variant: "outline" }), "h-9 px-4")}>Share Profile</button>
       </div>
     </div>
 
-    <!--
-      Roster table — SectionCard isn't used here because the header contains
-      both a title and a compound action (search + button), which doesn't fit
-      the simple title + single-action slot pattern.
-    -->
+    <!-- Roster table — static until Players slice is implemented -->
     <div class="rounded-xl border border-(--color-border) bg-(--color-card)">
       <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between px-4 sm:px-6 py-4 gap-3 border-b border-(--color-border)">
         <h3 class="font-display font-semibold text-(--color-foreground)">
-          Squad Roster <span class="font-normal text-sm text-(--color-muted)">· 18 players</span>
+          Squad Roster <span class="font-normal text-sm text-(--color-muted)"><!-- TODO: PlayerService --></span>
         </h3>
-        <div class="flex items-center gap-3 w-full sm:w-auto">
-          <div class="relative flex-1 sm:flex-none">
-            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-(--color-muted-fg)">🔍</span>
-            <input placeholder="Search players…" class="h-8 pl-8 pr-3 rounded-md border border-(--color-border) bg-(--color-surface) text-sm w-full sm:w-48 focus:outline-none focus:ring-2 focus:ring-(--color-primary) focus:ring-offset-1" />
-          </div>
-          <button class={cn(buttonVariants({ variant: "default" }), "h-8 px-3 text-xs shrink-0")}>+ Add Player</button>
-        </div>
+        <button class={cn(buttonVariants({ variant: "default" }), "h-8 px-3 text-xs shrink-0")}>+ Add Player</button>
       </div>
-      <table class="w-full">
-        <thead>
-          <tr class="border-b border-(--color-border)">
-            <!-- # — hidden on mobile -->
-            <th class="hidden sm:table-cell text-left text-xs font-semibold uppercase tracking-wider text-(--color-muted-fg) px-5 py-3">#</th>
-            <th class="text-left text-xs font-semibold uppercase tracking-wider text-(--color-muted-fg) px-5 py-3">Player</th>
-            <th class="text-left text-xs font-semibold uppercase tracking-wider text-(--color-muted-fg) px-5 py-3">Position</th>
-            <!-- Age, Goals, Assists — hidden on mobile -->
-            <th class="hidden sm:table-cell text-left text-xs font-semibold uppercase tracking-wider text-(--color-muted-fg) px-5 py-3">Age</th>
-            <th class="hidden sm:table-cell text-left text-xs font-semibold uppercase tracking-wider text-(--color-muted-fg) px-5 py-3">Goals</th>
-            <th class="hidden sm:table-cell text-left text-xs font-semibold uppercase tracking-wider text-(--color-muted-fg) px-5 py-3">Assists</th>
-            <th class="text-left text-xs font-semibold uppercase tracking-wider text-(--color-muted-fg) px-5 py-3">Status</th>
-            <th class="text-left text-xs font-semibold uppercase tracking-wider text-(--color-muted-fg) px-5 py-3"></th>
-          </tr>
-        </thead>
-        <tbody>
-          {[
-            { num: 1,  initials: "MK", name: "Marco Keller",  email: "marco@fcvelocity.com",  gradient: "from-amber-400 to-amber-600",     pos: "GK",  posV: "warning",     age: 17, g: 0, a: 0, status: "Active",      statusV: "success" },
-            { num: 4,  initials: "DS", name: "Diego Santos",  email: "diego@fcvelocity.com",  gradient: "from-sky-500 to-blue-700",        pos: "DEF", posV: "info",        age: 18, g: 1, a: 2, status: "Active",      statusV: "success" },
-            { num: 5,  initials: "TW", name: "Tom Weber",     email: "tom@fcvelocity.com",    gradient: "from-sky-500 to-blue-700",        pos: "DEF", posV: "info",        age: 17, g: 0, a: 1, status: "Active",      statusV: "success" },
-            { num: 8,  initials: "LR", name: "Luis Rivera",   email: "luis@fcvelocity.com",   gradient: "from-emerald-500 to-emerald-700", pos: "MID", posV: "success",     age: 18, g: 3, a: 4, status: "Active",      statusV: "success" },
-            { num: 10, initials: "JC", name: "Jordan Cole",   email: "jordan@fcvelocity.com", gradient: "from-emerald-500 to-emerald-700", pos: "MID", posV: "success",     age: 18, g: 5, a: 3, status: "Active",      statusV: "success", captain: true },
-            { num: 9,  initials: "FN", name: "Femi Nwosu",    email: "femi@fcvelocity.com",   gradient: "from-orange-500 to-orange-700",   pos: "FWD", posV: "destructive", age: 17, g: 4, a: 1, status: "Yellow card", statusV: "warning" },
-            { num: 11, initials: "KP", name: "Kai Peterson",  email: "kai@fcvelocity.com",    gradient: "from-orange-500 to-orange-700",   pos: "FWD", posV: "destructive", age: 18, g: 0, a: 0, status: "Injured",     statusV: "destructive" },
-          ].map((p) => (
-            <tr class="border-b border-(--color-border-soft) last:border-0 hover:bg-(--color-background) transition-colors">
-              <td class="hidden sm:table-cell px-5 py-3.5 font-semibold text-sm text-(--color-foreground)">{p.num}</td>
-              <td class="px-5 py-3.5">
-                <div class="flex items-center gap-3">
-                  <div class={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white bg-gradient-to-br ${p.gradient} shrink-0`}>{p.initials}</div>
-                  <div>
-                    <div class="flex items-center gap-1.5">
-                      <span class="text-sm font-semibold text-(--color-foreground)">{p.name}</span>
-                      {p.captain && <span class={badgeVariants({ variant: "accent" })}>C</span>}
-                    </div>
-                    <p class="text-xs text-(--color-muted)">{p.email}</p>
-                  </div>
-                </div>
-              </td>
-              <td class="px-5 py-3.5">
-                <span class={badgeVariants({ variant: p.posV as any })}>{p.pos}</span>
-              </td>
-              <td class="hidden sm:table-cell px-5 py-3.5 text-sm text-(--color-muted)">{p.age}</td>
-              <td class="hidden sm:table-cell px-5 py-3.5 text-sm text-(--color-foreground)">{p.g}</td>
-              <td class="hidden sm:table-cell px-5 py-3.5 text-sm text-(--color-foreground)">{p.a}</td>
-              <td class="px-5 py-3.5">
-                <span class={badgeVariants({ variant: p.statusV as any })}>{p.status}</span>
-              </td>
-              <td class="px-5 py-3.5">
-                <button class={cn(buttonVariants({ variant: "outline" }), "h-7 px-2 text-xs")}>···</button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-      <div class="flex items-center justify-between px-6 py-4 border-t border-(--color-border-soft)">
-        <span class="text-sm text-(--color-muted)">Showing 7 of 18 players</span>
-        <button class={cn(buttonVariants({ variant: "outline" }), "h-8 px-3")}>Show all 18 →</button>
+      <div class="px-6 py-8 text-center text-sm text-(--color-muted)">
+        Roster management coming soon. <!-- TODO: PlayerService + PlayerRepository -->
       </div>
     </div>
   </div>

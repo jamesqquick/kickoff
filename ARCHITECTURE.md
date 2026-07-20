@@ -80,6 +80,95 @@ Import from the appropriate virtual module:
 - Server vars: `import { DATABASE_URL } from "astro:env/server"`
 - Client vars: `import { PUBLIC_APP_URL } from "astro:env/client"`
 
+## Data Access
+
+### ORM / Query Layer
+
+App-owned tables use **Drizzle ORM** (`drizzle-orm/d1`). The schema is defined once in `src/lib/schema.ts` — row types come from `InferSelectModel`/`InferInsertModel`, never manually duplicated.
+
+Better Auth manages its own four tables (`user`, `session`, `account`, `verification`) via `kysely-d1` internally. Those tables must **not** appear in `src/lib/schema.ts` or drizzle-kit will attempt to diff them.
+
+### Getting the DB
+
+```ts
+import { getDb } from "@/lib/db";
+```
+
+`getDb()` is a lazy singleton that calls `drizzle(env.DB, { schema })`. The `env.DB` D1 binding is read from `cloudflare:workers` — no Astro context required, so repositories are usable in Services, Actions, background jobs, and unit tests (via mock).
+
+### Repositories
+
+Constructor-injected `AppDatabase`:
+
+```ts
+export class TeamRepository {
+  constructor(private readonly db: AppDatabase) {}
+  async list(): Promise<Team[]> { ... }
+  async findById(id: string): Promise<Team | undefined> { ... }
+  async insert(row: NewTeam): Promise<Team> { ... }
+}
+```
+
+No business logic, no HTTP.
+
+### Services
+
+Constructor-injected repository:
+
+```ts
+export class TeamService {
+  constructor(private readonly teams: TeamRepository) {}
+  async getTeam(id: string): Promise<Team> { ... }  // throws NotFoundError
+  async createTeam(input, currentUser: User): Promise<Team> { ... }  // throws ForbiddenError
+}
+```
+
+### DI Factory
+
+Never instantiate a service directly in a page or action. Use the `make*Service()` factory:
+
+```ts
+export function makeTeamService(): TeamService {
+  return new TeamService(new TeamRepository(getDb()));
+}
+```
+
+Factories are trivially injectable in tests by constructing the service with a fake repository.
+
+### Migrations
+
+- **Schema** → `src/lib/schema.ts` (Drizzle, app tables only)
+- **Generate** → `pnpm db:generate` (runs `drizzle-kit generate`, writes SQL to `migrations/`)
+- **Apply** → `pnpm db:migrate:local` / `pnpm db:migrate:remote` (wrangler D1)
+
+The hand-written `0001_better_auth_init.sql` predates Drizzle. drizzle-kit's `meta/` journal starts at `0000_sturdy_masque`; wrangler applies all files alphabetically regardless.
+
+## Errors → Actions
+
+Domain errors are defined in `src/lib/errors.ts` and thrown only by services. Actions map them via `toActionError()` in `src/actions/teams.ts` (copy this pattern for every new action file):
+
+| Domain error | ActionError code |
+|---|---|
+| `NotFoundError` | `NOT_FOUND` |
+| `ForbiddenError` | `FORBIDDEN` |
+| `ValidationError` | `BAD_REQUEST` |
+| any other `AppError` | `INTERNAL_SERVER_ERROR` |
+
+## Authorization
+
+Middleware handles **authentication only** (populates `locals.user`). Services handle **authorization**:
+
+- Receive `currentUser: User` as an explicit parameter.
+- Check role/ownership; throw `ForbiddenError(action)` if denied.
+- Pages never check roles — delegate entirely to the service.
+
+```ts
+async createTeam(input: CreateTeamInput, currentUser: User): Promise<Team> {
+  if (!ALLOWED_ROLES.has(currentUser.role)) throw new ForbiddenError("createTeam");
+  // ...
+}
+```
+
 ## Middleware
 
 Auth, session lookup, current user population, security headers, logging, request IDs. Authorization enforced inside services.
