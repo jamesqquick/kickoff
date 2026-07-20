@@ -82,98 +82,51 @@ Mount with `<SaveThingButton client:load />`.
 
 ### Folder Structure
 
+The core layers (`actions/`, `services/`, `repositories/`) are **type-grouped** flat directories — one file per domain entity. The global `AGENTS.md` "start flat, group by feature" rule applies _within_ each layer only if a single feature's files grow large enough to warrant it.
+
+The `pages/` tree below is the **target state** as the tournament feature set matures. Add routes to it as work begins on each section; don't pre-create empty files.
+
 ```
 src/
   pages/
     index.astro
-    login.astro
-    profile.astro
+    signin.astro
+    dashboard.astro
 
-    schedule/
-      index.astro
-      division/
-        [divisionId].astro
-      team/
-        [teamId].astro
-      field/
-        [fieldId].astro
+    teams/
+      index.astro          ← lists all teams (real data, Teams slice)
+      register.astro       ← team registration form
+      [id]/
+        index.astro        ← team detail (real data, Teams slice)
+        schedule.astro
 
-    brackets/
-      index.astro
-      [divisionId].astro
-
-    results/
-      index.astro
-
-    admin/
-      index.astro
-      tournament/
-        settings.astro
-        divisions.astro
-        age-groups.astro
-        venues.astro
-        fields.astro
-        rules.astro
-      teams/
-        index.astro
-        [teamId].astro
-        approve.astro
-      players/
-        index.astro
-        [playerId].astro
-      schedule/
-        generate.astro
-        editor.astro
-        conflicts.astro
-      games/
-        index.astro
-        [gameId].astro
-        scores.astro
-      volunteers/
-        index.astro
-        assignments.astro
-        shifts.astro
-      sponsors/
-        index.astro
-        packages.astro
-      reports/
-        index.astro
-      users/
-        index.astro
-        roles.astro
-      settings/
-        index.astro
-
-    coach/
-      index.astro
-      roster.astro
-      registration.astro
-      payments.astro
-      messages.astro
-
-    referee/
-      index.astro
-      assignments.astro
-      game/
-        [gameId].astro
-
-    volunteer/
-      index.astro
-      shifts.astro
+    schedule/              ← target: add when scheduling work starts
+    brackets/              ← target
+    results/               ← target
+    users/                 ← target
+    admin/                 ← target (deep tree, add per feature)
+    coach/                 ← target
+    referee/               ← target
+    volunteer/             ← target
 
     api/
-      public/
+      auth/                ← Better Auth cookie routes (see Auth Routes)
+      public/              ← external consumers only
       webhooks/
       integrations/
 
-  actions/        ← Astro Actions (mutations from forms/UI)
-  services/       ← Business logic (TeamService, ScheduleService, etc.)
-  repositories/   ← Database access (TeamRepository, GameRepository, etc.)
+  actions/        ← Astro Actions. One file per domain (teams.ts, players.ts, …)
+                     src/actions/index.ts re-exports the `server` object.
+  services/       ← Business logic. One file per domain (team-service.ts, …)
+  repositories/   ← DB access. One file per domain (team-repository.ts, …)
+  __mocks__/      ← Vitest stubs for Cloudflare virtual modules
   components/
     ui/           ← shadcn primitives
-    layout/       ← Layout components
-  layouts/        ← BaseLayout.astro, AppLayout.astro
-  lib/            ← Shared utilities
+    layout/       ← layout-specific components (Sidebar, UserMenu)
+                     Feature components live flat in components/ until there
+                     are enough to warrant a sub-folder.
+  layouts/        ← AppLayout.astro, BaseLayout.astro
+  lib/            ← Shared utilities: db.ts, schema.ts, errors.ts, auth.ts, http.ts, utils.ts
   styles/
     globals.css
 ```
