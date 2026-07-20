@@ -34,6 +34,7 @@ export function PendingRequestActions({
       if (error) throw error;
       setState("approved");
       toast.success(`${playerName} added to the roster.`);
+      setTimeout(() => window.location.reload(), 1500);
     } catch {
       setState("pending");
       toast.error("Could not approve. Try again.");
