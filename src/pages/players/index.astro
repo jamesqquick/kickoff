@@ -1,0 +1,79 @@
+---
+import AppLayout from "@/layouts/AppLayout.astro";
+import { buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+import PageHeader from "@/components/PageHeader.astro";
+import { makePlayerService } from "@/services/player-service";
+
+const players = await makePlayerService().listPlayersWithProfile();
+---
+
+<AppLayout title="Players" activeNav="players">
+  <div class="p-4 sm:p-6 lg:p-8">
+    <PageHeader
+      title="Players"
+      eyebrow="Spring Invitational Cup"
+      subtitle="All registered players for this tournament."
+    />
+
+    {players.length === 0 ? (
+      <div class="rounded-xl border border-(--color-border) bg-(--color-card) p-12 text-center">
+        <p class="text-(--color-muted) text-sm">No players registered yet.</p>
+        <p class="text-(--color-muted) text-xs mt-2">
+          Players are created automatically when users sign up.
+        </p>
+      </div>
+    ) : (
+      <div class="rounded-xl border border-(--color-border) bg-(--color-card)">
+        <table class="w-full">
+          <thead>
+            <tr class="border-b border-(--color-border)">
+              <th class="text-left text-xs font-semibold uppercase tracking-wider text-(--color-muted-fg) px-5 py-3">
+                Player
+              </th>
+              <th class="hidden sm:table-cell text-left text-xs font-semibold uppercase tracking-wider text-(--color-muted-fg) px-5 py-3">
+                Joined
+              </th>
+              <th class="px-5 py-3"></th>
+            </tr>
+          </thead>
+          <tbody>
+            {players.map((player) => (
+              <tr class="border-b border-(--color-border-soft) last:border-0 hover:bg-(--color-background) transition-colors">
+                <td class="px-5 py-3.5">
+                  <div class="flex items-center gap-3">
+                    {player.image ? (
+                      <img
+                        src={player.image}
+                        alt={player.name}
+                        class="w-8 h-8 rounded-full object-cover"
+                      />
+                    ) : (
+                      <div class="w-8 h-8 rounded-full bg-(--color-primary) flex items-center justify-center text-white text-xs font-semibold shrink-0">
+                        {player.name.slice(0, 2).toUpperCase()}
+                      </div>
+                    )}
+                    <span class="font-semibold text-sm text-(--color-foreground)">
+                      {player.name}
+                    </span>
+                  </div>
+                </td>
+                <td class="hidden sm:table-cell px-5 py-3.5 text-sm text-(--color-muted)">
+                  {new Date(player.createdAt).toLocaleDateString()}
+                </td>
+                <td class="px-5 py-3.5">
+                  <a
+                    href={`/players/${player.id}`}
+                    class={cn(buttonVariants({ variant: "outline" }), "h-7 px-3 text-xs")}
+                  >
+                    View →
+                  </a>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    )}
+  </div>
+</AppLayout>

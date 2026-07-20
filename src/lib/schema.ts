@@ -1,4 +1,4 @@
-import { int, sqliteTable, text } from "drizzle-orm/sqlite-core";
+import { int, sqliteTable, text, unique } from "drizzle-orm/sqlite-core";
 import type { InferInsertModel, InferSelectModel } from "drizzle-orm";
 
 // App-owned tables only. Better Auth owns `user`, `session`, `account`,
@@ -23,3 +23,32 @@ export const teams = sqliteTable("teams", {
 export type Team = InferSelectModel<typeof teams>;
 export type NewTeam = InferInsertModel<typeof teams>;
 export type TeamStatus = Team["status"];
+
+// players — thin domain anchor. Profile data (name, image) lives in the
+// Better Auth `user` table, not here. One row per user account.
+export const players = sqliteTable("players", {
+  id: text("id").primaryKey(),
+  userId: text("user_id").notNull().unique(), // FK → user.id (enforced at app level)
+  createdAt: int("created_at").notNull(),
+  updatedAt: int("updated_at").notNull(),
+});
+
+export type Player = InferSelectModel<typeof players>;
+export type NewPlayer = InferInsertModel<typeof players>;
+
+// playerTeams — stub for the future roster slice. No service or actions yet;
+// the table exists so FKs between players and teams stay in Drizzle-owned tables.
+export const playerTeams = sqliteTable(
+  "player_teams",
+  {
+    id: text("id").primaryKey(),
+    playerId: text("player_id").notNull(), // FK → players.id
+    teamId: text("team_id").notNull(), // FK → teams.id
+    createdAt: int("created_at").notNull(),
+    updatedAt: int("updated_at").notNull(),
+  },
+  (t) => [unique().on(t.playerId, t.teamId)],
+);
+
+export type PlayerTeam = InferSelectModel<typeof playerTeams>;
+export type NewPlayerTeam = InferInsertModel<typeof playerTeams>;
