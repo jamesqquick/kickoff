@@ -1,0 +1,41 @@
+package.json
+  s_b9703605a6a30f::t_af92084fd26883 42
+pnpm-lock.yaml
+  s_b9703605a6a30f::t_fe48a57fd7f12d 71-73,2716-2721,5598-5602
+src/components/ContinueToRosterButton.tsx
+  s_b9703605a6a30f::t_486857a61b29b1 1-32
+src/components/SaveProfileButton.tsx
+  s_b9703605a6a30f::t_602aa16e42ea0b 1-32
+src/components/TeamActionButtons.tsx
+  s_b9703605a6a30f::t_bcd6b5443b40e5 1-43
+src/components/UpdatePasswordButton.tsx
+  s_b9703605a6a30f::t_f0e497f062bfe5 1-53
+src/components/ui/sonner.tsx
+  s_b9703605a6a30f::t_41402a565f2a6f 1-28
+src/layouts/AppLayout.astro
+  s_b9703605a6a30f::t_31cc9746ddde63 5,48-49
+src/lib/utils.ts
+  s_b9703605a6a30f::t_a99b99a61254ef 7-14
+src/pages/dashboard.astro
+  s_b9703605a6a30f::t_e3f55cdf6cb487 11,81-85
+src/pages/teams/register.astro
+  s_b9703605a6a30f::t_92dc62e3f14eff 10,118
+src/pages/users/[id]/profile.astro
+  s_b9703605a6a30f::t_b07f1885986a02 10-11,19,99-102
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "4bae61c9d0513088d0a410a2e5081519536ae0ff",
+  "prompts": {},
+  "sessions": {
+    "s_b9703605a6a30f": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_0892632e0ffenZIsrRIwTFE2YS",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "James Quick <jquick@cloudflare.com>"
+    }
+  }
+}
