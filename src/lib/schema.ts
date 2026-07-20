@@ -52,3 +52,23 @@ export const playerTeams = sqliteTable(
 
 export type PlayerTeam = InferSelectModel<typeof playerTeams>;
 export type NewPlayerTeam = InferInsertModel<typeof playerTeams>;
+
+// profiles — extended player contact info, 1:1 with the Better Auth user.
+// Stored separately so auth and domain data stay in distinct tables.
+export const profiles = sqliteTable("profiles", {
+  id: text("id").primaryKey(),
+  userId: text("user_id").notNull().unique(), // FK → user.id (enforced at app level)
+  phone: text("phone"),
+  dateOfBirth: text("date_of_birth"), // ISO date string YYYY-MM-DD, nullable
+  addressStreet: text("address_street"),
+  addressApt: text("address_apt"),
+  addressCity: text("address_city"),
+  addressState: text("address_state"),
+  addressZip: text("address_zip"),
+  addressCountry: text("address_country"),
+  createdAt: int("created_at").notNull(),
+  updatedAt: int("updated_at").notNull(),
+});
+
+export type Profile = InferSelectModel<typeof profiles>;
+export type NewProfile = InferInsertModel<typeof profiles>;
