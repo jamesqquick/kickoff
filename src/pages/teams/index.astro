@@ -1,0 +1,79 @@
+---
+import AppLayout from "@/layouts/AppLayout.astro";
+import { buttonVariants } from "@/components/ui/button";
+import { badgeVariants } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
+import PageHeader from "@/components/PageHeader.astro";
+import TeamCrest from "@/components/TeamCrest.astro";
+import { makeTeamService } from "@/services/team-service";
+
+const teams = await makeTeamService().listTeams();
+---
+
+<AppLayout title="Teams" activeNav="teams">
+  <div class="p-4 sm:p-6 lg:p-8">
+    <PageHeader title="Teams" eyebrow="Spring Invitational Cup" subtitle="All registered teams for this tournament.">
+      <div slot="actions">
+        <a href="/teams/register" class={cn(buttonVariants({ variant: "default" }), "h-9 px-4")}>
+          + Register Team
+        </a>
+      </div>
+    </PageHeader>
+
+    {teams.length === 0 ? (
+      <div class="rounded-xl border border-(--color-border) bg-(--color-card) p-12 text-center">
+        <p class="text-(--color-muted) text-sm">No teams registered yet.</p>
+        <a href="/teams/register" class={cn(buttonVariants({ variant: "default" }), "mt-4 inline-flex")}>
+          Register the first team
+        </a>
+      </div>
+    ) : (
+      <div class="rounded-xl border border-(--color-border) bg-(--color-card)">
+        <table class="w-full">
+          <thead>
+            <tr class="border-b border-(--color-border)">
+              <th class="text-left text-xs font-semibold uppercase tracking-wider text-(--color-muted-fg) px-5 py-3">Team</th>
+              <th class="hidden sm:table-cell text-left text-xs font-semibold uppercase tracking-wider text-(--color-muted-fg) px-5 py-3">Division</th>
+              <th class="hidden sm:table-cell text-left text-xs font-semibold uppercase tracking-wider text-(--color-muted-fg) px-5 py-3">City</th>
+              <th class="text-left text-xs font-semibold uppercase tracking-wider text-(--color-muted-fg) px-5 py-3">Status</th>
+              <th class="px-5 py-3"></th>
+            </tr>
+          </thead>
+          <tbody>
+            {teams.map((team) => (
+              <tr class="border-b border-(--color-border-soft) last:border-0 hover:bg-(--color-background) transition-colors">
+                <td class="px-5 py-3.5">
+                  <div class="flex items-center gap-3">
+                    <TeamCrest
+                      initials={team.name.slice(0, 2).toUpperCase()}
+                      gradient="from-emerald-500 to-emerald-700"
+                      size="md"
+                    />
+                    <span class="font-semibold text-sm text-(--color-foreground)">{team.name}</span>
+                  </div>
+                </td>
+                <td class="hidden sm:table-cell px-5 py-3.5 text-sm text-(--color-muted)">{team.division}</td>
+                <td class="hidden sm:table-cell px-5 py-3.5 text-sm text-(--color-muted)">{team.city}</td>
+                <td class="px-5 py-3.5">
+                  <span class={badgeVariants({
+                    variant: team.status === "approved" ? "success" : team.status === "rejected" ? "destructive" : "warning",
+                  })}>
+                    {team.status}
+                  </span>
+                </td>
+                <td class="px-5 py-3.5">
+                  <a
+                    href={`/teams/${team.id}`}
+                    class={cn(buttonVariants({ variant: "outline" }), "h-7 px-3 text-xs")}
+                  >
+                    View →
+                  </a>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    )}
+  </div>
+</AppLayout>
