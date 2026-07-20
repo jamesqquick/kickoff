@@ -1,0 +1,19 @@
+pnpm-lock.yaml
+  s_77cce08eb7b335::t_5d1c49c626c6db 3035-3036,6234,6661
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "0e28715ba74051e8ac7078221ed66dbff24352ad",
+  "prompts": {},
+  "sessions": {
+    "s_77cce08eb7b335": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_07f473c60ffeNgnKiu6YLQ1YAo",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "James Quick <jquick@cloudflare.com>"
+    }
+  }
+}
