@@ -6,6 +6,9 @@ dist/
 # wrangler local state
 .wrangler/
 
+# git worktrees
+.worktrees/
+
 # dependencies
 node_modules/
 
