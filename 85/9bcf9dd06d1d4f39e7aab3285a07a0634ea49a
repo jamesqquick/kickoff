@@ -1,0 +1,35 @@
+src/components/MatchCard.astro
+  s_b07243c0bbba04::t_63d8ade5f53607 44-47,49,63-64
+src/components/PageHeader.astro
+  s_b07243c0bbba04::t_36d2a892677723 12
+src/layouts/AppLayout.astro
+  s_b07243c0bbba04::t_983dadaa5eb90d 4,14-39,42-43,48-77
+src/pages/dashboard.astro
+  s_b07243c0bbba04::t_837c4e5ef53272 14,20-22,26,30,34-35,54-55,60-85,117,160
+src/pages/signin.astro
+  s_b07243c0bbba04::t_d2defe3b0935be 19-20,22,51,53-58
+src/pages/teams/[id]/index.astro
+  s_b07243c0bbba04::t_5eb932130a40ee 11,21,24,27,31-32,47-48,60,64-65,67,69,75-84,98,114-116
+src/pages/teams/[id]/schedule.astro
+  s_b07243c0bbba04::t_04910efc8c97fa 16,18,27-28,40-41,60,62,70,72,81,107
+src/pages/teams/register.astro
+  s_b07243c0bbba04::t_b869575064d4c0 13,20-41,43-44,48,52,62,78,90
+src/pages/users/[id]/profile.astro
+  s_b07243c0bbba04::t_b779e1e2443ebf 15,20-21,24,36,41,51,55
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "859bcf9dd06d1d4f39e7aab3285a07a0634ea49a",
+  "prompts": {},
+  "sessions": {
+    "s_b07243c0bbba04": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_0835ef7baffex5gWEZY2uMyVR9",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "James Quick <jquick@cloudflare.com>"
+    }
+  }
+}
