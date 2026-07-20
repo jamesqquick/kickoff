@@ -42,6 +42,43 @@ Astro Pages → Astro Actions / API Endpoints → Service Layer → Repository L
 - Long-running work goes through Cloudflare Workflows or Queues.
 - Declare all environment variables in the `env.schema` in `astro.config.mjs` using `envField`. Import from `astro:env/server` or `astro:env/client` — never use `import.meta.env` directly.
 - Actions define input validation inline via `defineAction({ input: z.object({...}) })`. Use `z.infer<typeof schema>` for any TypeScript types derived from those shapes — never duplicate a Zod schema as a manual TypeScript type.
+- User-facing feedback uses toasts (Sonner), fired from React islands, never `<script>` blocks. See Toast Notifications below.
+
+### Toast Notifications
+
+Toasts use [Sonner](https://sonner.emilkowal.ski/). `<Toaster>` is mounted once in `AppLayout.astro` (bottom-right); `src/components/ui/sonner.tsx` maps our tokens — don't reinstall the shadcn default (it adds `next-themes`).
+
+Fire from a React island, never an Astro `<script>` (they need loading state and will call Actions later):
+
+```tsx
+// src/components/SaveThingButton.tsx
+import { useState } from "react";
+import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import { delay } from "@/lib/utils";
+
+export function SaveThingButton() {
+  const [loading, setLoading] = useState(false);
+  async function handleClick() {
+    setLoading(true);
+    try {
+      await delay(800); // TODO: swap for actions.thing.save(...)
+      toast.success("Thing saved");
+    } catch {
+      toast.error("Could not save. Try again.");
+    } finally {
+      setLoading(false);
+    }
+  }
+  return <Button onClick={handleClick} disabled={loading}>{loading ? "Saving…" : "Save"}</Button>;
+}
+```
+
+Mount with `<SaveThingButton client:load />`.
+
+- `toast.success` for confirmations, `toast.error` for failures and client-side validation (validation toasts fire synchronously — no `delay`).
+- Always `disabled` + a loading label during async work.
+- Until Actions exist, simulate with `delay()` and leave a `// TODO: swap for actions.*`.
 
 ### Folder Structure
 
