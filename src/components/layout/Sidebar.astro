@@ -1,10 +1,21 @@
 ---
 import BrandMark from "@/components/BrandMark.astro";
+import { UserMenu } from "@/components/layout/UserMenu";
 
 interface Props {
   activeNav?: string;
 }
 const { activeNav = "dashboard" } = Astro.props;
+
+const user = Astro.locals.user;
+const displayName = user?.name?.trim() || user?.email || "Account";
+const role = (user as { role?: string } | null)?.role ?? "Member";
+const initials =
+  displayName
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase() ?? "")
+    .join("") || "?";
 
 function getIcon(name: string) {
   const icons: Record<string, string> = {
@@ -51,7 +62,7 @@ const navGroups = [
 ];
 ---
 
-<aside class="w-[248px] shrink-0 flex flex-col bg-(--color-surface) border-r border-(--color-border) min-h-screen sticky top-0">
+<aside class="w-[248px] shrink-0 flex flex-col bg-(--color-surface) border-r border-(--color-border) h-screen sticky top-0">
   <!-- Brand -->
   <div class="flex items-center gap-2.5 px-5 py-5 border-b border-(--color-border)">
     <BrandMark size="sm" />
@@ -90,17 +101,12 @@ const navGroups = [
 
   <!-- User footer -->
   <div class="p-3 border-t border-(--color-border)">
-    <div class="flex items-center gap-3 px-3 py-2.5 rounded-[8px] bg-(--color-background)">
-      <div
-        class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white shrink-0"
-        style="background: linear-gradient(135deg, #ea580c, #c2410c);"
-      >
-        AM
-      </div>
-      <div class="min-w-0">
-        <p class="text-sm font-semibold text-(--color-foreground) truncate">Alex Morgan</p>
-        <p class="text-xs text-(--color-muted) truncate">Organizer</p>
-      </div>
-    </div>
+    <UserMenu
+      client:load
+      name={displayName}
+      email={user?.email ?? ""}
+      role={role}
+      initials={initials}
+    />
   </div>
 </aside>

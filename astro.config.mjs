@@ -9,6 +9,15 @@ export default defineConfig({
   integrations: [react()],
   vite: {
     plugins: [tailwindcss()],
+    optimizeDeps: {
+      include: [
+        "astro/actions/runtime/entrypoints/route.js",
+        "astro/env/runtime",
+        "better-auth",
+        "kysely-d1",
+        "@radix-ui/react-dropdown-menu",
+      ],
+    },
   },
   env: {
     validateSecrets: true,

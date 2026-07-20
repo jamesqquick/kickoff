@@ -5,40 +5,14 @@ import { cn } from "@/lib/utils";
 import BrandMark from "@/components/BrandMark.astro";
 import FormField from "@/components/FormField.astro";
 import GoogleAuthButton from "@/components/GoogleAuthButton.astro";
-import { actions, isInputError } from "astro:actions";
 
 const GOOGLE_OAUTH_URL = "/api/auth/signin/google";
 
-// Process action results
-const signInResult = Astro.getActionResult(actions.auth.signIn);
-const signUpResult = Astro.getActionResult(actions.auth.signUp);
-
-// Redirect on success — Better Auth sets the session cookie before the action
-// returns, so the middleware will hydrate locals on the next request.
-if (signInResult?.data?.success || signUpResult?.data?.success) {
-  return Astro.redirect("/dashboard");
-}
-
-// Field-level validation errors
-const signInErrors = isInputError(signInResult?.error)
-  ? signInResult.error.fields
-  : null;
-const signUpErrors = isInputError(signUpResult?.error)
-  ? signUpResult.error.fields
-  : null;
-
-// Server/auth errors (wrong password, email already exists, etc.)
-const signInServerError =
-  signInResult?.error && !isInputError(signInResult.error)
-    ? signInResult.error.message
-    : null;
-const signUpServerError =
-  signUpResult?.error && !isInputError(signUpResult.error)
-    ? signUpResult.error.message
-    : null;
-
-// Keep the active tab after a failed submit
-const activeTab = signUpResult ? "signup" : "signin";
+// API routes redirect back here with ?tab=signup&error=... on failure.
+const activeTab = Astro.url.searchParams.get("tab") === "signup" ? "signup" : "signin";
+const error = Astro.url.searchParams.get("error");
+const signInError = activeTab === "signin" ? error : null;
+const signUpError = activeTab === "signup" ? error : null;
 ---
 
 <BaseLayout title="Sign In">
@@ -115,10 +89,10 @@ const activeTab = signUpResult ? "signup" : "signin";
             <span class="flex-1 h-px bg-[#c5cdd9]" />
           </div>
 
-          <form method="POST" action={actions.auth.signIn}>
-            {signInServerError && (
+          <form method="POST" action="/api/auth/signin">
+            {signInError && (
               <p class="text-sm text-red-600 mb-4 p-3 rounded-md bg-red-50 border border-red-200">
-                {signInServerError}
+                {signInError}
               </p>
             )}
             <div class="space-y-4">
@@ -127,7 +101,6 @@ const activeTab = signUpResult ? "signup" : "signin";
                 type="email"
                 name="email"
                 placeholder="you@email.com"
-                error={signInErrors?.email?.[0]}
               />
               <div>
                 <div class="flex justify-between items-center mb-1.5">
@@ -138,7 +111,6 @@ const activeTab = signUpResult ? "signup" : "signin";
                   type="password"
                   name="password"
                   placeholder="Your password"
-                  error={signInErrors?.password?.[0]}
                 />
               </div>
               <button
@@ -164,10 +136,10 @@ const activeTab = signUpResult ? "signup" : "signin";
             <span class="flex-1 h-px bg-[#c5cdd9]" />
           </div>
 
-          <form method="POST" action={actions.auth.signUp}>
-            {signUpServerError && (
+          <form method="POST" action="/api/auth/signup">
+            {signUpError && (
               <p class="text-sm text-red-600 mb-4 p-3 rounded-md bg-red-50 border border-red-200">
-                {signUpServerError}
+                {signUpError}
               </p>
             )}
             <div class="space-y-4">
@@ -177,14 +149,14 @@ const activeTab = signUpResult ? "signup" : "signin";
                   type="text"
                   name="firstName"
                   placeholder="Alex"
-                  error={signUpErrors?.firstName?.[0]}
+                  required
                 />
                 <FormField
                   label="Last name"
                   type="text"
                   name="lastName"
                   placeholder="Morgan"
-                  error={signUpErrors?.lastName?.[0]}
+                  required
                 />
               </div>
               <FormField
@@ -192,14 +164,15 @@ const activeTab = signUpResult ? "signup" : "signin";
                 type="email"
                 name="email"
                 placeholder="you@email.com"
-                error={signUpErrors?.email?.[0]}
+                required
               />
               <FormField
                 label="Password"
                 type="password"
                 name="password"
                 placeholder="Create a password (min. 8 chars)"
-                error={signUpErrors?.password?.[0]}
+                minlength={8}
+                required
               />
               <FormField label="I am a…">
                 <div class="relative">
@@ -219,9 +192,6 @@ const activeTab = signUpResult ? "signup" : "signin";
                   </div>
                 </div>
               </FormField>
-              {signUpErrors?.role?.[0] && (
-                <p class="text-xs text-red-600">{signUpErrors.role[0]}</p>
-              )}
               <label class="flex items-start gap-2 text-sm text-(--color-muted) cursor-pointer">
                 <input type="checkbox" class="w-4 h-4 accent-(--color-primary) mt-0.5 shrink-0" />
                 I agree to the Terms of Service and Privacy Policy
