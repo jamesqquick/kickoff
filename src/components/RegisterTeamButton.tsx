@@ -15,23 +15,22 @@ export function RegisterTeamButton({ name, city, division }: Props) {
   async function handleClick() {
     setLoading(true);
     try {
-      const { error } = await actions.teams.create({ name, city, division });
+      const { data, error } = await actions.teams.create({ name, city, division });
       if (error) {
         toast.error(error.message ?? "Could not register team. Try again.");
         return;
       }
-      toast.success("Team registered! Pending approval.");
-      // TODO: redirect to /teams/:id once the new team id is returned
+      toast.success("Team registered! Redirecting to your team…");
+      window.location.href = `/teams/${data.id}`;
     } catch {
       toast.error("Could not register team. Try again.");
-    } finally {
       setLoading(false);
     }
   }
 
   return (
     <Button onClick={handleClick} disabled={loading}>
-      {loading ? "Registering…" : "Continue to Roster →"}
+      {loading ? "Registering…" : "Register Team"}
     </Button>
   );
 }
