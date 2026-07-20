@@ -24,41 +24,30 @@ export type Team = InferSelectModel<typeof teams>;
 export type NewTeam = InferInsertModel<typeof teams>;
 export type TeamStatus = Team["status"];
 
-// players — thin domain anchor. Profile data (name, image) lives in the
-// Better Auth `user` table, not here. One row per user account.
-export const players = sqliteTable("players", {
-  id: text("id").primaryKey(),
-  userId: text("user_id").notNull().unique(), // FK → user.id (enforced at app level)
-  createdAt: int("created_at").notNull(),
-  updatedAt: int("updated_at").notNull(),
-});
-
-export type Player = InferSelectModel<typeof players>;
-export type NewPlayer = InferInsertModel<typeof players>;
-
-// playerTeams — join table between players and teams.
-// A player may be on multiple teams; the unique constraint prevents duplicate
-// (player_id, team_id) pairs. status tracks the join-request lifecycle.
-export const playerTeams = sqliteTable(
-  "player_teams",
+// teamMembers — join table linking users directly to teams.
+// Replaces the old players + player_teams two-hop design.
+// Any authenticated user can be a member of any team; the team owner
+// (teams.coach_id) determines who has management permissions.
+export const teamMembers = sqliteTable(
+  "team_members",
   {
     id: text("id").primaryKey(),
-    playerId: text("player_id").notNull(), // FK → players.id
-    teamId: text("team_id").notNull(),     // FK → teams.id
-    jerseyNumber: int("jersey_number"),    // nullable — assigned later
+    userId: text("user_id").notNull(),   // FK → user.id (enforced at app level)
+    teamId: text("team_id").notNull(),   // FK → teams.id
+    jerseyNumber: int("jersey_number"),  // nullable — assigned later
     status: text("status", { enum: ["pending", "approved", "rejected"] })
       .notNull()
       .default("pending"),
     createdAt: int("created_at").notNull(),
     updatedAt: int("updated_at").notNull(),
   },
-  (t) => [unique().on(t.playerId, t.teamId)],
+  (t) => [unique().on(t.userId, t.teamId)],
 );
 
-export type PlayerTeam = InferSelectModel<typeof playerTeams>;
-export type NewPlayerTeam = InferInsertModel<typeof playerTeams>;
+export type TeamMember = InferSelectModel<typeof teamMembers>;
+export type NewTeamMember = InferInsertModel<typeof teamMembers>;
 
-// profiles — extended player contact info, 1:1 with the Better Auth user.
+// profiles — extended contact info, 1:1 with the Better Auth user.
 // Stored separately so auth and domain data stay in distinct tables.
 export const profiles = sqliteTable("profiles", {
   id: text("id").primaryKey(),

@@ -1,11 +1,8 @@
 import type { AppUser } from "@/lib/auth";
-import { ForbiddenError, NotFoundError } from "@/lib/errors";
+import { NotFoundError } from "@/lib/errors";
 import { getDb } from "@/lib/db";
 import { TeamRepository } from "@/repositories/team-repository";
 import type { Team } from "@/lib/schema";
-
-// Roles permitted to create a team.
-const TEAM_CREATE_ROLES = new Set(["admin", "coach"]);
 
 export interface CreateTeamInput {
   name: string;
@@ -35,10 +32,6 @@ export class TeamService {
   }
 
   async createTeam(input: CreateTeamInput, currentUser: AppUser): Promise<Team> {
-    if (!TEAM_CREATE_ROLES.has(currentUser.role)) {
-      throw new ForbiddenError("createTeam");
-    }
-
     const now = Date.now();
     const id = crypto.randomUUID();
 

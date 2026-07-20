@@ -8,11 +8,13 @@ import {
   GOOGLE_CLIENT_ID,
   GOOGLE_CLIENT_SECRET,
 } from "astro:env/server";
-import { makePlayerService } from "@/services/player-service";
 
 // Extends Better Auth's base User with our custom additionalFields.
 // Use this everywhere instead of `User` from "better-auth" + a cast.
-export type UserRole = "admin" | "coach" | "referee" | "player";
+// admin — platform-level superuser (assigned manually, never self-selected).
+// referee — match official (assigned manually, never self-selected).
+// user — default for all sign-ups; team ownership determines coach permissions.
+export type UserRole = "admin" | "referee" | "user";
 export interface AppUser extends User {
   role: UserRole;
 }
@@ -41,20 +43,8 @@ export function getAuth() {
           role: {
             type: "string",
             required: true,
-            defaultValue: "player",
-            input: true,
-          },
-        },
-      },
-      // Auto-create a players domain row whenever a new user account is created.
-      // makePlayerService().createPlayerForUser is idempotent, so it is safe if
-      // this hook fires more than once for the same user.
-      databaseHooks: {
-        user: {
-          create: {
-            after: async (user) => {
-              await makePlayerService().createPlayerForUser(user.id);
-            },
+            defaultValue: "user",
+            input: false, // role is never accepted from user input
           },
         },
       },

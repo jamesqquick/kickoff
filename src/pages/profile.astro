@@ -7,9 +7,7 @@ import SectionCard from "@/components/SectionCard.astro";
 import FormField from "@/components/FormField.astro";
 import { SaveProfileButton } from "@/components/SaveProfileButton";
 import { makeProfileService } from "@/services/profile-service";
-import { makePlayerTeamService } from "@/services/player-team-service";
-import { PlayerRepository } from "@/repositories/player-repository";
-import { getDb } from "@/lib/db";
+import { makeTeamMemberService } from "@/services/team-member-service";
 import { badgeVariants } from "@/components/ui/badge";
 
 const user = Astro.locals.user;
@@ -23,11 +21,8 @@ const lastName = nameParts.slice(1).join(" ");
 // Load extended profile (may be null for new users — form renders empty).
 const profileData = await makeProfileService().getProfile(user.id);
 
-// Load the player's team memberships for the My Teams section.
-const player = await new PlayerRepository(getDb()).findByUserId(user.id);
-const myTeams = player
-  ? await makePlayerTeamService().listByPlayer(player.id)
-  : [];
+// Load the user's team memberships for the My Teams section.
+const myTeams = await makeTeamMemberService().listByUser(user.id);
 ---
 
 <AppLayout title="My Profile" activeNav="profile">

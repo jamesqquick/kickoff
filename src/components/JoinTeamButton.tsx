@@ -35,7 +35,7 @@ export function JoinTeamButton({ teamId, initialStatus }: Props) {
   async function handleJoin() {
     setLoading(true);
     try {
-      const { error } = await actions.playerTeams.requestJoin({ teamId });
+      const { error } = await actions.teamMembers.requestJoin({ teamId });
       if (error) throw error;
       setStatus("pending");
       toast.success("Join request sent. Awaiting coach approval.");

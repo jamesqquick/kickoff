@@ -1,12 +1,12 @@
 import { defineAction, ActionError } from "astro:actions";
 import { z } from "astro:schema";
-import { makePlayerTeamService } from "@/services/player-team-service";
+import { makeTeamMemberService } from "@/services/team-member-service";
 import { AppError } from "@/lib/errors";
 import { toActionError } from "./utils";
 
-export const playerTeams = {
-  // Player requests to join a team. Only teamId is needed as input —
-  // the service resolves the caller's player record from context.locals.user.
+export const teamMembers = {
+  // Any authenticated user can request to join a team.
+  // The service resolves the caller's identity from context.locals.user.
   requestJoin: defineAction({
     input: z.object({ teamId: z.string() }),
     handler: async ({ teamId }, context) => {
@@ -15,7 +15,7 @@ export const playerTeams = {
         throw new ActionError({ code: "UNAUTHORIZED", message: "You must be signed in" });
       }
       try {
-        return await makePlayerTeamService().requestJoin(teamId, user);
+        return await makeTeamMemberService().requestJoin(teamId, user);
       } catch (err) {
         if (err instanceof AppError) throw toActionError(err);
         throw err;
@@ -23,20 +23,20 @@ export const playerTeams = {
     },
   }),
 
-  // Coach / admin adds a player directly (status = approved).
+  // Team owner / admin adds a user directly (status = approved).
   add: defineAction({
     input: z.object({
-      playerId: z.string(),
+      userId: z.string(),
       teamId: z.string(),
       jerseyNumber: z.number().int().positive().optional(),
     }),
-    handler: async ({ playerId, teamId, jerseyNumber }, context) => {
+    handler: async ({ userId, teamId, jerseyNumber }, context) => {
       const user = context.locals.user;
       if (!user) {
         throw new ActionError({ code: "UNAUTHORIZED", message: "You must be signed in" });
       }
       try {
-        return await makePlayerTeamService().addPlayer(playerId, teamId, user, jerseyNumber);
+        return await makeTeamMemberService().addMember(userId, teamId, user, jerseyNumber);
       } catch (err) {
         if (err instanceof AppError) throw toActionError(err);
         throw err;
@@ -46,16 +46,16 @@ export const playerTeams = {
 
   remove: defineAction({
     input: z.object({
-      playerId: z.string(),
+      userId: z.string(),
       teamId: z.string(),
     }),
-    handler: async ({ playerId, teamId }, context) => {
+    handler: async ({ userId, teamId }, context) => {
       const user = context.locals.user;
       if (!user) {
         throw new ActionError({ code: "UNAUTHORIZED", message: "You must be signed in" });
       }
       try {
-        await makePlayerTeamService().removePlayer(playerId, teamId, user);
+        await makeTeamMemberService().removeMember(userId, teamId, user);
         return { success: true };
       } catch (err) {
         if (err instanceof AppError) throw toActionError(err);
@@ -68,7 +68,7 @@ export const playerTeams = {
     input: z.object({ teamId: z.string() }),
     handler: async ({ teamId }) => {
       try {
-        return await makePlayerTeamService().listByTeam(teamId);
+        return await makeTeamMemberService().listByTeam(teamId);
       } catch (err) {
         if (err instanceof AppError) throw toActionError(err);
         throw err;
@@ -77,14 +77,14 @@ export const playerTeams = {
   }),
 
   approveRequest: defineAction({
-    input: z.object({ playerId: z.string(), teamId: z.string() }),
-    handler: async ({ playerId, teamId }, context) => {
+    input: z.object({ userId: z.string(), teamId: z.string() }),
+    handler: async ({ userId, teamId }, context) => {
       const user = context.locals.user;
       if (!user) {
         throw new ActionError({ code: "UNAUTHORIZED", message: "You must be signed in" });
       }
       try {
-        return await makePlayerTeamService().approveRequest(playerId, teamId, user);
+        return await makeTeamMemberService().approveRequest(userId, teamId, user);
       } catch (err) {
         if (err instanceof AppError) throw toActionError(err);
         throw err;
@@ -93,14 +93,14 @@ export const playerTeams = {
   }),
 
   denyRequest: defineAction({
-    input: z.object({ playerId: z.string(), teamId: z.string() }),
-    handler: async ({ playerId, teamId }, context) => {
+    input: z.object({ userId: z.string(), teamId: z.string() }),
+    handler: async ({ userId, teamId }, context) => {
       const user = context.locals.user;
       if (!user) {
         throw new ActionError({ code: "UNAUTHORIZED", message: "You must be signed in" });
       }
       try {
-        await makePlayerTeamService().denyRequest(playerId, teamId, user);
+        await makeTeamMemberService().denyRequest(userId, teamId, user);
         return { success: true };
       } catch (err) {
         if (err instanceof AppError) throw toActionError(err);

@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from "vitest";
 import { TeamService } from "./team-service";
-import { NotFoundError, ForbiddenError } from "@/lib/errors";
+import { NotFoundError } from "@/lib/errors";
 import type { TeamRepository } from "@/repositories/team-repository";
 import type { Team } from "@/lib/schema";
 import type { AppUser } from "@/lib/auth";
@@ -26,7 +26,7 @@ const baseTeam: Team = {
 };
 
 const adminUser = { id: "user-1", role: "admin" } as unknown as AppUser;
-const playerUser = { id: "user-2", role: "player" } as unknown as AppUser;
+const regularUser = { id: "user-2", role: "user" } as unknown as AppUser;
 
 describe("TeamService.getTeam", () => {
   it("returns the team when found", async () => {
@@ -42,14 +42,18 @@ describe("TeamService.getTeam", () => {
 });
 
 describe("TeamService.createTeam", () => {
-  it("throws ForbiddenError for player role", async () => {
-    const service = new TeamService(makeFakeRepo());
-    await expect(
-      service.createTeam({ name: "X", city: "Y", division: "Z" }, playerUser),
-    ).rejects.toThrow(ForbiddenError);
+  it("any authenticated user can create a team", async () => {
+    const repo = makeFakeRepo();
+    const service = new TeamService(repo);
+    const result = await service.createTeam(
+      { name: "X", city: "Y", division: "Z" },
+      regularUser,
+    );
+    expect(repo.insert).toHaveBeenCalledOnce();
+    expect(result.coachId).toBe(regularUser.id);
   });
 
-  it("inserts and returns a new team for admin role", async () => {
+  it("inserts and returns a new team — sets caller as owner", async () => {
     const repo = makeFakeRepo();
     const service = new TeamService(repo);
     const result = await service.createTeam(

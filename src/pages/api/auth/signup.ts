@@ -15,7 +15,6 @@ export const POST: APIRoute = async ({ request }) => {
       name: `${firstName} ${lastName}`,
       email: String(form.get("email")),
       password: String(form.get("password")),
-      role: String(form.get("role")),
     } as {
       name: string;
       email: string;

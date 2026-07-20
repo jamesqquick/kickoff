@@ -4,20 +4,20 @@ import { actions } from "astro:actions";
 import { Button } from "@/components/ui/button";
 
 interface Props {
-  playerId: string;
+  userId: string;
   teamId: string;
-  playerName: string;
-  playerImage: string | null;
+  userName: string;
+  userImage: string | null;
   requestedAt: number;
 }
 
 type RowState = "pending" | "approved" | "denied" | "loading-approve" | "loading-deny";
 
 export function PendingRequestActions({
-  playerId,
+  userId,
   teamId,
-  playerName,
-  playerImage,
+  userName,
+  userImage,
   requestedAt,
 }: Props) {
   const [state, setState] = useState<RowState>("pending");
@@ -30,10 +30,10 @@ export function PendingRequestActions({
   async function handleApprove() {
     setState("loading-approve");
     try {
-      const { error } = await actions.playerTeams.approveRequest({ playerId, teamId });
+      const { error } = await actions.teamMembers.approveRequest({ userId, teamId });
       if (error) throw error;
       setState("approved");
-      toast.success(`${playerName} added to the roster.`);
+      toast.success(`${userName} added to the roster.`);
       setTimeout(() => window.location.reload(), 1500);
     } catch {
       setState("pending");
@@ -44,10 +44,10 @@ export function PendingRequestActions({
   async function handleDeny() {
     setState("loading-deny");
     try {
-      const { error } = await actions.playerTeams.denyRequest({ playerId, teamId });
+      const { error } = await actions.teamMembers.denyRequest({ userId, teamId });
       if (error) throw error;
       setState("denied");
-      toast.success(`Request from ${playerName} denied.`);
+      toast.success(`Request from ${userName} denied.`);
     } catch {
       setState("pending");
       toast.error("Could not deny. Try again.");
@@ -59,7 +59,7 @@ export function PendingRequestActions({
     return (
       <div className="flex items-center justify-between gap-3 px-5 py-3 opacity-40">
         <span className="text-sm text-[--color-muted]">
-          {state === "approved" ? "Approved" : "Denied"} — {playerName}
+          {state === "approved" ? "Approved" : "Denied"} — {userName}
         </span>
       </div>
     );
@@ -71,22 +71,22 @@ export function PendingRequestActions({
     <div className="flex items-center gap-3 px-5 py-3 border-b border-[--color-border-soft] last:border-0">
       {/* Avatar */}
       <div className="shrink-0">
-        {playerImage ? (
+        {userImage ? (
           <img
-            src={playerImage}
-            alt={playerName}
+            src={userImage}
+            alt={userName}
             className="w-8 h-8 rounded-full object-cover"
           />
         ) : (
           <div className="w-8 h-8 rounded-full bg-[--color-primary] flex items-center justify-center text-white text-xs font-bold">
-            {playerName.slice(0, 2).toUpperCase()}
+            {userName.slice(0, 2).toUpperCase()}
           </div>
         )}
       </div>
 
       {/* Name + date */}
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium text-[--color-foreground] truncate">{playerName}</p>
+        <p className="text-sm font-medium text-[--color-foreground] truncate">{userName}</p>
         <p className="text-xs text-[--color-muted]">Requested {requestedDate}</p>
       </div>
 
