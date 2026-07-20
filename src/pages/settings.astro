@@ -1,0 +1,71 @@
+---
+import AppLayout from "@/layouts/AppLayout.astro";
+import PageHeader from "@/components/PageHeader.astro";
+import SectionCard from "@/components/SectionCard.astro";
+import FormField from "@/components/FormField.astro";
+import { UpdatePasswordButton } from "@/components/UpdatePasswordButton";
+import { getAuth } from "@/lib/auth";
+
+const user = Astro.locals.user;
+if (!user) return Astro.redirect("/");
+
+// Determine whether the user has an email/password credential.
+// Google-only users see a "managed by Google" note instead of password fields.
+const accounts = await getAuth().api.listUserAccounts({
+  headers: Astro.request.headers,
+});
+const hasPassword = accounts.some(
+  (a: { providerId: string }) => a.providerId === "credential",
+);
+---
+
+<AppLayout title="Settings" activeNav="settings">
+  <div class="p-4 sm:p-6 lg:p-8">
+    <PageHeader title="Settings" subtitle="Manage your account security and notification preferences." />
+
+    <div class="max-w-xl space-y-6">
+      <!-- Account & Security -->
+      <SectionCard class="p-5">
+        <h3 class="font-display font-semibold text-(--color-foreground) mb-4">Account &amp; Security</h3>
+        {hasPassword ? (
+          <div class="space-y-4">
+            <FormField label="Current password"     name="currentPassword"  type="password" placeholder="••••••••" />
+            <FormField label="New password"         name="newPassword"      type="password" placeholder="••••••••" />
+            <FormField label="Confirm new password" name="confirmPassword"  type="password" placeholder="••••••••" />
+            <UpdatePasswordButton client:load />
+          </div>
+        ) : (
+          <p class="text-sm text-(--color-muted-fg)">
+            Your account is managed through Google. To update your password, visit{" "}
+            <a
+              href="https://myaccount.google.com/security"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="text-(--color-primary) underline underline-offset-2"
+            >
+              Google Account Security
+            </a>.
+          </p>
+        )}
+      </SectionCard>
+
+      <!-- Notifications -->
+      <SectionCard class="p-5">
+        <h3 class="font-display font-semibold text-(--color-foreground) mb-4">Notifications</h3>
+        <div class="divide-y divide-(--color-border-soft)">
+          {[
+            { label: "Match reminders",     checked: true  },
+            { label: "Roster changes",      checked: true  },
+            { label: "Payment receipts",    checked: false },
+            { label: "Weekly digest email", checked: true  },
+          ].map((n) => (
+            <label class="flex justify-between items-center py-3 cursor-pointer">
+              <span class="text-sm text-(--color-foreground)">{n.label}</span>
+              <input type="checkbox" checked={n.checked} class="w-4 h-4 accent-(--color-primary)" />
+            </label>
+          ))}
+        </div>
+      </SectionCard>
+    </div>
+  </div>
+</AppLayout>
