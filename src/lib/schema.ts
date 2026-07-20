@@ -36,14 +36,19 @@ export const players = sqliteTable("players", {
 export type Player = InferSelectModel<typeof players>;
 export type NewPlayer = InferInsertModel<typeof players>;
 
-// playerTeams — stub for the future roster slice. No service or actions yet;
-// the table exists so FKs between players and teams stay in Drizzle-owned tables.
+// playerTeams — join table between players and teams.
+// A player may be on multiple teams; the unique constraint prevents duplicate
+// (player_id, team_id) pairs. status tracks the join-request lifecycle.
 export const playerTeams = sqliteTable(
   "player_teams",
   {
     id: text("id").primaryKey(),
     playerId: text("player_id").notNull(), // FK → players.id
-    teamId: text("team_id").notNull(), // FK → teams.id
+    teamId: text("team_id").notNull(),     // FK → teams.id
+    jerseyNumber: int("jersey_number"),    // nullable — assigned later
+    status: text("status", { enum: ["pending", "approved", "rejected"] })
+      .notNull()
+      .default("pending"),
     createdAt: int("created_at").notNull(),
     updatedAt: int("updated_at").notNull(),
   },
