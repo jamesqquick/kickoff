@@ -75,4 +75,37 @@ export const playerTeams = {
       }
     },
   }),
+
+  approveRequest: defineAction({
+    input: z.object({ playerId: z.string(), teamId: z.string() }),
+    handler: async ({ playerId, teamId }, context) => {
+      const user = context.locals.user;
+      if (!user) {
+        throw new ActionError({ code: "UNAUTHORIZED", message: "You must be signed in" });
+      }
+      try {
+        return await makePlayerTeamService().approveRequest(playerId, teamId, user);
+      } catch (err) {
+        if (err instanceof AppError) throw toActionError(err);
+        throw err;
+      }
+    },
+  }),
+
+  denyRequest: defineAction({
+    input: z.object({ playerId: z.string(), teamId: z.string() }),
+    handler: async ({ playerId, teamId }, context) => {
+      const user = context.locals.user;
+      if (!user) {
+        throw new ActionError({ code: "UNAUTHORIZED", message: "You must be signed in" });
+      }
+      try {
+        await makePlayerTeamService().denyRequest(playerId, teamId, user);
+        return { success: true };
+      } catch (err) {
+        if (err instanceof AppError) throw toActionError(err);
+        throw err;
+      }
+    },
+  }),
 };

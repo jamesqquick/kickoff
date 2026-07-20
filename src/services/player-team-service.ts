@@ -90,6 +90,60 @@ export class PlayerTeamService {
     await this.playerTeams.removePlayer(playerId, teamId);
   }
 
+  // Coach of the team or admin can approve a pending join request.
+  async approveRequest(
+    playerId: string,
+    teamId: string,
+    currentUser: AppUser,
+  ): Promise<PlayerTeam> {
+    const team = await this.teams.findById(teamId);
+    if (!team) throw new NotFoundError("Team", teamId);
+
+    if (currentUser.role !== "admin" && team.coachId !== currentUser.id) {
+      throw new ForbiddenError("approveRequest");
+    }
+
+    const existing = await this.playerTeams.findByPlayerAndTeam(playerId, teamId);
+    if (!existing) throw new NotFoundError("JoinRequest", `${playerId}:${teamId}`);
+
+    return this.playerTeams.updateStatus(playerId, teamId, "approved");
+  }
+
+  // Coach of the team or admin can deny a pending join request.
+  async denyRequest(
+    playerId: string,
+    teamId: string,
+    currentUser: AppUser,
+  ): Promise<void> {
+    const team = await this.teams.findById(teamId);
+    if (!team) throw new NotFoundError("Team", teamId);
+
+    if (currentUser.role !== "admin" && team.coachId !== currentUser.id) {
+      throw new ForbiddenError("denyRequest");
+    }
+
+    const existing = await this.playerTeams.findByPlayerAndTeam(playerId, teamId);
+    if (!existing) throw new NotFoundError("JoinRequest", `${playerId}:${teamId}`);
+
+    // Set to rejected so the player can see the outcome on their profile.
+    await this.playerTeams.updateStatus(playerId, teamId, "rejected");
+  }
+
+  // Pending join requests for a team — coach/admin only.
+  async listPendingByTeam(
+    teamId: string,
+    currentUser: AppUser,
+  ): Promise<PlayerTeamWithProfile[]> {
+    const team = await this.teams.findById(teamId);
+    if (!team) throw new NotFoundError("Team", teamId);
+
+    if (currentUser.role !== "admin" && team.coachId !== currentUser.id) {
+      throw new ForbiddenError("listPendingByTeam");
+    }
+
+    return this.playerTeams.listPendingByTeam(teamId);
+  }
+
   // Returns the approved roster for a team. Public — no auth required.
   async listByTeam(teamId: string): Promise<PlayerTeamWithProfile[]> {
     const team = await this.teams.findById(teamId);

@@ -95,6 +95,40 @@ export class PlayerTeamRepository {
     return result.results;
   }
 
+  // Pending join requests for a team — same JOIN as listByTeam but status = 'pending'.
+  async listPendingByTeam(teamId: string): Promise<PlayerTeamWithProfile[]> {
+    const result = await this.db.$client
+      .prepare(
+        `SELECT pt.id, pt.player_id AS playerId, pt.team_id AS teamId,
+                pt.jersey_number AS jerseyNumber, pt.status,
+                pt.created_at AS createdAt, pt.updated_at AS updatedAt,
+                u.name AS playerName, u.image AS playerImage
+         FROM player_teams pt
+         JOIN players p ON p.id = pt.player_id
+         JOIN user u ON u.id = p.user_id
+         WHERE pt.team_id = ? AND pt.status = 'pending'
+         ORDER BY pt.created_at ASC`,
+      )
+      .bind(teamId)
+      .all<PlayerTeamWithProfile>();
+    return result.results;
+  }
+
+  async updateStatus(
+    playerId: string,
+    teamId: string,
+    status: "approved" | "rejected",
+  ): Promise<PlayerTeam> {
+    const results = await this.db
+      .update(playerTeams)
+      .set({ status, updatedAt: Date.now() })
+      .where(
+        and(eq(playerTeams.playerId, playerId), eq(playerTeams.teamId, teamId)),
+      )
+      .returning();
+    return results[0];
+  }
+
   async findByPlayerAndTeam(
     playerId: string,
     teamId: string,

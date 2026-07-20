@@ -12,6 +12,7 @@ import { getDb } from "@/lib/db";
 import { NotFoundError } from "@/lib/errors";
 import { teamStatusVariant } from "@/lib/utils";
 import { JoinTeamButton } from "@/components/JoinTeamButton";
+import { PendingRequestActions } from "@/components/PendingRequestActions";
 
 const { id } = Astro.params;
 const user = Astro.locals.user;
@@ -26,7 +27,13 @@ try {
   throw err;
 }
 
+const isCoachOrAdmin =
+  user?.role === "admin" || user?.id === team.coachId;
+
 const roster = await makePlayerTeamService().listByTeam(id!);
+const pendingRequests = isCoachOrAdmin
+  ? await makePlayerTeamService().listPendingByTeam(id!, user!)
+  : [];
 
 // Resolve the current user's join status to seed the island's initial state.
 type JoinStatus = "none" | "pending" | "approved";
@@ -44,9 +51,6 @@ if (user) {
     }
   }
 }
-
-const isCoachOrAdmin =
-  user?.role === "admin" || user?.id === team.coachId;
 
 const joinedFormat = (ts: number) =>
   new Date(ts).toLocaleDateString("en-US", { month: "short", year: "numeric" });
@@ -99,6 +103,30 @@ const joinedFormat = (ts: number) =>
         )}
       </div>
     </div>
+
+    <!-- Pending join requests — coaches/admins only -->
+    {isCoachOrAdmin && pendingRequests.length > 0 && (
+      <div class="rounded-xl border border-(--color-border) bg-(--color-card) mb-5">
+        <div class="flex items-center justify-between px-4 sm:px-6 py-4 border-b border-(--color-border)">
+          <h3 class="font-display font-semibold text-(--color-foreground)">
+            Join Requests
+          </h3>
+          <span class={badgeVariants({ variant: "warning" })}>{pendingRequests.length} pending</span>
+        </div>
+        <div>
+          {pendingRequests.map((req) => (
+            <PendingRequestActions
+              client:load
+              playerId={req.playerId}
+              teamId={req.teamId}
+              playerName={req.playerName}
+              playerImage={req.playerImage}
+              requestedAt={req.createdAt}
+            />
+          ))}
+        </div>
+      </div>
+    )}
 
     <!-- Roster table -->
     <div class="rounded-xl border border-(--color-border) bg-(--color-card)">
