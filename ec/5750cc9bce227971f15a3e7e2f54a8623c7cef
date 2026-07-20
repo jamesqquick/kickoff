@@ -1,0 +1,21 @@
+package.json
+  s_92ae808618eb80::t_79bb284b3a7f56 53
+pnpm-lock.yaml
+  s_92ae808618eb80::t_ec873fa59219d6 13,16,40,49,52,87-89,98,2003-2005,3307-3309,3733,3737-3738,3740,3862,3867,3872,4121,4126,5211,5216,5269-5272,5345,5353,5366,5372,5488,5538-5539,5544,5586,5610,6397,6428,6563-6564,6657,6665,6672,6674,6676,6679,6696,6698-6699
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "ec5750cc9bce227971f15a3e7e2f54a8623c7cef",
+  "prompts": {},
+  "sessions": {
+    "s_92ae808618eb80": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_07fbc9158ffeAxbCCjFa2ZWhGS",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "James Quick <jquick@cloudflare.com>"
+    }
+  }
+}
