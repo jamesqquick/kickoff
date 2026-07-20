@@ -1,40 +1,52 @@
 import { useState } from "react";
 import { toast } from "sonner";
+import { actions } from "astro:actions";
 import { Button } from "@/components/ui/button";
-import { delay } from "@/lib/utils";
 
 /**
  * Reads the sibling password inputs (rendered as Astro FormFields) by name and
- * validates them before simulating a submit. Kept as a button-only island so the
- * form markup stays server-rendered Astro.
+ * submits them to the profile.updatePassword action.
  */
 export function UpdatePasswordButton() {
   const [loading, setLoading] = useState(false);
 
   async function handleUpdate() {
-    const next = document.querySelector<HTMLInputElement>(
-      'input[name="newPassword"]'
-    );
-    const confirm = document.querySelector<HTMLInputElement>(
-      'input[name="confirmPassword"]'
-    );
+    const get = (name: string) =>
+      document.querySelector<HTMLInputElement>(`input[name="${name}"]`)?.value ?? "";
 
-    if (!next?.value || !confirm?.value) {
-      toast.error("Enter and confirm your new password.");
+    const currentPassword = get("currentPassword");
+    const newPassword = get("newPassword");
+    const confirmPassword = get("confirmPassword");
+
+    // Client-side early validation — server validates too.
+    if (!currentPassword || !newPassword || !confirmPassword) {
+      toast.error("All password fields are required.");
       return;
     }
-    if (next.value !== confirm.value) {
-      toast.error("Passwords don't match");
+    if (newPassword !== confirmPassword) {
+      toast.error("Passwords don't match.");
       return;
     }
 
     setLoading(true);
     try {
-      // TODO: swap for `await actions.profile.updatePassword(...)` once Actions exist
-      await delay(800);
+      const { error } = await actions.profile.updatePassword({
+        currentPassword,
+        newPassword,
+        confirmPassword,
+      });
+      if (error) {
+        toast.error(error.message ?? "Could not update password. Try again.");
+        return;
+      }
       toast.success("Password updated");
+      // Clear fields on success.
+      ["currentPassword", "newPassword", "confirmPassword"].forEach((name) => {
+        const el = document.querySelector<HTMLInputElement>(`input[name="${name}"]`);
+        if (el) el.value = "";
+      });
     } catch {
-      toast.error("Could not update password. Please try again.");
+      toast.error("Could not update password. Try again.");
     } finally {
       setLoading(false);
     }
