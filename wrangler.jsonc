@@ -12,5 +12,12 @@
   },
   "placement": {
     "mode": "smart"
-  }
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "kickoff-db",
+      "database_id": "faecd5a5-bdf6-4479-9abf-b8dcee2e7e22"
+    }
+  ]
 }
