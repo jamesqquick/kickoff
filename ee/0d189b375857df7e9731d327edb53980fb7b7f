@@ -1,0 +1,21 @@
+src/repositories/player-team-repository.ts
+  s_802a2b1478ab98::t_705600ca3644d5 1-126
+src/repositories/team-repository.ts
+  s_802a2b1478ab98::t_8252cf189a0fd5 2,26-32
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "ee0d189b375857df7e9731d327edb53980fb7b7f",
+  "prompts": {},
+  "sessions": {
+    "s_802a2b1478ab98": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_07ee34755ffe45zmR4hjIgOdMG",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "James Quick <jquick@cloudflare.com>"
+    }
+  }
+}
