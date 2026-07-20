@@ -7,6 +7,7 @@ import SectionCard from "@/components/SectionCard.astro";
 import FormField from "@/components/FormField.astro";
 import { SaveProfileButton } from "@/components/SaveProfileButton";
 import { UpdatePasswordButton } from "@/components/UpdatePasswordButton";
+import { makeProfileService } from "@/services/profile-service";
 
 const user = Astro.locals.user;
 if (!user) return Astro.redirect("/");
@@ -15,6 +16,9 @@ if (!user) return Astro.redirect("/");
 const nameParts = (user.name ?? "").trim().split(/\s+/);
 const firstName = nameParts[0] ?? "";
 const lastName = nameParts.slice(1).join(" ");
+
+// Load extended profile (may be null for new users — form renders empty).
+const profileData = await makeProfileService().getProfile(user.id);
 ---
 
 <AppLayout title="My Profile" activeNav="profile">
@@ -49,31 +53,34 @@ const lastName = nameParts.slice(1).join(" ");
           </div>
 
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-            <FormField label="First name" value={firstName} />
-            <FormField label="Last name"  value={lastName} />
+            <FormField label="First name" name="firstName" value={firstName} />
+            <FormField label="Last name"  name="lastName"  value={lastName} />
           </div>
           <FormField label="Email" type="email" value={user.email} class="mb-4" />
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <FormField label="Phone"         placeholder="(512) 555-0000" />
-            <FormField label="Date of birth" type="date" />
+            <FormField label="Phone"         name="phone"       placeholder="(512) 555-0000" value={profileData?.phone ?? ""} />
+            <FormField label="Date of birth" name="dateOfBirth" type="date" value={profileData?.dateOfBirth ?? ""} />
           </div>
 
           <div class="h-px bg-(--color-border) my-5" />
           <h4 class="text-sm font-semibold text-(--color-foreground) mb-4">Address</h4>
 
-          <FormField label="Street address" placeholder="" class="mb-4" />
-          <FormField label="Apt / Suite / Unit" placeholder="Optional" class="mb-4" />
+          <FormField label="Street address"     name="addressStreet" value={profileData?.addressStreet ?? ""} class="mb-4" />
+          <FormField label="Apt / Suite / Unit" name="addressApt"    value={profileData?.addressApt ?? ""} placeholder="Optional" class="mb-4" />
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-            <FormField label="City"  placeholder="" />
-            <FormField label="State" placeholder="" />
+            <FormField label="City"  name="addressCity"  value={profileData?.addressCity ?? ""} />
+            <FormField label="State" name="addressState" value={profileData?.addressState ?? ""} />
           </div>
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <FormField label="ZIP code" placeholder="" />
+            <FormField label="ZIP code" name="addressZip" value={profileData?.addressZip ?? ""} />
             <FormField label="Country">
-              <select class="w-full h-10 px-3 rounded-md border border-(--color-border) bg-(--color-surface) text-sm focus:outline-none focus:ring-2 focus:ring-(--color-primary) focus:ring-offset-1">
-                <option>United States</option>
-                <option>Canada</option>
-                <option>Mexico</option>
+              <select
+                name="addressCountry"
+                class="w-full h-10 px-3 rounded-md border border-(--color-border) bg-(--color-surface) text-sm focus:outline-none focus:ring-2 focus:ring-(--color-primary) focus:ring-offset-1"
+              >
+                {["United States", "Canada", "Mexico"].map((c) => (
+                  <option selected={c === (profileData?.addressCountry ?? "United States")}>{c}</option>
+                ))}
               </select>
             </FormField>
           </div>
