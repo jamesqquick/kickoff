@@ -12,20 +12,20 @@ const { id } = Astro.params;
 ---
 
 <AppLayout title="My Profile" activeNav="profile">
-  <div class="p-8">
+  <div class="p-4 sm:p-6 lg:p-8">
     <PageHeader title="My Profile" subtitle="Manage your account, address, and preferences.">
       <button slot="actions" class={cn(buttonVariants({ variant: "default" }), "h-9 px-4")}>Save Changes</button>
     </PageHeader>
 
-    <div class="grid grid-cols-[1fr_360px] gap-6">
+    <!-- Single column on mobile/tablet, side panel at xl+ -->
+    <div class="grid grid-cols-1 xl:grid-cols-[1fr_360px] gap-6">
       <!-- Left: personal info -->
       <div class="space-y-5">
-        <SectionCard class="p-6">
+        <SectionCard class="p-5 sm:p-6">
           <h3 class="font-display font-semibold text-(--color-foreground) mb-5">Personal Information</h3>
 
           <!-- Avatar upload -->
           <div class="flex items-center gap-4 mb-6">
-            <!-- User avatar is circular (person), not a team crest -->
             <div class="w-[72px] h-[72px] rounded-full flex items-center justify-center text-[26px] font-bold text-white bg-gradient-to-br from-orange-500 to-orange-700 shrink-0">AM</div>
             <div>
               <button class={cn(buttonVariants({ variant: "outline" }), "h-8 px-3")}>Upload photo</button>
@@ -33,12 +33,12 @@ const { id } = Astro.params;
             </div>
           </div>
 
-          <div class="grid grid-cols-2 gap-4 mb-4">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
             <FormField label="First name" value="Alex" />
             <FormField label="Last name"  value="Morgan" />
           </div>
           <FormField label="Email" type="email" value="alex.morgan@fcvelocity.com" class="mb-4" />
-          <div class="grid grid-cols-2 gap-4">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <FormField label="Phone"         value="(512) 555-0148" />
             <FormField label="Date of birth" type="date" value="2007-04-12" />
           </div>
@@ -48,11 +48,11 @@ const { id } = Astro.params;
 
           <FormField label="Street address" value="1204 South Lamar Blvd" class="mb-4" />
           <FormField label="Apt / Suite / Unit" placeholder="Optional" class="mb-4" />
-          <div class="grid grid-cols-2 gap-4 mb-4">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
             <FormField label="City"  value="Austin" />
             <FormField label="State" value="TX" />
           </div>
-          <div class="grid grid-cols-2 gap-4">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <FormField label="ZIP code" value="78704" />
             <FormField label="Country">
               <select class="w-full h-10 px-3 rounded-md border border-(--color-border) bg-(--color-surface) text-sm focus:outline-none focus:ring-2 focus:ring-(--color-primary) focus:ring-offset-1">

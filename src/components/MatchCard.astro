@@ -41,11 +41,12 @@ const {
 } = Astro.props;
 ---
 
-<div class:list={["grid grid-cols-[1fr_auto_1fr] items-center gap-4", className]}>
-  <!-- Home team -->
-  <div class="flex items-center gap-2.5 justify-end">
-    <span class="text-sm font-semibold text-(--color-foreground)">{home.name}</span>
+<!-- Mobile: vertical stack (home → score → away). sm+: horizontal 3-col grid. -->
+<div class:list={["flex flex-col sm:grid sm:grid-cols-[1fr_auto_1fr] items-center gap-3 sm:gap-4", className]}>
+  <!-- Home team: right-aligned on sm+, left-aligned row on mobile -->
+  <div class="flex items-center gap-2.5 w-full sm:w-auto sm:justify-end">
     <TeamCrest initials={home.initials} gradient={home.gradient} size={crestSize} />
+    <span class="text-sm font-semibold text-(--color-foreground)">{home.name}</span>
   </div>
 
   <!-- Center: badge / score -->
@@ -59,8 +60,8 @@ const {
     </div>
   </div>
 
-  <!-- Away team -->
-  <div class="flex items-center gap-2.5">
+  <!-- Away team: left-aligned on both -->
+  <div class="flex items-center gap-2.5 w-full sm:w-auto">
     <TeamCrest initials={away.initials} gradient={away.gradient} size={crestSize} />
     <span class="text-sm font-semibold text-(--color-foreground)">{away.name}</span>
   </div>
