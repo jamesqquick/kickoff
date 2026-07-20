@@ -7,6 +7,8 @@ import PageHeader from "@/components/PageHeader.astro";
 import SectionCard from "@/components/SectionCard.astro";
 import TeamCrest from "@/components/TeamCrest.astro";
 import FormField from "@/components/FormField.astro";
+import { SaveProfileButton } from "@/components/SaveProfileButton";
+import { UpdatePasswordButton } from "@/components/UpdatePasswordButton";
 const { id } = Astro.params;
 // Static mockup — real data would use `id` to fetch user profile
 ---
@@ -14,7 +16,7 @@ const { id } = Astro.params;
 <AppLayout title="My Profile" activeNav="profile">
   <div class="p-4 sm:p-6 lg:p-8">
     <PageHeader title="My Profile" subtitle="Manage your account, address, and preferences.">
-      <button slot="actions" class={cn(buttonVariants({ variant: "default" }), "h-9 px-4")}>Save Changes</button>
+      <SaveProfileButton slot="actions" client:load />
     </PageHeader>
 
     <!-- Single column on mobile/tablet, side panel at xl+ -->
@@ -94,10 +96,10 @@ const { id } = Astro.params;
         <SectionCard class="p-5">
           <h3 class="font-display font-semibold text-(--color-foreground) mb-4">Account &amp; Security</h3>
           <div class="space-y-4">
-            <FormField label="Current password" type="password" placeholder="••••••••" />
-            <FormField label="New password"      type="password" placeholder="••••••••" />
-            <FormField label="Confirm new password" type="password" placeholder="••••••••" />
-            <button class={cn(buttonVariants({ variant: "outline" }), "h-8 px-3")}>Update password</button>
+            <FormField label="Current password" name="currentPassword" type="password" placeholder="••••••••" />
+            <FormField label="New password"      name="newPassword"     type="password" placeholder="••••••••" />
+            <FormField label="Confirm new password" name="confirmPassword" type="password" placeholder="••••••••" />
+            <UpdatePasswordButton client:load />
           </div>
         </SectionCard>
 

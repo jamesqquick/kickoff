@@ -9,7 +9,9 @@
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
-    "astro": "astro"
+    "astro": "astro",
+    "db:migrate:local": "wrangler d1 migrations apply kickoff-db --local",
+    "db:migrate:remote": "wrangler d1 migrations apply kickoff-db --remote"
   },
   "pnpm": {
     "allowedBuildScripts": [
@@ -39,6 +41,7 @@
     "lucide-react": "^1.25.0",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
+    "sonner": "^2.0.7",
     "tailwind-merge": "^3.6.0",
     "tailwindcss": "^4.3.3"
   },

@@ -7,6 +7,7 @@ import PageHeader from "@/components/PageHeader.astro";
 import SectionCard from "@/components/SectionCard.astro";
 import TeamCrest from "@/components/TeamCrest.astro";
 import FormField from "@/components/FormField.astro";
+import { ContinueToRosterButton } from "@/components/ContinueToRosterButton";
 ---
 
 <AppLayout title="Register Team" activeNav="teams">
@@ -114,7 +115,7 @@ import FormField from "@/components/FormField.astro";
 
       <div class="flex justify-between">
         <button class={cn(buttonVariants({ variant: "outline" }))}>← Back</button>
-        <button class={cn(buttonVariants({ variant: "default" }), "px-5")}>Continue to Roster →</button>
+        <ContinueToRosterButton client:load />
       </div>
     </SectionCard>
   </div>

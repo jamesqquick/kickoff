@@ -8,6 +8,7 @@ import SectionCard from "@/components/SectionCard.astro";
 import StatCard from "@/components/StatCard.astro";
 import TeamCrest from "@/components/TeamCrest.astro";
 import MatchCard from "@/components/MatchCard.astro";
+import { TeamActionButtons } from "@/components/TeamActionButtons";
 ---
 
 <AppLayout title="Dashboard" activeNav="dashboard">
@@ -77,10 +78,11 @@ import MatchCard from "@/components/MatchCard.astro";
               <!-- Payment badge -->
               <span class={badgeVariants({ variant: row.payV as any })}>{row.payment}</span>
               <!-- Action button -->
-              {i === 0
-                ? <button class={cn(buttonVariants({ variant: "default" }), "h-7 px-3 text-xs shrink-0")}>Approve</button>
-                : <button class={cn(buttonVariants({ variant: "outline" }), "h-7 px-3 text-xs shrink-0")}>Review</button>
-              }
+              <TeamActionButtons
+                client:load
+                teamName={row.name}
+                action={i === 0 ? "approve" : "review"}
+              />
             </div>
           ))}
         </SectionCard>

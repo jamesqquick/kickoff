@@ -2,6 +2,7 @@
 import BaseLayout from "./BaseLayout.astro";
 import Sidebar from "@/components/layout/Sidebar.astro";
 import BrandMark from "@/components/BrandMark.astro";
+import { Toaster } from "@/components/ui/sonner";
 
 interface Props {
   title?: string;
@@ -44,6 +45,8 @@ const { title, activeNav } = Astro.props;
       <slot />
     </main>
   </div>
+
+  <Toaster client:load />
 </BaseLayout>
 
 <script>
