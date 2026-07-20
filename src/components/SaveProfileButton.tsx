@@ -7,12 +7,10 @@ export function SaveProfileButton() {
   const [loading, setLoading] = useState(false);
 
   async function handleSave() {
-    const get = (name: string) =>
-      (
-        document.querySelector<HTMLInputElement | HTMLSelectElement>(
-          `[name="${name}"]`,
-        )?.value ?? ""
-      ).trim();
+    const get = (name: string) => {
+      const el = document.querySelector(`[name="${name}"]`);
+      return ((el as HTMLInputElement | null)?.value ?? "").trim();
+    };
 
     setLoading(true);
     try {
