@@ -1,0 +1,21 @@
+migrations/0003_profiles_init.sql
+  s_59c4511d973615::t_6a42c9c385ae9b 1-16
+migrations/meta/0003_snapshot.json
+  s_59c4511d973615::t_c3fa2f1752d4e8 1-287
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "d6de8734b57a1135bce18413f64ea3c4bc5ac708",
+  "prompts": {},
+  "sessions": {
+    "s_59c4511d973615": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_07f1d7e99ffePdr4AtwUTs4D7k",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "James Quick <jquick@cloudflare.com>"
+    }
+  }
+}
