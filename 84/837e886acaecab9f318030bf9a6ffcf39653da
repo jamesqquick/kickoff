@@ -1,0 +1,19 @@
+src/actions/teams.ts
+  s_97f681182fc51e::t_cfea63a6ce774f 37,60
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "84837e886acaecab9f318030bf9a6ffcf39653da",
+  "prompts": {},
+  "sessions": {
+    "s_97f681182fc51e": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_079c26c33ffeR5CTr6d7AnlSul",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "James Quick <jquick@cloudflare.com>"
+    }
+  }
+}
