@@ -34,6 +34,7 @@ export const teams = {
       city: z.string().min(1, "City is required"),
       division: z.string().min(1, "Division is required"),
       color: z.string().default("emerald"),
+      shortName: z.string().max(4).optional(),
     }),
     handler: async (input, context) => {
       const user = context.locals.user;
@@ -56,14 +57,15 @@ export const teams = {
       city: z.string(),
       division: z.string(),
       color: z.string().default("emerald"),
+      shortName: z.string().max(4).optional(),
     }),
-    handler: async ({ id, name, city, division, color }, context) => {
+    handler: async ({ id, name, city, division, color, shortName }, context) => {
       const user = context.locals.user;
       if (!user) {
         throw new ActionError({ code: "UNAUTHORIZED", message: "You must be signed in" });
       }
       try {
-        return await makeTeamService().updateTeam(id, { name, city, division, color }, user);
+        return await makeTeamService().updateTeam(id, { name, city, division, color, shortName }, user);
       } catch (err) {
         if (err instanceof AppError) throw toActionError(err);
         throw err;

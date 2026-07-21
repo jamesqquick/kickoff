@@ -82,8 +82,8 @@ const pendingCount = allTeams.filter((t) => t.status === "pending").length;
                   href={`/admin/teams/${team.id}`}
                   class="flex items-center gap-3 px-5 py-3 hover:bg-(--color-background) transition-colors"
                 >
-                  <TeamCrest
-                    initials={team.name.slice(0, 2).toUpperCase()}
+                   <TeamCrest
+                    initials={team.shortName ?? team.name.slice(0, 2).toUpperCase()}
                     gradient={teamColorGradient(team.color)}
                     size="sm"
                   />

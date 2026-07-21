@@ -42,8 +42,8 @@ const teams = await makeTeamService().listApprovedTeams();
               <tr class="border-b border-(--color-border-soft) last:border-0 hover:bg-(--color-background) transition-colors">
                 <td class="px-5 py-3.5">
                   <div class="flex items-center gap-3">
-                    <TeamCrest
-                      initials={team.name.slice(0, 2).toUpperCase()}
+                     <TeamCrest
+                      initials={team.shortName ?? team.name.slice(0, 2).toUpperCase()}
                       gradient={teamColorGradient(team.color)}
                       size="md"
                     />

@@ -24,6 +24,7 @@ const baseTeam: Team = {
   city: "Austin, TX",
   division: "U18 Men's",
   color: "emerald",
+  shortName: null,
   coachId: "user-1",
   status: "pending",
   createdAt: 1000,

@@ -61,7 +61,11 @@ if (!isOwnerOrAdmin) {
         <FormField label="Home city" name="city" value={team.city} placeholder="e.g. Austin, TX" />
       </div>
 
-      <CrestPicker client:load initials={team.name.slice(0, 2).toUpperCase()} initialColor={team.color} />
+      <CrestPicker
+        client:load
+        initials={team.shortName ?? team.name.slice(0, 2).toUpperCase()}
+        initialColor={team.color}
+      />
 
       <div class="h-px bg-(--color-border) mb-6" />
 

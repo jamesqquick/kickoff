@@ -19,6 +19,7 @@ export function RegisterTeamButton() {
     const city = getText("city");
     const division = getField("division");
     const color = getText("color");
+    const shortName = getText("shortName") || undefined;
 
     if (!name) {
       toast.error("Team name is required.");
@@ -31,7 +32,7 @@ export function RegisterTeamButton() {
 
     setLoading(true);
     try {
-      const { data, error } = await actions.teams.create({ name, city, division, color });
+      const { data, error } = await actions.teams.create({ name, city, division, color, shortName });
       if (error) {
         toast.error(error.message ?? "Could not register team. Try again.");
         return;
