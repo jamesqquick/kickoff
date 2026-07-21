@@ -1,0 +1,19 @@
+src/components/TeamActionButtons.tsx
+  s_350b410b2ee1b3::t_5d0d98ab9154e9 32-39
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "2f66390770dd0e2448485cd66039cef66450805d",
+  "prompts": {},
+  "sessions": {
+    "s_350b410b2ee1b3": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_07a6af957ffeN8gynJNcfkRfGz",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "James Quick <jquick@cloudflare.com>"
+    }
+  }
+}
