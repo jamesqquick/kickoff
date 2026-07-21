@@ -10,6 +10,7 @@ export interface CreateTeamInput {
   city: string;
   division: string;
   color: string;
+  shortName?: string;
 }
 
 // TeamService — all business logic for teams.
@@ -47,6 +48,7 @@ export class TeamService {
       city: input.city,
       division: input.division,
       color: input.color || "emerald",
+      shortName: input.shortName?.trim().toUpperCase() || null,
       coachId: currentUser.id,
       status: "pending",
       createdAt: now,
@@ -56,7 +58,7 @@ export class TeamService {
 
   async updateTeam(
     id: string,
-    input: { name: string; city: string; division: string; color: string },
+    input: { name: string; city: string; division: string; color: string; shortName?: string },
     currentUser: AppUser,
   ): Promise<Team> {
     const team = await this.teams.findById(id);
@@ -74,6 +76,7 @@ export class TeamService {
       city: input.city.trim(),
       division: input.division.trim(),
       color: input.color || "emerald",
+      shortName: input.shortName?.trim().toUpperCase() || null,
     });
   }
 

@@ -54,7 +54,7 @@ const registeredDate = new Date(team.createdAt).toLocaleDateString("en-US", {
       style="background: radial-gradient(circle at 15% 30%, rgba(5,150,105,0.18), transparent 40%), radial-gradient(circle at 85% 70%, rgba(234,88,12,0.12), transparent 45%), #ffffff;"
     >
       <TeamCrest
-        initials={team.name.slice(0, 2).toUpperCase()}
+        initials={team.shortName ?? team.name.slice(0, 2).toUpperCase()}
         gradient={teamColorGradient(team.color)}
         size="2xl"
         class="shadow-lg shrink-0"

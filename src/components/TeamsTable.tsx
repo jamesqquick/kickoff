@@ -133,11 +133,11 @@ export function TeamsTable({ teams: initialTeams }: Props) {
                   <td className="px-5 py-3.5">
                     <div className="flex items-center gap-3">
                       <div className="hidden sm:block">
-                        <TeamCrest
-                          initials={team.name.slice(0, 2).toUpperCase()}
-                          gradient={teamColorGradient(team.color)}
-                          size="md"
-                        />
+                         <TeamCrest
+                           initials={team.shortName ?? team.name.slice(0, 2).toUpperCase()}
+                           gradient={teamColorGradient(team.color)}
+                           size="md"
+                         />
                       </div>
                       <div>
                         <a

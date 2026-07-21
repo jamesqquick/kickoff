@@ -18,6 +18,7 @@ export function SaveTeamButton({ teamId }: Props) {
     const city = get("city");
     const division = get("division");
     const color = get("color");
+    const shortName = get("shortName") || undefined;
 
     if (!name) {
       toast.error("Team name is required.");
@@ -26,7 +27,7 @@ export function SaveTeamButton({ teamId }: Props) {
 
     setLoading(true);
     try {
-      const { error } = await actions.teams.update({ id: teamId, name, city, division, color });
+      const { error } = await actions.teams.update({ id: teamId, name, city, division, color, shortName });
       if (error) {
         toast.error(error.message ?? "Could not save changes. Try again.");
         return;

@@ -85,7 +85,7 @@ export class TeamRepository {
     return results[0];
   }
 
-  async update(id: string, fields: { name: string; city: string; division: string; color: string }): Promise<Team> {
+  async update(id: string, fields: { name: string; city: string; division: string; color: string; shortName?: string | null }): Promise<Team> {
     const results = await this.db
       .update(teams)
       .set({ ...fields, updatedAt: Date.now() })

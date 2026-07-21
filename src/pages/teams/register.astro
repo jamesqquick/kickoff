@@ -25,10 +25,10 @@ import { RegisterTeamButton } from "@/components/RegisterTeamButton";
 
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
         <FormField label="Team name" name="name" required placeholder="e.g. FC Velocity" />
-        <FormField label="Home city" name="city" placeholder="e.g. Austin, TX" />
+        <FormField label="Home city" name="city" required placeholder="e.g. Austin, TX" />
       </div>
 
-      <CrestPicker client:load initials="FC" />
+      <CrestPicker client:load />
 
       <!--
         TODO: Division selection
@@ -38,8 +38,7 @@ import { RegisterTeamButton } from "@/components/RegisterTeamButton";
       -->
       <input type="hidden" name="division" value="TBD" />
 
-      <div class="flex justify-between pt-2">
-        <a href="/teams" class={cn(buttonVariants({ variant: "outline" }))}>← Back</a>
+      <div class="flex justify-end pt-2">
         <RegisterTeamButton client:load />
       </div>
     </SectionCard>
