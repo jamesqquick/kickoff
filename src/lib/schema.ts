@@ -67,3 +67,16 @@ export const profiles = sqliteTable("profiles", {
 
 export type Profile = InferSelectModel<typeof profiles>;
 export type NewProfile = InferInsertModel<typeof profiles>;
+
+export const tournaments = sqliteTable("tournaments", {
+  id: text("id").primaryKey(),
+  name: text("name").notNull(),
+  slug: text("slug").notNull().unique(), // URL-safe, e.g. 'spring-invitational-2026'
+  startDate: text("start_date"), // ISO date YYYY-MM-DD, nullable until set
+  endDate: text("end_date"),
+  createdAt: int("created_at").notNull(),
+  updatedAt: int("updated_at").notNull(),
+});
+
+export type Tournament = InferSelectModel<typeof tournaments>;
+export type NewTournament = InferInsertModel<typeof tournaments>;

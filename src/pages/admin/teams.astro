@@ -15,7 +15,7 @@ if (!user || user.role !== "admin") {
 const pendingTeams = await makeTeamService().listPendingTeams();
 ---
 
-<AppLayout title="Admin — Pending Teams" activeNav="teams">
+<AppLayout title="Admin — Pending Teams" activeNav="admin-teams">
   <div class="p-4 sm:p-6 lg:p-8">
     <PageHeader
       eyebrow="Admin"
@@ -46,7 +46,7 @@ const pendingTeams = await makeTeamService().listPendingTeams();
           </thead>
           <tbody>
             {pendingTeams.map((team) => (
-              <tr class="border-b border-(--color-border-soft) last:border-0 hover:bg-(--color-background) transition-colors">
+              <tr data-team-id={team.id} class="border-b border-(--color-border-soft) last:border-0 hover:bg-(--color-background) transition-colors">
                 <td class="px-5 py-3.5">
                   <div class="flex items-center gap-3">
                     <TeamCrest

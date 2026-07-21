@@ -43,3 +43,22 @@ export function teamStatusVariant(
   if (status === "rejected") return "destructive";
   return "warning";
 }
+
+// Tournament status is derived from dates, never stored.
+export type TournamentStatus = "upcoming" | "active" | "past";
+
+/**
+ * Derives a tournament's status from its start/end dates relative to today.
+ *   - No start date, or start date in the future → upcoming
+ *   - Start date ≤ today and (no end date, or end date ≥ today) → active
+ *   - End date < today → past
+ */
+export function getTournamentStatus(t: {
+  startDate: string | null;
+  endDate: string | null;
+}): TournamentStatus {
+  const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+  if (!t.startDate || t.startDate > today) return "upcoming";
+  if (t.endDate && t.endDate < today) return "past";
+  return "active";
+}

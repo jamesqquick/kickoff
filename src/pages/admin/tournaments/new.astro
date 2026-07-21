@@ -1,0 +1,52 @@
+---
+import AppLayout from "@/layouts/AppLayout.astro";
+import { buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+import PageHeader from "@/components/PageHeader.astro";
+import SectionCard from "@/components/SectionCard.astro";
+import FormField from "@/components/FormField.astro";
+import { SaveTournamentButton } from "@/components/SaveTournamentButton";
+
+const user = Astro.locals.user;
+if (!user || user.role !== "admin") {
+  return Astro.redirect("/");
+}
+---
+
+<AppLayout title="New Tournament" activeNav="admin-tournaments">
+  <div class="p-4 sm:p-6 lg:p-8 max-w-3xl">
+    <p class="text-sm text-(--color-muted) mb-5">
+      <a href="/admin/tournaments" class="hover:text-(--color-primary)">Tournaments</a>
+      <span class="mx-2">/</span>
+      <span class="text-(--color-foreground)">New</span>
+    </p>
+
+    <PageHeader
+      title="Create Tournament"
+      subtitle="Name and date range. Status starts as Draft — promote it when you're ready."
+    />
+
+    <SectionCard class="p-5 sm:p-7">
+      <h2 class="font-display text-lg font-semibold text-(--color-foreground) mb-1">Tournament Details</h2>
+      <p class="text-sm text-(--color-muted) mb-6">
+        The slug is auto-generated from the name and must be unique.
+      </p>
+
+      <div class="grid grid-cols-1 gap-4 mb-6">
+        <FormField label="Tournament name" name="name" required placeholder="e.g. Spring Invitational 2026" />
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+        <FormField label="Start date" name="startDate" type="date" />
+        <FormField label="End date" name="endDate" type="date" />
+      </div>
+
+      <div class="flex justify-between">
+        <a href="/admin/tournaments" class={cn(buttonVariants({ variant: "outline" }))}>
+          ← Cancel
+        </a>
+        <SaveTournamentButton client:load mode="create" />
+      </div>
+    </SectionCard>
+  </div>
+</AppLayout>
