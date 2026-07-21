@@ -1,0 +1,19 @@
+src/lib/schema.ts
+  s_97f681182fc51e::t_aa2c1ccde05457 15
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "9b6609e391dc509052be6823cfd0f9dd4ad8a41e",
+  "prompts": {},
+  "sessions": {
+    "s_97f681182fc51e": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_079c26c33ffeR5CTr6d7AnlSul",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "James Quick <jquick@cloudflare.com>"
+    }
+  }
+}
