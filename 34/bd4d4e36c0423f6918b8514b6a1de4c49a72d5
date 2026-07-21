@@ -1,0 +1,23 @@
+package.json
+  s_4cd316e627d8f8::t_6f5c2deff3ee46 56-57
+pnpm-lock.yaml
+  s_4cd316e627d8f8::t_dc6eef45d92394 99-101
+src/components/TeamActionButtons.tsx
+  s_4cd316e627d8f8::t_a74c988990ee9f 2,59-68,72,75,77-78
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "34bd4d4e36c0423f6918b8514b6a1de4c49a72d5",
+  "prompts": {},
+  "sessions": {
+    "s_4cd316e627d8f8": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_079e11807ffeNLmInNDwKlG6Lm",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "James Quick <jquick@cloudflare.com>"
+    }
+  }
+}
