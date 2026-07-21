@@ -7,8 +7,15 @@ New feature work goes in a worktree under `.worktrees/` (gitignored). Use the `k
 git worktree add .worktrees/<slug> -b feat/<slug>
 cp .env .worktrees/<slug>/.env
 cp -R .wrangler .worktrees/<slug>/.wrangler
-cd .worktrees/<slug> && pnpm astro sync && pnpm db:migrate:local
+cd .worktrees/<slug> && pnpm astro sync && pnpm db:migrate:local && pnpm db:seed:local
 ```
+
+## Seed Data
+
+- Local D1 is seeded via `pnpm db:seed:local` (runs `seed/seed.sql`).
+- The seed wipes all app and auth data then re-inserts fixtures. Run it on a fresh worktree after `db:migrate:local`. See `seed/README.md` for the test account reference.
+- When a PR adds a new table or a column that affects feature behavior, **update `seed/seed.sql` with representative rows**. This is required as part of the PR, not optional cleanup.
+- All test accounts use the password `Test1234!`. Never use a real or production password in the seed file.
 
 ## Development
 
