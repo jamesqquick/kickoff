@@ -4,6 +4,7 @@ import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import PageHeader from "@/components/PageHeader.astro";
 import { makeTournamentService } from "@/services/tournament-service";
+import { DeleteTournamentButton } from "@/components/DeleteTournamentButton";
 
 const user = Astro.locals.user;
 if (!user || user.role !== "admin") {
@@ -81,12 +82,21 @@ const statusClass: Record<string, string> = {
                       : "—"}
                 </td>
                 <td class="px-5 py-3.5 text-right">
-                  <a
-                    href={`/admin/tournaments/${t.id}/edit`}
-                    class={cn(buttonVariants({ variant: "outline" }), "h-7 px-3 text-xs")}
-                  >
-                    Edit
-                  </a>
+                  <div class="flex items-center justify-end gap-2">
+                    <a
+                      href={`/admin/tournaments/${t.id}/edit`}
+                      class={cn(buttonVariants({ variant: "outline" }), "h-7 px-3 text-xs")}
+                    >
+                      Edit
+                    </a>
+                    {t.status !== "active" && (
+                      <DeleteTournamentButton
+                        client:load
+                        tournamentId={t.id}
+                        tournamentName={t.name}
+                      />
+                    )}
+                  </div>
                 </td>
               </tr>
             ))}

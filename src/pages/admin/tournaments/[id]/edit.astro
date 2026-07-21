@@ -6,6 +6,7 @@ import PageHeader from "@/components/PageHeader.astro";
 import SectionCard from "@/components/SectionCard.astro";
 import FormField from "@/components/FormField.astro";
 import { SaveTournamentButton } from "@/components/SaveTournamentButton";
+import { DeleteTournamentButton } from "@/components/DeleteTournamentButton";
 import { makeTournamentService } from "@/services/tournament-service";
 import { NotFoundError } from "@/lib/errors";
 
@@ -72,5 +73,19 @@ try {
         <SaveTournamentButton client:load mode="edit" tournamentId={tournament.id} />
       </div>
     </SectionCard>
+
+    {tournament.status !== "active" && (
+      <div class="mt-8 rounded-xl border border-red-200 dark:border-red-900 bg-red-50 dark:bg-red-950/30 p-5">
+        <h3 class="text-sm font-semibold text-red-700 dark:text-red-400 mb-1">Danger zone</h3>
+        <p class="text-sm text-(--color-muted) mb-4">
+          Deleting a tournament is permanent. Active tournaments cannot be deleted.
+        </p>
+        <DeleteTournamentButton
+          client:load
+          tournamentId={tournament.id}
+          tournamentName={tournament.name}
+        />
+      </div>
+    )}
   </div>
 </AppLayout>

@@ -57,4 +57,20 @@ export const tournaments = {
       }
     },
   }),
+
+  delete: defineAction({
+    input: z.object({ id: z.string() }),
+    handler: async ({ id }, context) => {
+      const user = context.locals.user;
+      if (!user) {
+        throw new ActionError({ code: "UNAUTHORIZED", message: "You must be signed in" });
+      }
+      try {
+        await makeTournamentService().deleteTournament(id, user);
+      } catch (err) {
+        if (err instanceof AppError) throw toActionError(err);
+        throw err;
+      }
+    },
+  }),
 };

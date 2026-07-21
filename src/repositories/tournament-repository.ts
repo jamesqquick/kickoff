@@ -44,4 +44,8 @@ export class TournamentRepository {
       .returning();
     return results[0];
   }
+
+  async delete(id: string): Promise<void> {
+    await this.db.delete(tournaments).where(eq(tournaments.id, id));
+  }
 }

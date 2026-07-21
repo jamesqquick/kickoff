@@ -15,6 +15,7 @@ function makeFakeRepo(rows: Tournament[] = []): TournamentRepository {
       const t = rows.find((r) => r.id === id);
       return { ...t, ...fields } as Tournament;
     }),
+    delete: vi.fn(async () => {}),
   } as unknown as TournamentRepository;
 }
 
@@ -95,5 +96,30 @@ describe("TournamentService.updateTournament", () => {
     const result = await service.updateTournament("t-1", { status: "active" }, adminUser);
     expect(repo.update).toHaveBeenCalledOnce();
     expect(result.status).toBe("active");
+  });
+});
+
+describe("TournamentService.deleteTournament", () => {
+  it("throws ForbiddenError when caller is not admin", async () => {
+    const service = new TournamentService(makeFakeRepo([baseTournament]));
+    await expect(service.deleteTournament("t-1", regularUser)).rejects.toThrow(ForbiddenError);
+  });
+
+  it("throws NotFoundError when tournament does not exist", async () => {
+    const service = new TournamentService(makeFakeRepo([]));
+    await expect(service.deleteTournament("missing", adminUser)).rejects.toThrow(NotFoundError);
+  });
+
+  it("throws ValidationError when tournament is active", async () => {
+    const active = { ...baseTournament, status: "active" as const };
+    const service = new TournamentService(makeFakeRepo([active]));
+    await expect(service.deleteTournament("t-1", adminUser)).rejects.toThrow("Cannot delete an active tournament");
+  });
+
+  it("admin can delete a draft tournament", async () => {
+    const repo = makeFakeRepo([baseTournament]);
+    const service = new TournamentService(repo);
+    await service.deleteTournament("t-1", adminUser);
+    expect(repo.delete).toHaveBeenCalledWith("t-1");
   });
 });

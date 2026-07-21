@@ -95,6 +95,20 @@ export class TournamentService {
 
     return this.tournaments.update(id, fields);
   }
+
+  async deleteTournament(id: string, currentUser: AppUser): Promise<void> {
+    if (currentUser.role !== "admin") {
+      throw new ForbiddenError("delete tournaments");
+    }
+    const tournament = await this.tournaments.findById(id);
+    if (!tournament) {
+      throw new NotFoundError("Tournament", id);
+    }
+    if (tournament.status === "active") {
+      throw new ValidationError("status", "Cannot delete an active tournament");
+    }
+    await this.tournaments.delete(id);
+  }
 }
 
 // DI factory — wire the service with its dependencies.
