@@ -225,3 +225,110 @@ Rules for `src/pages/api/auth/*`:
 - Static routes here (`signin.ts`, `signout.ts`, `signin/google.ts`) take
   precedence over the `[...all].ts` catch-all that mounts Better Auth's own
   handlers.
+
+## Admin Pages
+
+All admin routes live under `src/pages/admin/`. Follow this pattern for every new page.
+
+### Guard + data loading
+
+```astro
+---
+const user = Astro.locals.user;
+if (!user || user.role !== "admin") return Astro.redirect("/");
+
+const [teams, tournaments] = await Promise.all([
+  makeTeamService().listTeams(),
+  makeTournamentService().listTournaments(),
+]);
+---
+```
+
+Service calls go in the frontmatter — never call internal API endpoints from pages.
+
+### Page shell
+
+```astro
+<AppLayout title="Admin — Thing" activeNav="admin-thing">
+  <div class="p-4 sm:p-6 lg:p-8">
+    <AdminBreadcrumb crumbs={[
+      { label: "Admin", href: "/admin" },
+      { label: "Things" },
+    ]} />
+    <PageHeader eyebrow="Admin" title="Things" subtitle="Manage things.">
+      <div slot="actions"><!-- buttons here --></div>
+    </PageHeader>
+    <!-- content -->
+  </div>
+</AppLayout>
+```
+
+`activeNav` uses the `"admin-*"` prefix (`"admin"`, `"admin-teams"`, `"admin-tournaments"`).
+Never use public nav IDs (`"teams"`) on admin pages.
+
+### List pages
+
+Wrap tables in `SectionCard`. Use `slot="header-action"` for right-side actions.
+
+```astro
+<SectionCard title="Things">
+  <a slot="header-action" href="/admin/things/new" ...>+ New</a>
+  <table class="w-full">
+    <thead>
+      <tr class="border-b border-(--color-border)">
+        <th class="text-left text-xs font-semibold uppercase tracking-wider text-(--color-muted-fg) px-5 py-3">Name</th>
+      </tr>
+    </thead>
+    <tbody>
+      {items.map((item) => (
+        <tr class="border-b border-(--color-border-soft) last:border-0 hover:bg-(--color-background) transition-colors">
+          <td class="px-5 py-3.5 text-sm">...</td>
+        </tr>
+      ))}
+    </tbody>
+  </table>
+</SectionCard>
+```
+
+Empty state: `<SectionCard class="p-12 text-center">`.
+
+### Detail pages
+
+Hero section → `StatCard` grid → `SectionCard` sections.
+
+```astro
+<div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+  <StatCard label="City"     value={team.city}     />
+  <StatCard label="Division" value={team.division}  />
+</div>
+
+<SectionCard title="Roster">
+  <a slot="header-action" ...>View public page →</a>
+  <!-- table -->
+</SectionCard>
+```
+
+### React islands
+
+Use a React island only when rows need to update in place after a mutation — no `window.location.reload()`. Fetch data server-side in Astro, pass as props to the island.
+
+```astro
+---
+const teams = await makeTeamService().listTeams();
+---
+<TeamsTable teams={teams} client:load />
+```
+
+The island manages local state and calls `onSuccess(newStatus)` callbacks to update rows after actions. See `TeamsTable.tsx` and `AdminTeamActions.tsx` as reference implementations.
+
+### Status utilities
+
+Never define local status-to-class maps in a page. Import from `@/lib/utils`:
+
+```ts
+import { teamStatusClass, tournamentStatusClass, tournamentStatusLabel } from "@/lib/utils";
+
+<span class={cn("inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium", teamStatusClass(team.status))}>
+  {team.status}
+</span>
+```
