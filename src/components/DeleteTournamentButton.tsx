@@ -18,6 +18,8 @@ export function DeleteTournamentButton({ tournamentId, tournamentName }: Props) 
         <span className="text-sm text-red-600">Delete &ldquo;{tournamentName}&rdquo;?</span>
         <Button
           variant="destructive"
+          size="sm"
+          className="h-7 px-3 text-xs"
           onClick={async () => {
             setLoading(true);
             try {
@@ -39,7 +41,7 @@ export function DeleteTournamentButton({ tournamentId, tournamentName }: Props) 
         >
           {loading ? "Deleting…" : "Yes, delete"}
         </Button>
-        <Button variant="outline" onClick={() => setConfirming(false)} disabled={loading}>
+        <Button variant="outline" size="sm" className="h-7 px-3 text-xs" onClick={() => setConfirming(false)} disabled={loading}>
           Cancel
         </Button>
       </div>
@@ -47,7 +49,7 @@ export function DeleteTournamentButton({ tournamentId, tournamentName }: Props) 
   }
 
   return (
-    <Button variant="destructive" onClick={() => setConfirming(true)}>
+    <Button variant="destructive" size="sm" className="h-7 px-3 text-xs" onClick={() => setConfirming(true)}>
       Delete
     </Button>
   );
