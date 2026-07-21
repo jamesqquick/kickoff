@@ -19,37 +19,41 @@ export interface AppUser extends User {
   role: UserRole;
 }
 
-// Lazy singleton — created on first request so env bindings are available.
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-let _auth: any = null;
+// Extracted so TypeScript can infer the full return type, including
+// additionalFields inference, without an `any` cast on the singleton.
+function createAuth() {
+  return betterAuth({
+    database: new D1Dialect({ database: env.DB }),
+    secret: BETTER_AUTH_SECRET,
+    baseURL: BETTER_AUTH_URL,
+    emailAndPassword: {
+      enabled: true,
+    },
+    socialProviders: {
+      google: {
+        clientId: GOOGLE_CLIENT_ID,
+        clientSecret: GOOGLE_CLIENT_SECRET,
+      },
+    },
+    user: {
+      additionalFields: {
+        role: {
+          type: "string",
+          required: true,
+          defaultValue: "user",
+          input: false, // role is never accepted from user input
+        },
+      },
+    },
+  });
+}
 
-export function getAuth() {
+// Lazy singleton — created on first request so env bindings are available.
+let _auth: ReturnType<typeof createAuth> | null = null;
+
+export function getAuth(): ReturnType<typeof createAuth> {
   if (!_auth) {
-    _auth = betterAuth({
-      database: new D1Dialect({ database: env.DB }),
-      secret: BETTER_AUTH_SECRET,
-      baseURL: BETTER_AUTH_URL,
-      emailAndPassword: {
-        enabled: true,
-      },
-      socialProviders: {
-        google: {
-          clientId: GOOGLE_CLIENT_ID,
-          clientSecret: GOOGLE_CLIENT_SECRET,
-        },
-      },
-      user: {
-        additionalFields: {
-          role: {
-            type: "string",
-            required: true,
-            defaultValue: "user",
-            input: false, // role is never accepted from user input
-          },
-        },
-      },
-    });
+    _auth = createAuth();
   }
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return _auth as ReturnType<typeof betterAuth<any>>;
+  return _auth;
 }
