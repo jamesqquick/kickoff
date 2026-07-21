@@ -2,6 +2,7 @@ import type { AppUser } from "@/lib/auth";
 import { ForbiddenError, NotFoundError, ValidationError } from "@/lib/errors";
 import { getDb } from "@/lib/db";
 import { TeamRepository } from "@/repositories/team-repository";
+import type { TeamWithCoach } from "@/repositories/team-repository";
 import type { Team } from "@/lib/schema";
 
 export interface CreateTeamInput {
@@ -28,8 +29,8 @@ export class TeamService {
     return this.teams.listPending();
   }
 
-  async getTeam(id: string): Promise<Team> {
-    const team = await this.teams.findById(id);
+  async getTeam(id: string): Promise<TeamWithCoach> {
+    const team = await this.teams.findByIdWithCoach(id);
     if (!team) {
       throw new NotFoundError("Team", id);
     }
