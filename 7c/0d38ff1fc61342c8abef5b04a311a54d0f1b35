@@ -1,0 +1,19 @@
+src/pages/teams/register.astro
+  s_97f681182fc51e::t_e98c86a092bcd9 41
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "7c0d38ff1fc61342c8abef5b04a311a54d0f1b35",
+  "prompts": {},
+  "sessions": {
+    "s_97f681182fc51e": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_079c26c33ffeR5CTr6d7AnlSul",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "James Quick <jquick@cloudflare.com>"
+    }
+  }
+}
