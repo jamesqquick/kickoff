@@ -1,3 +1,15 @@
+## Worktrees
+
+New feature work goes in a worktree under `.worktrees/` (gitignored). Use the `kickoff-worktree` skill — it handles the full bootstrap: creates the branch, copies `.env` and `.wrangler` state, runs `astro sync`, and applies local D1 migrations.
+
+```bash
+# Quick reference — the skill documents every step
+git worktree add .worktrees/<slug> -b feat/<slug>
+cp .env .worktrees/<slug>/.env
+cp -R .wrangler .worktrees/<slug>/.wrangler
+cd .worktrees/<slug> && pnpm astro sync && pnpm db:migrate:local
+```
+
 ## Development
 
 When starting the dev server, use background mode:
