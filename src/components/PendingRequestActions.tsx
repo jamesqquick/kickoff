@@ -2,6 +2,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { actions } from "astro:actions";
 import { Button } from "@/components/ui/button";
+import type { TeamMemberWithUser } from "@/repositories/team-member-repository";
 
 interface Props {
   userId: string;
@@ -9,6 +10,8 @@ interface Props {
   userName: string;
   userImage: string | null;
   requestedAt: number;
+  onApproved: (member: TeamMemberWithUser) => void;
+  onResolved: () => void;
 }
 
 type RowState = "pending" | "approved" | "denied" | "loading-approve" | "loading-deny";
@@ -19,6 +22,8 @@ export function PendingRequestActions({
   userName,
   userImage,
   requestedAt,
+  onApproved,
+  onResolved,
 }: Props) {
   const [state, setState] = useState<RowState>("pending");
 
@@ -30,11 +35,12 @@ export function PendingRequestActions({
   async function handleApprove() {
     setState("loading-approve");
     try {
-      const { error } = await actions.teamMembers.approveRequest({ userId, teamId });
+      const { data, error } = await actions.teamMembers.approveRequest({ userId, teamId });
       if (error) throw error;
       setState("approved");
       toast.success(`${userName} added to the roster.`);
-      setTimeout(() => window.location.reload(), 1500);
+      onApproved({ ...data, userName, userImage });
+      onResolved();
     } catch {
       setState("pending");
       toast.error("Could not approve. Try again.");
@@ -48,19 +54,21 @@ export function PendingRequestActions({
       if (error) throw error;
       setState("denied");
       toast.success(`Request from ${userName} denied.`);
+      onResolved();
     } catch {
       setState("pending");
       toast.error("Could not deny. Try again.");
     }
   }
 
-  // Fade out approved/denied rows rather than removing them abruptly.
-  if (state === "approved" || state === "denied") {
+  // Approved rows disappear entirely — the member now appears in the roster.
+  if (state === "approved") return null;
+
+  // Denied rows fade in place as brief confirmation before the section collapses.
+  if (state === "denied") {
     return (
       <div className="flex items-center justify-between gap-3 px-5 py-3 opacity-40">
-        <span className="text-sm text-[--color-muted]">
-          {state === "approved" ? "Approved" : "Denied"} — {userName}
-        </span>
+        <span className="text-sm text-(--color-muted)">Denied — {userName}</span>
       </div>
     );
   }
@@ -68,7 +76,7 @@ export function PendingRequestActions({
   const busy = state === "loading-approve" || state === "loading-deny";
 
   return (
-    <div className="flex items-center gap-3 px-5 py-3 border-b border-[--color-border-soft] last:border-0">
+    <div className="flex items-center gap-3 px-5 py-3 border-b border-(--color-border-soft) last:border-0">
       {/* Avatar */}
       <div className="shrink-0">
         {userImage ? (
@@ -78,7 +86,7 @@ export function PendingRequestActions({
             className="w-8 h-8 rounded-full object-cover"
           />
         ) : (
-          <div className="w-8 h-8 rounded-full bg-[--color-primary] flex items-center justify-center text-white text-xs font-bold">
+          <div className="w-8 h-8 rounded-full bg-(--color-primary) flex items-center justify-center text-white text-xs font-bold">
             {userName.slice(0, 2).toUpperCase()}
           </div>
         )}
@@ -86,8 +94,13 @@ export function PendingRequestActions({
 
       {/* Name + date */}
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium text-[--color-foreground] truncate">{userName}</p>
-        <p className="text-xs text-[--color-muted]">Requested {requestedDate}</p>
+        <a
+          href={`/users/${userId}`}
+          className="text-sm font-medium text-(--color-foreground) hover:text-(--color-primary) hover:underline truncate block"
+        >
+          {userName}
+        </a>
+        <p className="text-xs text-(--color-muted)">Requested {requestedDate}</p>
       </div>
 
       {/* Actions */}
