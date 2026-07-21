@@ -8,21 +8,12 @@ export const POST: APIRoute = async ({ request }) => {
   const lastName = String(form.get("lastName")).trim();
 
   try {
-    // Better Auth forwards unknown body fields to the database at runtime.
-    // The base signUpEmail type doesn't include custom fields (e.g. `role`),
-    // so we cast the body rather than duplicating the type.
-    const body = {
-      name: `${firstName} ${lastName}`,
-      email: String(form.get("email")),
-      password: String(form.get("password")),
-    } as {
-      name: string;
-      email: string;
-      password: string;
-    };
-
     const { headers } = await getAuth().api.signUpEmail({
-      body,
+      body: {
+        name: `${firstName} ${lastName}`,
+        email: String(form.get("email")),
+        password: String(form.get("password")),
+      },
       headers: request.headers, // forward incoming cookies
       returnHeaders: true, // capture Better Auth's Set-Cookie
     });
