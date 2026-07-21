@@ -44,8 +44,39 @@ export function teamStatusVariant(
   return "warning";
 }
 
+/**
+ * Maps a team status to a Tailwind pill class string.
+ * Single source of truth — import wherever a team status pill is rendered.
+ */
+export function teamStatusClass(
+  status: import("@/lib/schema").TeamStatus,
+): string {
+  if (status === "approved") return "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400";
+  if (status === "rejected") return "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400";
+  return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400";
+}
+
 // Tournament status is derived from dates, never stored.
 export type TournamentStatus = "upcoming" | "active" | "past";
+
+/**
+ * Maps a tournament status to a Tailwind pill class string.
+ * Single source of truth — import wherever a tournament status pill is rendered.
+ */
+export function tournamentStatusClass(status: TournamentStatus): string {
+  if (status === "active") return "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300";
+  if (status === "past")   return "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300";
+  return "bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400";
+}
+
+/**
+ * Maps a tournament status to its display label.
+ */
+export function tournamentStatusLabel(status: TournamentStatus): string {
+  if (status === "active")   return "Active";
+  if (status === "past")     return "Past";
+  return "Upcoming";
+}
 
 /**
  * Derives a tournament's status from its start/end dates relative to today.

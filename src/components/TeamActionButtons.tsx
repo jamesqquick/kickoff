@@ -2,41 +2,52 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { actions } from "astro:actions";
 import { Button } from "@/components/ui/button";
+import type { TeamStatus } from "@/lib/schema";
 
 interface TeamActionButtonsProps {
   teamId: string;
   teamName: string;
-  action: "approve" | "reject";
+  action: "approve" | "reject" | "unreject";
+  onSuccess: (newStatus: TeamStatus) => void;
 }
 
-export function TeamActionButtons({ teamId, teamName, action }: TeamActionButtonsProps) {
+export function TeamActionButtons({ teamId, teamName, action, onSuccess }: TeamActionButtonsProps) {
   const [loading, setLoading] = useState(false);
   const [done, setDone] = useState(false);
 
   const isApprove = action === "approve";
+  const isUnreject = action === "unreject";
 
   async function handleClick() {
     setLoading(true);
     try {
-      const { error } = isApprove
-        ? await actions.teams.approve({ id: teamId })
-        : await actions.teams.reject({ id: teamId });
+      let error: { message?: string } | undefined;
+
+      if (isApprove) {
+        ({ error } = await actions.teams.approve({ id: teamId }));
+      } else if (isUnreject) {
+        ({ error } = await actions.teams.unreject({ id: teamId }));
+      } else {
+        ({ error } = await actions.teams.reject({ id: teamId }));
+      }
 
       if (error) {
         toast.error(error.message ?? "Something went wrong. Please try again.");
         return;
       }
 
-      toast.success(isApprove ? `${teamName} approved` : `${teamName} rejected`);
-      setDone(true);
+      const newStatus: TeamStatus = isApprove ? "approved" : isUnreject ? "pending" : "rejected";
 
-      // Fade out and remove the row without a full page reload.
-      const row = document.querySelector(`tr[data-team-id="${teamId}"]`) as HTMLElement | null;
-      if (row) {
-        row.style.transition = "opacity 0.3s ease";
-        row.style.opacity = "0";
-        setTimeout(() => row.remove(), 300);
+      if (isApprove) {
+        toast.success(`${teamName} approved`);
+      } else if (isUnreject) {
+        toast.success(`${teamName} re-opened`);
+      } else {
+        toast.success(`${teamName} rejected`);
       }
+
+      setDone(true);
+      onSuccess(newStatus);
     } catch {
       toast.error("Something went wrong. Please try again.");
     } finally {
@@ -51,7 +62,7 @@ export function TeamActionButtons({ teamId, teamName, action }: TeamActionButton
       onClick={handleClick}
       disabled={loading || done}
     >
-      {loading ? "…" : isApprove ? "Approve" : "Reject"}
+      {loading ? "…" : isApprove ? "Approve" : isUnreject ? "Re-open" : "Reject"}
     </Button>
   );
 }

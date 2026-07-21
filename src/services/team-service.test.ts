@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from "vitest";
 import { TeamService } from "./team-service";
-import { NotFoundError } from "@/lib/errors";
+import { ForbiddenError, NotFoundError } from "@/lib/errors";
 import type { TeamRepository } from "@/repositories/team-repository";
 import type { Team } from "@/lib/schema";
 import type { AppUser } from "@/lib/auth";
@@ -11,6 +11,10 @@ function makeFakeRepo(teams: Team[] = []): TeamRepository {
     list: vi.fn(async () => teams),
     findById: vi.fn(async (id: string) => teams.find((t) => t.id === id)),
     insert: vi.fn(async (row) => ({ ...row } as Team)),
+    updateStatus: vi.fn(async (id: string, status) => {
+      const team = teams.find((t) => t.id === id);
+      return { ...team, status } as Team;
+    }),
   } as unknown as TeamRepository;
 }
 
@@ -74,5 +78,27 @@ describe("TeamService.listTeams", () => {
     const result = await service.listTeams();
     expect(result).toHaveLength(1);
     expect(result[0].id).toBe("team-1");
+  });
+});
+
+describe("TeamService.unRejectTeam", () => {
+  const rejectedTeam: Team = { ...baseTeam, status: "rejected" };
+
+  it("sets status back to pending for an admin", async () => {
+    const repo = makeFakeRepo([rejectedTeam]);
+    const service = new TeamService(repo);
+    const result = await service.unRejectTeam("team-1", adminUser);
+    expect(repo.updateStatus).toHaveBeenCalledWith("team-1", "pending");
+    expect(result.status).toBe("pending");
+  });
+
+  it("throws ForbiddenError when caller is not an admin", async () => {
+    const service = new TeamService(makeFakeRepo([rejectedTeam]));
+    await expect(service.unRejectTeam("team-1", regularUser)).rejects.toThrow(ForbiddenError);
+  });
+
+  it("throws NotFoundError when team does not exist", async () => {
+    const service = new TeamService(makeFakeRepo([]));
+    await expect(service.unRejectTeam("missing", adminUser)).rejects.toThrow(NotFoundError);
   });
 });

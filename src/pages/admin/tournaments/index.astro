@@ -1,8 +1,10 @@
 ---
 import AppLayout from "@/layouts/AppLayout.astro";
 import { buttonVariants } from "@/components/ui/button";
-import { cn, getTournamentStatus } from "@/lib/utils";
+import { cn, getTournamentStatus, tournamentStatusClass, tournamentStatusLabel } from "@/lib/utils";
 import PageHeader from "@/components/PageHeader.astro";
+import AdminBreadcrumb from "@/components/AdminBreadcrumb.astro";
+import SectionCard from "@/components/SectionCard.astro";
 import { makeTournamentService } from "@/services/tournament-service";
 import { DeleteTournamentButton } from "@/components/DeleteTournamentButton";
 
@@ -12,22 +14,15 @@ if (!user || user.role !== "admin") {
 }
 
 const tournaments = await makeTournamentService().listTournaments();
-
-const statusLabel: Record<string, string> = {
-  upcoming: "Upcoming",
-  active: "Active",
-  past: "Past",
-};
-
-const statusClass: Record<string, string> = {
-  upcoming: "bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400",
-  active: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300",
-  past: "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300",
-};
 ---
 
 <AppLayout title="Admin — Tournaments" activeNav="admin-tournaments">
   <div class="p-4 sm:p-6 lg:p-8">
+    <AdminBreadcrumb crumbs={[
+      { label: "Admin", href: "/admin" },
+      { label: "Tournaments" },
+    ]} />
+
     <PageHeader
       eyebrow="Admin"
       title="Tournaments"
@@ -41,14 +36,14 @@ const statusClass: Record<string, string> = {
     </PageHeader>
 
     {tournaments.length === 0 ? (
-      <div class="rounded-xl border border-(--color-border) bg-(--color-card) p-12 text-center">
+      <SectionCard class="p-12 text-center">
         <p class="text-(--color-muted) text-sm">No tournaments yet.</p>
         <a href="/admin/tournaments/new" class={cn(buttonVariants({ variant: "default" }), "mt-4 inline-flex")}>
           Create the first tournament
         </a>
-      </div>
+      </SectionCard>
     ) : (
-      <div class="rounded-xl border border-(--color-border) bg-(--color-card)">
+      <SectionCard>
         <table class="w-full">
           <thead>
             <tr class="border-b border-(--color-border)">
@@ -66,14 +61,14 @@ const statusClass: Record<string, string> = {
                   <td class="px-5 py-3.5">
                     <span class="font-semibold text-sm text-(--color-foreground)">{t.name}</span>
                     <p class="text-xs text-(--color-muted) sm:hidden mt-0.5">
-                      <span class={cn("inline-block rounded-full px-2 py-0.5 text-xs font-medium", statusClass[status])}>
-                        {statusLabel[status]}
+                      <span class={cn("inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium", tournamentStatusClass(status))}>
+                        {tournamentStatusLabel(status)}
                       </span>
                     </p>
                   </td>
                   <td class="hidden sm:table-cell px-5 py-3.5">
-                    <span class={cn("inline-block rounded-full px-2 py-0.5 text-xs font-medium", statusClass[status])}>
-                      {statusLabel[status]}
+                    <span class={cn("inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium", tournamentStatusClass(status))}>
+                      {tournamentStatusLabel(status)}
                     </span>
                   </td>
                   <td class="hidden md:table-cell px-5 py-3.5 text-sm text-(--color-muted)">
@@ -105,7 +100,7 @@ const statusClass: Record<string, string> = {
             })}
           </tbody>
         </table>
-      </div>
+      </SectionCard>
     )}
   </div>
 </AppLayout>

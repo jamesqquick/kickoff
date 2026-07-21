@@ -98,6 +98,17 @@ export class TeamService {
     }
     return this.teams.updateStatus(id, "rejected");
   }
+
+  async unRejectTeam(id: string, currentUser: AppUser): Promise<Team> {
+    if (currentUser.role !== "admin") {
+      throw new ForbiddenError("un-reject teams");
+    }
+    const team = await this.teams.findById(id);
+    if (!team) {
+      throw new NotFoundError("Team", id);
+    }
+    return this.teams.updateStatus(id, "pending");
+  }
 }
 
 // DI factory — wire the service with its dependencies.
