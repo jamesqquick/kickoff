@@ -56,21 +56,24 @@ The local D1 database lives in `.wrangler/state/`. Copy it from the main checkou
 cp -R .wrangler .worktrees/<slug>/.wrangler
 ```
 
-### 6. Run local D1 migration
+### 6. Run local D1 migration and seed
 
-Apply any pending migrations against the local D1 database:
+Apply any pending migrations, then populate the database with test fixtures:
 
 ```bash
-cd .worktrees/<slug> && pnpm db:migrate:local
+cd .worktrees/<slug> && pnpm db:migrate:local && pnpm db:seed:local
 ```
 
-If this fails with a workerd runtime error, wrangler may be outdated. Update it:
+The seed wipes all app and auth data and inserts a representative fixture set.
+See `seed/README.md` for the test account list (password: `Test1234!`).
+
+If the migrate step fails with a workerd runtime error, wrangler may be outdated. Update it:
 
 ```bash
 cd .worktrees/<slug> && pnpm add -D wrangler@latest
 ```
 
-Then re-run `pnpm db:migrate:local`.
+Then re-run `pnpm db:migrate:local && pnpm db:seed:local`.
 
 ## Full command sequence
 
@@ -84,7 +87,7 @@ cp .env .worktrees/$SLUG/.env
 cp -R .wrangler .worktrees/$SLUG/.wrangler
 cd .worktrees/$SLUG
 pnpm astro sync
-pnpm db:migrate:local
+pnpm db:migrate:local && pnpm db:seed:local
 ```
 
 ## Verify
