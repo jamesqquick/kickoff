@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Check, X, RotateCcw } from "lucide-react";
 import { toast } from "sonner";
 import { actions } from "astro:actions";
 import { Button } from "@/components/ui/button";
@@ -55,14 +56,26 @@ export function TeamActionButtons({ teamId, teamName, action, onSuccess }: TeamA
     }
   }
 
+  const icon = loading
+    ? "…"
+    : isApprove
+      ? <Check className="h-3.5 w-3.5 shrink-0" />
+      : isUnreject
+        ? <RotateCcw className="h-3.5 w-3.5 shrink-0" />
+        : <X className="h-3.5 w-3.5 shrink-0" />;
+
+  const label = isApprove ? "Approve" : isUnreject ? "Re-open" : "Reject";
+
   return (
     <Button
       variant={isApprove ? "default" : "outline"}
-      className="h-7 px-3 text-xs shrink-0"
+      className="h-7 px-2 xl:px-3 text-xs shrink-0"
       onClick={handleClick}
       disabled={loading || done}
+      title={label}
     >
-      {loading ? "…" : isApprove ? "Approve" : isUnreject ? "Re-open" : "Reject"}
+      {icon}
+      {!loading && <span className="hidden xl:inline">{label}</span>}
     </Button>
   );
 }

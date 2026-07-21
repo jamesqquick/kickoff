@@ -1,8 +1,11 @@
 import { useState, useEffect } from "react";
+import { ExternalLink } from "lucide-react";
 import { cn, teamColorGradient, teamStatusClass } from "@/lib/utils";
+import { buttonVariants } from "@/components/ui/button";
 import { TeamCrest } from "@/components/TeamCrest";
 import { TeamActionButtons } from "@/components/TeamActionButtons";
-import type { Team, TeamStatus } from "@/lib/schema";
+import type { TeamStatus } from "@/lib/schema";
+import type { TeamWithCoach } from "@/repositories/team-repository";
 
 type StatusFilter = "all" | "pending" | "approved" | "rejected";
 
@@ -22,11 +25,11 @@ function readTabFromUrl(): StatusFilter {
 }
 
 interface Props {
-  teams: Team[];
+  teams: TeamWithCoach[];
 }
 
 export function TeamsTable({ teams: initialTeams }: Props) {
-  const [teams, setTeams] = useState<Team[]>(initialTeams);
+  const [teams, setTeams] = useState<TeamWithCoach[]>(initialTeams);
   const [activeTab, setActiveTab] = useState<StatusFilter>(readTabFromUrl);
 
   // Keep URL in sync when tab changes so the link is bookmarkable
@@ -59,7 +62,7 @@ export function TeamsTable({ teams: initialTeams }: Props) {
   return (
     <div>
       {/* Status filter tabs */}
-      <div className="mb-4 flex gap-1 border-b border-(--color-border)">
+      <div className="mb-4 flex gap-1 border-b border-(--color-border) overflow-x-auto scrollbar-none">
         {TABS.map(({ label, value }) => (
           <button
             key={value}
@@ -93,19 +96,24 @@ export function TeamsTable({ teams: initialTeams }: Props) {
           </p>
         </div>
       ) : (
-        <div className="rounded-xl border border-(--color-border) bg-(--color-card)">
+        <div className="overflow-x-auto rounded-xl border border-(--color-border) bg-(--color-card)">
           <table className="w-full">
             <thead>
               <tr className="border-b border-(--color-border)">
                 <th className="text-left text-xs font-semibold uppercase tracking-wider text-(--color-muted-fg) px-5 py-3">
                   Team
                 </th>
-                <th className="hidden sm:table-cell text-left text-xs font-semibold uppercase tracking-wider text-(--color-muted-fg) px-5 py-3">
+                <th className="hidden md:table-cell text-left text-xs font-semibold uppercase tracking-wider text-(--color-muted-fg) px-5 py-3">
                   Division
                 </th>
-                <th className="hidden sm:table-cell text-left text-xs font-semibold uppercase tracking-wider text-(--color-muted-fg) px-5 py-3">
+                <th className="hidden md:table-cell text-left text-xs font-semibold uppercase tracking-wider text-(--color-muted-fg) px-5 py-3">
                   City
                 </th>
+                {activeTab === "pending" && (
+                  <th className="hidden sm:table-cell text-left text-xs font-semibold uppercase tracking-wider text-(--color-muted-fg) px-5 py-3">
+                    Coach
+                  </th>
+                )}
                 {activeTab === "all" && (
                   <th className="hidden md:table-cell text-left text-xs font-semibold uppercase tracking-wider text-(--color-muted-fg) px-5 py-3">
                     Status
@@ -124,11 +132,13 @@ export function TeamsTable({ teams: initialTeams }: Props) {
                 >
                   <td className="px-5 py-3.5">
                     <div className="flex items-center gap-3">
-                      <TeamCrest
-                        initials={team.name.slice(0, 2).toUpperCase()}
-                        gradient={teamColorGradient(team.color)}
-                        size="md"
-                      />
+                      <div className="hidden sm:block">
+                        <TeamCrest
+                          initials={team.name.slice(0, 2).toUpperCase()}
+                          gradient={teamColorGradient(team.color)}
+                          size="md"
+                        />
+                      </div>
                       <div>
                         <a
                           href={`/admin/teams/${team.id}`}
@@ -136,18 +146,23 @@ export function TeamsTable({ teams: initialTeams }: Props) {
                         >
                           {team.name}
                         </a>
-                        <p className="text-xs text-(--color-muted) sm:hidden">
+                        <p className="text-xs text-(--color-muted) md:hidden">
                           {team.division} · {team.city}
                         </p>
                       </div>
                     </div>
                   </td>
-                  <td className="hidden sm:table-cell px-5 py-3.5 text-sm text-(--color-muted)">
+                  <td className="hidden md:table-cell px-5 py-3.5 text-sm text-(--color-muted)">
                     {team.division}
                   </td>
-                  <td className="hidden sm:table-cell px-5 py-3.5 text-sm text-(--color-muted)">
+                  <td className="hidden md:table-cell px-5 py-3.5 text-sm text-(--color-muted)">
                     {team.city}
                   </td>
+                  {activeTab === "pending" && (
+                    <td className="hidden sm:table-cell px-5 py-3.5 text-sm text-(--color-muted)">
+                      {team.coachName}
+                    </td>
+                  )}
                   {activeTab === "all" && (
                     <td className="hidden md:table-cell px-5 py-3.5">
                       <span
@@ -164,6 +179,14 @@ export function TeamsTable({ teams: initialTeams }: Props) {
                     <div className="flex items-center justify-end gap-2">
                       {team.status === "pending" && (
                         <>
+                          <a
+                            href={`/admin/teams/${team.id}`}
+                            className={cn(buttonVariants({ variant: "outline" }), "h-7 px-2 xl:px-3 text-xs shrink-0 gap-1")}
+                            title="View team"
+                          >
+                            <ExternalLink className="h-3.5 w-3.5 shrink-0" />
+                            <span className="hidden xl:inline">View →</span>
+                          </a>
                           <TeamActionButtons
                             teamId={team.id}
                             teamName={team.name}
