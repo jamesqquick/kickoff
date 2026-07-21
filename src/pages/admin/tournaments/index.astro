@@ -1,7 +1,7 @@
 ---
 import AppLayout from "@/layouts/AppLayout.astro";
 import { buttonVariants } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import { cn, getTournamentStatus } from "@/lib/utils";
 import PageHeader from "@/components/PageHeader.astro";
 import { makeTournamentService } from "@/services/tournament-service";
 import { DeleteTournamentButton } from "@/components/DeleteTournamentButton";
@@ -14,15 +14,15 @@ if (!user || user.role !== "admin") {
 const tournaments = await makeTournamentService().listTournaments();
 
 const statusLabel: Record<string, string> = {
-  draft: "Draft",
+  upcoming: "Upcoming",
   active: "Active",
-  completed: "Completed",
+  past: "Past",
 };
 
 const statusClass: Record<string, string> = {
-  draft: "bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400",
+  upcoming: "bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400",
   active: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300",
-  completed: "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300",
+  past: "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300",
 };
 ---
 
@@ -31,7 +31,7 @@ const statusClass: Record<string, string> = {
     <PageHeader
       eyebrow="Admin"
       title="Tournaments"
-      subtitle="Manage tournaments, dates, and status."
+      subtitle="Manage tournaments and dates."
     >
       <div slot="actions">
         <a href="/admin/tournaments/new" class={cn(buttonVariants({ variant: "default" }), "h-9 px-4")}>
@@ -59,47 +59,50 @@ const statusClass: Record<string, string> = {
             </tr>
           </thead>
           <tbody>
-            {tournaments.map((t) => (
-              <tr class="border-b border-(--color-border-soft) last:border-0 hover:bg-(--color-background) transition-colors">
-                <td class="px-5 py-3.5">
-                  <span class="font-semibold text-sm text-(--color-foreground)">{t.name}</span>
-                  <p class="text-xs text-(--color-muted) sm:hidden mt-0.5">
-                    <span class={cn("inline-block rounded-full px-2 py-0.5 text-xs font-medium", statusClass[t.status])}>
-                      {statusLabel[t.status]}
+            {tournaments.map((t) => {
+              const status = getTournamentStatus(t);
+              return (
+                <tr class="border-b border-(--color-border-soft) last:border-0 hover:bg-(--color-background) transition-colors">
+                  <td class="px-5 py-3.5">
+                    <span class="font-semibold text-sm text-(--color-foreground)">{t.name}</span>
+                    <p class="text-xs text-(--color-muted) sm:hidden mt-0.5">
+                      <span class={cn("inline-block rounded-full px-2 py-0.5 text-xs font-medium", statusClass[status])}>
+                        {statusLabel[status]}
+                      </span>
+                    </p>
+                  </td>
+                  <td class="hidden sm:table-cell px-5 py-3.5">
+                    <span class={cn("inline-block rounded-full px-2 py-0.5 text-xs font-medium", statusClass[status])}>
+                      {statusLabel[status]}
                     </span>
-                  </p>
-                </td>
-                <td class="hidden sm:table-cell px-5 py-3.5">
-                  <span class={cn("inline-block rounded-full px-2 py-0.5 text-xs font-medium", statusClass[t.status])}>
-                    {statusLabel[t.status]}
-                  </span>
-                </td>
-                <td class="hidden md:table-cell px-5 py-3.5 text-sm text-(--color-muted)">
-                  {t.startDate && t.endDate
-                    ? `${t.startDate} – ${t.endDate}`
-                    : t.startDate
-                      ? `From ${t.startDate}`
-                      : "—"}
-                </td>
-                <td class="px-5 py-3.5 text-right">
-                  <div class="flex items-center justify-end gap-2">
-                    <a
-                      href={`/admin/tournaments/${t.id}/edit`}
-                      class={cn(buttonVariants({ variant: "outline" }), "h-7 px-3 text-xs")}
-                    >
-                      Edit
-                    </a>
-                    {t.status !== "active" && (
-                      <DeleteTournamentButton
-                        client:load
-                        tournamentId={t.id}
-                        tournamentName={t.name}
-                      />
-                    )}
-                  </div>
-                </td>
-              </tr>
-            ))}
+                  </td>
+                  <td class="hidden md:table-cell px-5 py-3.5 text-sm text-(--color-muted)">
+                    {t.startDate && t.endDate
+                      ? `${t.startDate} – ${t.endDate}`
+                      : t.startDate
+                        ? `From ${t.startDate}`
+                        : "—"}
+                  </td>
+                  <td class="px-5 py-3.5 text-right">
+                    <div class="flex items-center justify-end gap-2">
+                      <a
+                        href={`/admin/tournaments/${t.id}/edit`}
+                        class={cn(buttonVariants({ variant: "outline" }), "h-7 px-3 text-xs")}
+                      >
+                        Edit
+                      </a>
+                      {status !== "active" && (
+                        <DeleteTournamentButton
+                          client:load
+                          tournamentId={t.id}
+                          tournamentName={t.name}
+                        />
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>

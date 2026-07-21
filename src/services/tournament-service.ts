@@ -2,6 +2,7 @@ import type { AppUser } from "@/lib/auth";
 import { ForbiddenError, NotFoundError, ValidationError } from "@/lib/errors";
 import { getDb } from "@/lib/db";
 import { TournamentRepository } from "@/repositories/tournament-repository";
+import { getTournamentStatus } from "@/lib/utils";
 import type { Tournament } from "@/lib/schema";
 
 export interface CreateTournamentInput {
@@ -14,7 +15,6 @@ export interface UpdateTournamentInput {
   name?: string;
   startDate?: string | null;
   endDate?: string | null;
-  status?: Tournament["status"];
 }
 
 // Derive a URL-safe slug from a tournament name.
@@ -59,7 +59,6 @@ export class TournamentService {
       id: crypto.randomUUID(),
       name: input.name.trim(),
       slug,
-      status: "draft",
       startDate: input.startDate ?? null,
       endDate: input.endDate ?? null,
       createdAt: now,
@@ -91,7 +90,6 @@ export class TournamentService {
     }
     if ("startDate" in input) fields.startDate = input.startDate ?? null;
     if ("endDate" in input) fields.endDate = input.endDate ?? null;
-    if (input.status !== undefined) fields.status = input.status;
 
     return this.tournaments.update(id, fields);
   }
@@ -104,7 +102,7 @@ export class TournamentService {
     if (!tournament) {
       throw new NotFoundError("Tournament", id);
     }
-    if (tournament.status === "active") {
+    if (getTournamentStatus(tournament) === "active") {
       throw new ValidationError("status", "Cannot delete an active tournament");
     }
     await this.tournaments.delete(id);

@@ -23,9 +23,8 @@ const baseTournament: Tournament = {
   id: "t-1",
   name: "Spring Invitational 2026",
   slug: "spring-invitational-2026",
-  status: "draft",
-  startDate: "2026-04-01",
-  endDate: "2026-04-03",
+  startDate: "2099-04-01", // far future → status = "upcoming"
+  endDate: "2099-04-03",
   createdAt: 1000,
   updatedAt: 1000,
 };
@@ -64,7 +63,6 @@ describe("TournamentService.createTournament", () => {
     expect(repo.insert).toHaveBeenCalledOnce();
     expect(result.name).toBe("Fall Classic 2026");
     expect(result.slug).toBe("fall-classic-2026");
-    expect(result.status).toBe("draft");
   });
 
   it("auto-generates a slug from the name", async () => {
@@ -90,12 +88,12 @@ describe("TournamentService.updateTournament", () => {
     ).rejects.toThrow(NotFoundError);
   });
 
-  it("admin can promote status", async () => {
+  it("admin can update dates", async () => {
     const repo = makeFakeRepo([baseTournament]);
     const service = new TournamentService(repo);
-    const result = await service.updateTournament("t-1", { status: "active" }, adminUser);
+    const result = await service.updateTournament("t-1", { startDate: "2099-06-01", endDate: "2099-06-03" }, adminUser);
     expect(repo.update).toHaveBeenCalledOnce();
-    expect(result.status).toBe("active");
+    expect(result.startDate).toBe("2099-06-01");
   });
 });
 
@@ -111,7 +109,8 @@ describe("TournamentService.deleteTournament", () => {
   });
 
   it("throws ValidationError when tournament is active", async () => {
-    const active = { ...baseTournament, status: "active" as const };
+    const today = new Date().toISOString().slice(0, 10);
+    const active = { ...baseTournament, startDate: today, endDate: null };
     const service = new TournamentService(makeFakeRepo([active]));
     await expect(service.deleteTournament("t-1", adminUser)).rejects.toThrow("Cannot delete an active tournament");
   });

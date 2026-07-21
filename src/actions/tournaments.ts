@@ -42,7 +42,6 @@ export const tournaments = {
       name: z.string().min(1, "Tournament name is required").optional(),
       startDate: z.string().nullable().optional(),
       endDate: z.string().nullable().optional(),
-      status: z.enum(["draft", "active", "completed"]).optional(),
     }),
     handler: async ({ id, ...input }, context) => {
       const user = context.locals.user;

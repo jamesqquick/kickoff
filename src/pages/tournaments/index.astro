@@ -1,26 +1,22 @@
 ---
 import AppLayout from "@/layouts/AppLayout.astro";
 import { buttonVariants } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import { cn, getTournamentStatus } from "@/lib/utils";
 import PageHeader from "@/components/PageHeader.astro";
 import { makeTournamentService } from "@/services/tournament-service";
 
 const tournaments = await makeTournamentService().listTournaments();
 
-const active = tournaments.filter((t) => t.status === "active");
-const upcoming = tournaments.filter((t) => t.status === "draft");
-const past = tournaments.filter((t) => t.status === "completed");
+const active = tournaments.filter((t) => getTournamentStatus(t) === "active");
+const upcoming = tournaments.filter((t) => getTournamentStatus(t) === "upcoming");
+const past = tournaments.filter((t) => getTournamentStatus(t) === "past");
 
-const statusLabel: Record<string, string> = {
-  draft: "Upcoming",
-  active: "Live",
-  completed: "Completed",
-};
+const statusLabel = { upcoming: "Upcoming", active: "Live", past: "Past" };
 
 const statusClass: Record<string, string> = {
-  draft: "bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400",
+  upcoming: "bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400",
   active: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300",
-  completed: "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300",
+  past: "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300",
 };
 
 function formatDates(t: (typeof tournaments)[number]): string {
@@ -51,13 +47,13 @@ function formatDates(t: (typeof tournaments)[number]): string {
                 <div class="rounded-xl border border-emerald-200 dark:border-emerald-800 bg-(--color-card) p-5 flex flex-col gap-3">
                   <div class="flex items-start justify-between gap-2">
                     <h3 class="font-display font-semibold text-(--color-foreground)">{t.name}</h3>
-                    <span class={cn("shrink-0 inline-block rounded-full px-2 py-0.5 text-xs font-medium", statusClass[t.status])}>
-                      {statusLabel[t.status]}
+                    <span class={cn("shrink-0 inline-block rounded-full px-2 py-0.5 text-xs font-medium", statusClass["active"])}>
+                      {statusLabel["active"]}
                     </span>
                   </div>
                   <p class="text-sm text-(--color-muted)">{formatDates(t)}</p>
                   <a
-                    href={`/teams`}
+                    href="/teams"
                     class={cn(buttonVariants({ variant: "default" }), "mt-auto h-8 px-3 text-xs w-full justify-center")}
                   >
                     View Teams →
@@ -78,8 +74,8 @@ function formatDates(t: (typeof tournaments)[number]): string {
                     <p class="font-semibold text-sm text-(--color-foreground)">{t.name}</p>
                     <p class="text-xs text-(--color-muted) mt-0.5">{formatDates(t)}</p>
                   </div>
-                  <span class={cn("shrink-0 inline-block rounded-full px-2 py-0.5 text-xs font-medium", statusClass[t.status])}>
-                    {statusLabel[t.status]}
+                  <span class={cn("shrink-0 inline-block rounded-full px-2 py-0.5 text-xs font-medium", statusClass["upcoming"])}>
+                    {statusLabel["upcoming"]}
                   </span>
                 </div>
               ))}
@@ -97,8 +93,8 @@ function formatDates(t: (typeof tournaments)[number]): string {
                     <p class="font-semibold text-sm text-(--color-foreground)">{t.name}</p>
                     <p class="text-xs text-(--color-muted) mt-0.5">{formatDates(t)}</p>
                   </div>
-                  <span class={cn("shrink-0 inline-block rounded-full px-2 py-0.5 text-xs font-medium", statusClass[t.status])}>
-                    {statusLabel[t.status]}
+                  <span class={cn("shrink-0 inline-block rounded-full px-2 py-0.5 text-xs font-medium", statusClass["past"])}>
+                    {statusLabel["past"]}
                   </span>
                 </div>
               ))}

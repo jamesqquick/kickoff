@@ -72,9 +72,6 @@ export const tournaments = sqliteTable("tournaments", {
   id: text("id").primaryKey(),
   name: text("name").notNull(),
   slug: text("slug").notNull().unique(), // URL-safe, e.g. 'spring-invitational-2026'
-  status: text("status", { enum: ["draft", "active", "completed"] })
-    .notNull()
-    .default("draft"),
   startDate: text("start_date"), // ISO date YYYY-MM-DD, nullable until set
   endDate: text("end_date"),
   createdAt: int("created_at").notNull(),
@@ -83,4 +80,3 @@ export const tournaments = sqliteTable("tournaments", {
 
 export type Tournament = InferSelectModel<typeof tournaments>;
 export type NewTournament = InferInsertModel<typeof tournaments>;
-export type TournamentStatus = Tournament["status"];

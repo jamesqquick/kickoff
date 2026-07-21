@@ -8,6 +8,7 @@ import FormField from "@/components/FormField.astro";
 import { SaveTournamentButton } from "@/components/SaveTournamentButton";
 import { DeleteTournamentButton } from "@/components/DeleteTournamentButton";
 import { makeTournamentService } from "@/services/tournament-service";
+import { getTournamentStatus } from "@/lib/utils";
 import { NotFoundError } from "@/lib/errors";
 
 const user = Astro.locals.user;
@@ -38,7 +39,7 @@ try {
 
     <PageHeader
       title="Edit Tournament"
-      subtitle="Update name, dates, and promote the status when ready."
+      subtitle="Update name and dates."
     />
 
     <SectionCard class="p-5 sm:p-7">
@@ -54,18 +55,6 @@ try {
         <FormField label="End date" name="endDate" type="date" value={tournament.endDate ?? undefined} />
       </div>
 
-      <div class="mb-6">
-        <label class="block text-sm font-medium text-(--color-foreground) mb-1.5">Status</label>
-        <select
-          name="status"
-          class="w-full h-10 px-3 rounded-md border border-(--color-border) bg-(--color-surface) text-sm text-(--color-foreground) focus:outline-none focus:ring-2 focus:ring-(--color-primary) focus:ring-offset-1"
-        >
-          <option value="draft" selected={tournament.status === "draft"}>Draft</option>
-          <option value="active" selected={tournament.status === "active"}>Active</option>
-          <option value="completed" selected={tournament.status === "completed"}>Completed</option>
-        </select>
-      </div>
-
       <div class="flex justify-between">
         <a href="/admin/tournaments" class={cn(buttonVariants({ variant: "outline" }))}>
           ← Cancel
@@ -74,7 +63,7 @@ try {
       </div>
     </SectionCard>
 
-    {tournament.status !== "active" && (
+    {getTournamentStatus(tournament) !== "active" && (
       <div class="mt-8 rounded-xl border border-red-200 dark:border-red-900 bg-red-50 dark:bg-red-950/30 p-5">
         <h3 class="text-sm font-semibold text-red-700 dark:text-red-400 mb-1">Danger zone</h3>
         <p class="text-sm text-(--color-muted) mb-4">

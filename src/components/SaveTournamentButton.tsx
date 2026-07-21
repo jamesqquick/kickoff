@@ -43,13 +43,11 @@ export function SaveTournamentButton({ mode, tournamentId }: Props) {
         toast.success("Tournament created.");
         window.location.href = "/admin/tournaments";
       } else {
-        const status = get("status") as "draft" | "active" | "completed" | "";
         const { error } = await actions.tournaments.update({
           id: tournamentId,
           name,
           startDate,
           endDate,
-          status: status || undefined,
         });
         if (error) {
           toast.error(error.message ?? "Could not save changes. Try again.");
