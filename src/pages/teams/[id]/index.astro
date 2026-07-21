@@ -81,6 +81,9 @@ const joinedFormat = (ts: number) =>
         <p class="text-sm text-(--color-muted)">
           {team.city} · {team.division}
         </p>
+        <p class="text-xs text-(--color-muted) mt-0.5">
+          Coach: {team.coachName}
+        </p>
       </div>
       <div class="flex sm:flex-col gap-2 shrink-0">
         {isOwnerOrAdmin ? (
