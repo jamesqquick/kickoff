@@ -5,26 +5,33 @@ import { cn, teamColorGradient } from "@/lib/utils";
 import PageHeader from "@/components/PageHeader.astro";
 import TeamCrest from "@/components/TeamCrest.astro";
 import { makeTeamService } from "@/services/team-service";
+import { TeamActionButtons } from "@/components/TeamActionButtons";
 
-const teams = await makeTeamService().listApprovedTeams();
+const user = Astro.locals.user;
+if (!user || user.role !== "admin") {
+  return Astro.redirect("/");
+}
+
+const pendingTeams = await makeTeamService().listPendingTeams();
 ---
 
-<AppLayout title="Teams" activeNav="teams">
+<AppLayout title="Admin — Pending Teams" activeNav="teams">
   <div class="p-4 sm:p-6 lg:p-8">
-    <PageHeader title="Teams" eyebrow="Spring Invitational Cup" subtitle="Browse approved teams and request to join.">
+    <PageHeader
+      eyebrow="Admin"
+      title="Pending Teams"
+      subtitle="Review and approve or reject team registrations."
+    >
       <div slot="actions">
-        <a href="/teams/register" class={cn(buttonVariants({ variant: "default" }), "h-9 px-4")}>
-          + Register Team
+        <a href="/teams" class={cn(buttonVariants({ variant: "outline" }), "h-9 px-4")}>
+          ← All Teams
         </a>
       </div>
     </PageHeader>
 
-    {teams.length === 0 ? (
+    {pendingTeams.length === 0 ? (
       <div class="rounded-xl border border-(--color-border) bg-(--color-card) p-12 text-center">
-        <p class="text-(--color-muted) text-sm">No teams registered yet.</p>
-        <a href="/teams/register" class={cn(buttonVariants({ variant: "default" }), "mt-4 inline-flex")}>
-          Register the first team
-        </a>
+        <p class="text-(--color-muted) text-sm">No pending team registrations.</p>
       </div>
     ) : (
       <div class="rounded-xl border border-(--color-border) bg-(--color-card)">
@@ -34,11 +41,11 @@ const teams = await makeTeamService().listApprovedTeams();
               <th class="text-left text-xs font-semibold uppercase tracking-wider text-(--color-muted-fg) px-5 py-3">Team</th>
               <th class="hidden sm:table-cell text-left text-xs font-semibold uppercase tracking-wider text-(--color-muted-fg) px-5 py-3">Division</th>
               <th class="hidden sm:table-cell text-left text-xs font-semibold uppercase tracking-wider text-(--color-muted-fg) px-5 py-3">City</th>
-              <th class="px-5 py-3"></th>
+              <th class="px-5 py-3 text-right text-xs font-semibold uppercase tracking-wider text-(--color-muted-fg)">Actions</th>
             </tr>
           </thead>
           <tbody>
-            {teams.map((team) => (
+            {pendingTeams.map((team) => (
               <tr class="border-b border-(--color-border-soft) last:border-0 hover:bg-(--color-background) transition-colors">
                 <td class="px-5 py-3.5">
                   <div class="flex items-center gap-3">
@@ -47,18 +54,29 @@ const teams = await makeTeamService().listApprovedTeams();
                       gradient={teamColorGradient(team.color)}
                       size="md"
                     />
-                    <span class="font-semibold text-sm text-(--color-foreground)">{team.name}</span>
+                    <div>
+                      <span class="font-semibold text-sm text-(--color-foreground)">{team.name}</span>
+                      <p class="text-xs text-(--color-muted) sm:hidden">{team.division} · {team.city}</p>
+                    </div>
                   </div>
                 </td>
                 <td class="hidden sm:table-cell px-5 py-3.5 text-sm text-(--color-muted)">{team.division}</td>
                 <td class="hidden sm:table-cell px-5 py-3.5 text-sm text-(--color-muted)">{team.city}</td>
                 <td class="px-5 py-3.5">
-                  <a
-                    href={`/teams/${team.id}`}
-                    class={cn(buttonVariants({ variant: "outline" }), "h-7 px-3 text-xs")}
-                  >
-                    View →
-                  </a>
+                  <div class="flex items-center justify-end gap-2">
+                    <TeamActionButtons
+                      client:load
+                      teamId={team.id}
+                      teamName={team.name}
+                      action="approve"
+                    />
+                    <TeamActionButtons
+                      client:load
+                      teamId={team.id}
+                      teamName={team.name}
+                      action="reject"
+                    />
+                  </div>
                 </td>
               </tr>
             ))}

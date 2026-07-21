@@ -30,6 +30,31 @@ export class TeamRepository {
       .where(eq(teams.status, "approved" as TeamStatus));
   }
 
+  async listPending(): Promise<Team[]> {
+    return this.db
+      .select()
+      .from(teams)
+      .where(eq(teams.status, "pending" as TeamStatus));
+  }
+
+  async updateStatus(id: string, status: TeamStatus): Promise<Team> {
+    const results = await this.db
+      .update(teams)
+      .set({ status, updatedAt: Date.now() })
+      .where(eq(teams.id, id))
+      .returning();
+    return results[0];
+  }
+
+  async update(id: string, fields: { name: string; city: string; division: string; color: string }): Promise<Team> {
+    const results = await this.db
+      .update(teams)
+      .set({ ...fields, updatedAt: Date.now() })
+      .where(eq(teams.id, id))
+      .returning();
+    return results[0];
+  }
+
   async insert(row: NewTeam): Promise<Team> {
     const results = await this.db.insert(teams).values(row).returning();
     return results[0];

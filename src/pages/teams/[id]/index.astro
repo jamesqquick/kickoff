@@ -9,7 +9,7 @@ import { makeTeamMemberService } from "@/services/team-member-service";
 import { TeamMemberRepository } from "@/repositories/team-member-repository";
 import { getDb } from "@/lib/db";
 import { NotFoundError } from "@/lib/errors";
-import { teamStatusVariant } from "@/lib/utils";
+import { teamStatusVariant, teamColorGradient } from "@/lib/utils";
 import { JoinTeamButton } from "@/components/JoinTeamButton";
 import { PendingRequestActions } from "@/components/PendingRequestActions";
 
@@ -67,7 +67,7 @@ const joinedFormat = (ts: number) =>
     >
       <TeamCrest
         initials={team.name.slice(0, 2).toUpperCase()}
-        gradient="from-emerald-500 to-emerald-700"
+        gradient={teamColorGradient(team.color)}
         size="2xl"
         class="shadow-lg shrink-0"
       />
@@ -85,7 +85,7 @@ const joinedFormat = (ts: number) =>
       <div class="flex sm:flex-col gap-2 shrink-0">
         {isOwnerOrAdmin ? (
           <>
-            <button class={cn(buttonVariants({ variant: "default" }), "h-9 px-4")}>Edit Team</button>
+            <a href={`/teams/${team.id}/edit`} class={cn(buttonVariants({ variant: "default" }), "h-9 px-4")}>Edit Team</a>
             <button class={cn(buttonVariants({ variant: "outline" }), "h-9 px-4")}>Share Profile</button>
           </>
         ) : user ? (

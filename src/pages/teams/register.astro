@@ -1,12 +1,11 @@
 ---
 import AppLayout from "@/layouts/AppLayout.astro";
 import { buttonVariants } from "@/components/ui/button";
-import { badgeVariants } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import PageHeader from "@/components/PageHeader.astro";
 import SectionCard from "@/components/SectionCard.astro";
-import TeamCrest from "@/components/TeamCrest.astro";
 import FormField from "@/components/FormField.astro";
+import { CrestPicker } from "@/components/CrestPicker";
 import { RegisterTeamButton } from "@/components/RegisterTeamButton";
 ---
 
@@ -15,115 +14,33 @@ import { RegisterTeamButton } from "@/components/RegisterTeamButton";
     <PageHeader
       eyebrow="Spring Invitational Cup"
       title="Register a Team"
-      subtitle="Complete the steps below to enter your team into the tournament."
+      subtitle="Enter your team's info to get started. Division, roster, and payment come next."
     />
 
-    <!-- Step bar: scrollable on mobile so it never wraps/overflows -->
-    <div class="overflow-x-auto pb-1 mb-8">
-      <div class="flex items-center min-w-max">
-        {[
-          { n: "✓", label: "Team Info", done: true,  active: false },
-          { n: "2", label: "Division",  done: false, active: true },
-          { n: "3", label: "Roster",    done: false, active: false },
-          { n: "4", label: "Payment",   done: false, active: false },
-        ].map((step, i) => (
-          <div class="flex items-center last:flex-none">
-            <div class="flex items-center gap-2.5 shrink-0">
-              <div class:list={[
-                "w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold border-2",
-                step.done   ? "bg-(--color-primary) border-(--color-primary) text-white"
-                : step.active ? "border-(--color-primary) text-(--color-primary) bg-transparent"
-                :               "border-(--color-border) text-(--color-muted-fg) bg-transparent",
-              ]}>{step.n}</div>
-              <span class:list={["text-sm font-semibold whitespace-nowrap", (step.done || step.active) ? "text-(--color-foreground)" : "text-(--color-muted-fg)"]}>{step.label}</span>
-            </div>
-            {i < 3 && (
-              <div class:list={["w-12 sm:w-16 h-0.5 mx-3 shrink-0", step.done ? "bg-(--color-primary)" : "bg-(--color-border)"]} />
-            )}
-          </div>
-        ))}
-      </div>
-    </div>
-
-    <!-- Form card -->
     <SectionCard class="p-5 sm:p-7">
-      <h2 class="font-display text-lg font-semibold text-(--color-foreground) mb-1">Team Details</h2>
-      <p class="text-sm text-(--color-muted) mb-6">Tell us about your team. This info appears on schedules and the public bracket.</p>
+      <h2 class="font-display text-lg font-semibold text-(--color-foreground) mb-1">Team Info</h2>
+      <p class="text-sm text-(--color-muted) mb-6">
+        This is how your team appears on schedules and the public bracket.
+      </p>
 
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-        <FormField label="Team name" required value="FC Velocity" />
-        <FormField label="Short code" required value="FV" hint="Up to 3 letters, shown on match cards.">
-          <input maxlength="3" value="FV" class="w-full h-10 px-3 rounded-md border border-(--color-border) bg-(--color-surface) text-sm text-(--color-foreground) focus:outline-none focus:ring-2 focus:ring-(--color-primary) focus:ring-offset-1" />
-        </FormField>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+        <FormField label="Team name" name="name" required placeholder="e.g. FC Velocity" />
+        <FormField label="Home city" name="city" placeholder="e.g. Austin, TX" />
       </div>
 
-      <!-- Crest color picker -->
-      <div class="mb-4">
-        <label class="block text-sm font-medium text-(--color-foreground) mb-2">Team crest color</label>
-        <div class="flex flex-wrap gap-2.5">
-          {[
-            { gradient: "from-emerald-500 to-emerald-700", active: true },
-            { gradient: "from-violet-600 to-violet-900",   active: false },
-            { gradient: "from-red-500 to-red-800",         active: false },
-            { gradient: "from-sky-500 to-blue-700",        active: false },
-            { gradient: "from-amber-400 to-amber-600",     active: false },
-          ].map((c) => (
-            <div class:list={["cursor-pointer border-2", c.active ? "border-(--color-foreground)" : "border-transparent"]}>
-              <TeamCrest initials="FV" gradient={c.gradient} size="xl" />
-            </div>
-          ))}
-          <div class="w-11 h-11 rounded-[10px] flex items-center justify-center text-(--color-muted-fg) border-2 border-dashed border-(--color-border) cursor-pointer hover:border-(--color-primary) text-lg">+</div>
-        </div>
-      </div>
+      <CrestPicker client:load initials="FC" />
 
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-        <FormField label="Home city"  value="Austin, TX" />
-        <FormField label="Head coach" required value="Alex Morgan" />
-      </div>
+      <!--
+        TODO: Division selection
+        Replace this hidden placeholder with a real radio picker once division data
+        is stored on the team record and seeded from the tournament config.
+        The action already accepts `division: string` — just wire the value through.
+      -->
+      <input type="hidden" name="division" value="TBD" />
 
-      <FormField label="Team bio" class="mb-6">
-        <textarea class="w-full px-3 py-2 rounded-md border border-(--color-border) bg-(--color-surface) text-sm resize-none focus:outline-none focus:ring-2 focus:ring-(--color-primary) focus:ring-offset-1 min-h-[80px]">Two-time regional finalists returning for another run at the cup. Fast, physical, and organized.</textarea>
-      </FormField>
-
-      <div class="h-px bg-(--color-border) mb-6" />
-
-      <h3 class="font-display font-semibold text-(--color-foreground) mb-4">Select Division <span class="text-(--color-accent)">*</span></h3>
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-8">
-        {[
-          { label: "U18 Men's",    fill: "30/32", price: "$300 entry", selected: true,  hot: false },
-          { label: "Open Women's", fill: "24/32", price: "$300 entry", selected: false, hot: false },
-          { label: "U16 Boys",     fill: "28/32", price: "$250 entry", selected: false, hot: false },
-          { label: "U16 Girls",    fill: "18/32", price: "$250 entry", selected: false, hot: true },
-        ].map((d) => (
-          <label class:list={[
-            "rounded-lg border p-4 cursor-pointer transition-colors",
-            d.selected ? "border-(--color-primary) bg-(--color-primary-subtle)" : "border-(--color-border) hover:border-(--color-primary)/40",
-          ]}>
-            <div class="flex justify-between items-center mb-1">
-              <span class="font-semibold text-sm text-(--color-foreground)">{d.label}</span>
-              {d.selected
-                ? <span class={badgeVariants({ variant: "success" })}>Selected</span>
-                : d.hot
-                ? <span class={badgeVariants({ variant: "warning" })}>Filling up</span>
-                : <span class={badgeVariants({ variant: "secondary" })}>{d.fill}</span>
-              }
-            </div>
-            <p class="text-xs text-(--color-muted)">11v11 · {d.fill} teams · {d.price}</p>
-          </label>
-        ))}
-      </div>
-
-      <div class="flex justify-between">
-        <button class={cn(buttonVariants({ variant: "outline" }))}>← Back</button>
-        <!-- Props are hardcoded placeholders; the form will be made
-             interactive (controlled React state) in a follow-up. The island
-             already wires the real Action + Sonner toast pattern. -->
-        <RegisterTeamButton
-          client:load
-          name="FC Velocity"
-          city="Austin, TX"
-          division="U18 Men's"
-        />
+      <div class="flex justify-between pt-2">
+        <a href="/teams" class={cn(buttonVariants({ variant: "outline" }))}>← Back</a>
+        <RegisterTeamButton client:load />
       </div>
     </SectionCard>
   </div>

@@ -1,0 +1,85 @@
+---
+import AppLayout from "@/layouts/AppLayout.astro";
+import { buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+import PageHeader from "@/components/PageHeader.astro";
+import SectionCard from "@/components/SectionCard.astro";
+import { CrestPicker } from "@/components/CrestPicker";
+import FormField from "@/components/FormField.astro";
+import { SaveTeamButton } from "@/components/SaveTeamButton";
+import { makeTeamService } from "@/services/team-service";
+import { NotFoundError } from "@/lib/errors";
+
+const { id } = Astro.params;
+const user = Astro.locals.user;
+
+// Auth guard: must be signed in
+if (!user) {
+  return Astro.redirect(`/signin?redirect=/teams/${id}/edit`);
+}
+
+let team;
+try {
+  team = await makeTeamService().getTeam(id!);
+} catch (err) {
+  if (err instanceof NotFoundError) {
+    return Astro.redirect("/teams");
+  }
+  throw err;
+}
+
+// Access guard: owner or admin only
+const isOwnerOrAdmin = user.role === "admin" || user.id === team.coachId;
+if (!isOwnerOrAdmin) {
+  return Astro.redirect(`/teams/${id}`);
+}
+
+---
+
+<AppLayout title={`Edit ${team.name}`} activeNav="teams">
+  <div class="p-4 sm:p-6 lg:p-8 max-w-3xl">
+    <!-- Breadcrumb -->
+    <p class="text-sm text-(--color-muted) mb-5">
+      <a href="/teams" class="hover:text-(--color-primary)">Teams</a>
+      <span class="mx-2">/</span>
+      <a href={`/teams/${team.id}`} class="hover:text-(--color-primary)">{team.name}</a>
+      <span class="mx-2">/</span>
+      <span class="text-(--color-foreground)">Edit</span>
+    </p>
+
+    <PageHeader
+      title="Edit Team"
+      subtitle="Update your team's details. Changes are visible to all members immediately."
+    />
+
+    <SectionCard class="p-5 sm:p-7">
+      <h2 class="font-display text-lg font-semibold text-(--color-foreground) mb-1">Team Details</h2>
+      <p class="text-sm text-(--color-muted) mb-6">This info appears on schedules and the public bracket.</p>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+        <FormField label="Team name" name="name" required value={team.name} />
+        <FormField label="Home city" name="city" value={team.city} placeholder="e.g. Austin, TX" />
+      </div>
+
+      <CrestPicker client:load initials={team.name.slice(0, 2).toUpperCase()} initialColor={team.color} />
+
+      <div class="h-px bg-(--color-border) mb-6" />
+
+      <h3 class="font-display font-semibold text-(--color-foreground) mb-4">Division</h3>
+      <FormField
+        label="Division"
+        name="division"
+        value={team.division}
+        placeholder="e.g. U18 Men's"
+        class="mb-8"
+      />
+
+      <div class="flex justify-between">
+        <a href={`/teams/${team.id}`} class={cn(buttonVariants({ variant: "outline" }))}>
+          ← Cancel
+        </a>
+        <SaveTeamButton client:load teamId={team.id} />
+      </div>
+    </SectionCard>
+  </div>
+</AppLayout>
