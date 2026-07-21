@@ -33,6 +33,7 @@ Astro Pages → Astro Actions / API Endpoints → Service Layer → Repository L
 
 ### Rules
 
+- Every interactive element (`<button>`, custom clickable `<div>`/`<li>`, tab triggers) must include `cursor-pointer`. The `<Button>` component and `buttonVariants` already include it — add it manually to any raw `<button>` or non-anchor clickable element that doesn't use those.
 - Pages call services directly. Never call internal API endpoints from pages.
 - Actions validate input, authenticate, call a service, return result. No SQL, no business logic.
 - Services own all business logic. No HTTP, no Astro context.

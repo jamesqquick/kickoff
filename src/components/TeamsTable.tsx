@@ -65,7 +65,7 @@ export function TeamsTable({ teams: initialTeams }: Props) {
             key={value}
             onClick={() => setActiveTab(value)}
             className={cn(
-              "px-4 py-2 text-sm font-medium transition-colors",
+              "px-4 py-2 text-sm font-medium transition-colors cursor-pointer",
               activeTab === value
                 ? "border-b-2 border-(--color-primary) text-(--color-foreground)"
                 : "text-(--color-muted) hover:text-(--color-foreground)",

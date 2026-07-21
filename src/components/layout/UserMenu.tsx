@@ -26,7 +26,7 @@ export function UserMenu({ name, email, role, initials }: Props) {
 
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <button className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left transition-colors hover:bg-(--color-border-soft) focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--color-primary)">
+          <button className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left transition-colors hover:bg-(--color-border-soft) focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--color-primary) cursor-pointer">
             <div
               className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-bold text-white"
               style={{ background: "linear-gradient(135deg, #ea580c, #c2410c)" }}
