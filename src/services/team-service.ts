@@ -17,8 +17,8 @@ export interface CreateTeamInput {
 export class TeamService {
   constructor(private readonly teams: TeamRepository) {}
 
-  async listTeams(): Promise<Team[]> {
-    return this.teams.list();
+  async listTeams(): Promise<TeamWithCoach[]> {
+    return this.teams.listAllWithCoach();
   }
 
   async listApprovedTeams(): Promise<Team[]> {

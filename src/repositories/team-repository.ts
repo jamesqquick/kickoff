@@ -47,6 +47,21 @@ export class TeamRepository {
     return result.results[0];
   }
 
+  // JOINs the Better Auth `user` table for all teams to resolve each coach's name.
+  // Uses the same raw SQL pattern as findByIdWithCoach.
+  async listAllWithCoach(): Promise<TeamWithCoach[]> {
+    const result = await this.db.$client
+      .prepare(
+        `SELECT t.id, t.name, t.city, t.division, t.coach_id AS coachId,
+                t.color, t.status, t.created_at AS createdAt, t.updated_at AS updatedAt,
+                u.name AS coachName
+         FROM teams t
+         JOIN user u ON u.id = t.coach_id`,
+      )
+      .all<TeamWithCoach>();
+    return result.results;
+  }
+
   async listApproved(): Promise<Team[]> {
     return this.db
       .select()
