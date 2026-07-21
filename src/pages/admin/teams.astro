@@ -15,7 +15,7 @@ if (!user || user.role !== "admin") {
 const pendingTeams = await makeTeamService().listPendingTeams();
 ---
 
-<AppLayout title="Admin — Pending Teams" activeNav="teams">
+<AppLayout title="Admin — Pending Teams" activeNav="admin-teams">
   <div class="p-4 sm:p-6 lg:p-8">
     <PageHeader
       eyebrow="Admin"

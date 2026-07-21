@@ -10,6 +10,7 @@ const { activeNav = "dashboard" } = Astro.props;
 const user = Astro.locals.user;
 const displayName = user?.name?.trim() || user?.email || "Account";
 const role = (user as { role?: string } | null)?.role ?? "Member";
+const isAdmin = user?.role === "admin";
 const initials =
   displayName
     .split(/\s+/)
@@ -51,11 +52,18 @@ const navGroups = [
       { id: "payments",  label: "Payments",        href: "/payments",         icon: "credit-card",   count: undefined },
     ],
   },
+  ...(isAdmin ? [{
+    label: "Admin",
+    items: [
+      { id: "admin-tournaments", label: "Tournaments", href: "/admin/tournaments", icon: "trophy",  count: undefined },
+      { id: "admin-teams",       label: "Teams",       href: "/admin/teams",       icon: "shield",  count: undefined },
+    ],
+  }] : []),
   {
     label: "Account",
     items: [
-      { id: "profile",  label: "My Profile", href: "/profile",        icon: "user",     count: undefined },
-      { id: "settings", label: "Settings",   href: "/settings",        icon: "settings", count: undefined },
+      { id: "profile",  label: "My Profile", href: "/profile",   icon: "user",     count: undefined },
+      { id: "settings", label: "Settings",   href: "/settings",  icon: "settings", count: undefined },
     ],
   },
 ];
