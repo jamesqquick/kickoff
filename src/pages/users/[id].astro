@@ -1,0 +1,170 @@
+---
+import AppLayout from "@/layouts/AppLayout.astro";
+import { getDb } from "@/lib/db";
+import { makeProfileService } from "@/services/profile-service";
+import { makeTeamMemberService } from "@/services/team-member-service";
+import { badgeVariants } from "@/components/ui/badge";
+
+const viewer = Astro.locals.user;
+if (!viewer) return Astro.redirect("/signin");
+
+const { id } = Astro.params;
+
+// Look up the target user from the Better Auth user table (raw D1 — not in Drizzle schema).
+interface UserRow {
+  id: string;
+  name: string;
+  email: string;
+  image: string | null;
+}
+
+const targetUser = await getDb().$client
+  .prepare("SELECT id, name, email, image FROM user WHERE id = ?")
+  .bind(id)
+  .first<UserRow>();
+
+if (!targetUser) return Astro.redirect("/teams");
+
+// Authorization: platform admins always have access.
+// Coaches can see the full profile only if the target user has any membership
+// (pending OR approved) on a team they coach.
+const isAdmin = viewer.role === "admin";
+
+let isAuthorizedCoach = false;
+if (!isAdmin) {
+  const coachMatch = await getDb().$client
+    .prepare(
+      `SELECT 1 FROM team_members tm
+       JOIN teams t ON t.id = tm.team_id
+       WHERE tm.user_id = ? AND t.coach_id = ?
+       LIMIT 1`,
+    )
+    .bind(targetUser.id, viewer.id)
+    .first<{ 1: number }>();
+  isAuthorizedCoach = coachMatch !== null;
+}
+
+const canViewFullProfile = isAdmin || isAuthorizedCoach;
+
+// If neither admin nor authorized coach, show a minimal public view (name only).
+// We still render the page — no redirect — so links don't 404 for regular users.
+
+const profile = canViewFullProfile
+  ? await makeProfileService().getProfile(targetUser.id)
+  : null;
+
+const memberships = await makeTeamMemberService().listByUser(targetUser.id);
+const activeTeams = memberships.filter((m) => m.status !== "rejected");
+
+const nameParts = (targetUser.name ?? "").trim().split(/\s+/);
+const initials =
+  (nameParts[0]?.[0] ?? "").toUpperCase() +
+  (nameParts[1]?.[0] ?? "").toUpperCase();
+
+const formatDate = (iso: string | null | undefined) => {
+  if (!iso) return null;
+  const [year, month, day] = iso.split("-").map(Number);
+  return new Date(year, month - 1, day).toLocaleDateString("en-US", {
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+  });
+};
+
+const hasAddress = !!(
+  profile?.addressStreet ||
+  profile?.addressCity ||
+  profile?.addressState
+);
+---
+
+<AppLayout title={targetUser.name}>
+  <div class="p-4 sm:p-6 lg:p-8 max-w-2xl mx-auto">
+
+    <!-- Identity card -->
+    <div class="rounded-xl border border-(--color-border) bg-(--color-card) p-6 mb-5">
+      <div class="flex items-center gap-5">
+        {targetUser.image ? (
+          <img
+            src={targetUser.image}
+            alt={targetUser.name}
+            class="w-16 h-16 rounded-full object-cover shrink-0"
+          />
+        ) : (
+          <div class="w-16 h-16 rounded-full bg-gradient-to-br from-orange-500 to-orange-700 flex items-center justify-center text-white text-xl font-bold shrink-0">
+            {initials}
+          </div>
+        )}
+        <div>
+          <h1 class="font-display text-xl font-bold text-(--color-foreground)">{targetUser.name}</h1>
+          {canViewFullProfile && (
+            <p class="text-sm text-(--color-muted)">{targetUser.email}</p>
+          )}
+        </div>
+      </div>
+
+      {canViewFullProfile && (profile?.phone || profile?.dateOfBirth) && (
+        <div class="mt-5 pt-5 border-t border-(--color-border) grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {profile?.phone && (
+            <div>
+              <p class="text-xs font-semibold uppercase tracking-wider text-(--color-muted-fg) mb-1">Phone</p>
+              <p class="text-sm text-(--color-foreground)">{profile.phone}</p>
+            </div>
+          )}
+          {profile?.dateOfBirth && (
+            <div>
+              <p class="text-xs font-semibold uppercase tracking-wider text-(--color-muted-fg) mb-1">Date of Birth</p>
+              <p class="text-sm text-(--color-foreground)">{formatDate(profile.dateOfBirth)}</p>
+            </div>
+          )}
+        </div>
+      )}
+
+      {canViewFullProfile && hasAddress && (
+        <div class="mt-5 pt-5 border-t border-(--color-border)">
+          <p class="text-xs font-semibold uppercase tracking-wider text-(--color-muted-fg) mb-2">Address</p>
+          <address class="not-italic text-sm text-(--color-foreground) leading-relaxed">
+            {profile?.addressStreet && <span class="block">{profile.addressStreet}{profile?.addressApt ? `, ${profile.addressApt}` : ""}</span>}
+            {(profile?.addressCity || profile?.addressState || profile?.addressZip) && (
+              <span class="block">
+                {[profile?.addressCity, profile?.addressState, profile?.addressZip]
+                  .filter(Boolean)
+                  .join(", ")}
+              </span>
+            )}
+            {profile?.addressCountry && profile.addressCountry !== "United States" && (
+              <span class="block">{profile.addressCountry}</span>
+            )}
+          </address>
+        </div>
+      )}
+    </div>
+
+    <!-- Teams -->
+    {activeTeams.length > 0 && (
+      <div class="rounded-xl border border-(--color-border) bg-(--color-card)">
+        <div class="px-5 py-4 border-b border-(--color-border)">
+          <h2 class="font-display font-semibold text-(--color-foreground)">Teams</h2>
+        </div>
+        <div class="divide-y divide-(--color-border-soft)">
+          {activeTeams.map((m) => (
+            <div class="flex items-center justify-between px-5 py-3.5 gap-3">
+              <div class="min-w-0">
+                <a
+                  href={`/teams/${m.teamId}`}
+                  class="font-medium text-sm text-(--color-foreground) hover:text-(--color-primary) hover:underline block truncate"
+                >
+                  {m.teamName}
+                </a>
+                <p class="text-xs text-(--color-muted) truncate">{m.teamDivision} · {m.teamCity}</p>
+              </div>
+              <span class={badgeVariants({ variant: m.status === "approved" ? "success" : "warning" })}>
+                {m.status === "approved" ? "Active" : "Pending"}
+              </span>
+            </div>
+          ))}
+        </div>
+      </div>
+    )}
+  </div>
+</AppLayout>

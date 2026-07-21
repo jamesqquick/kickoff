@@ -11,7 +11,7 @@ import { getDb } from "@/lib/db";
 import { NotFoundError } from "@/lib/errors";
 import { teamStatusVariant, teamColorGradient } from "@/lib/utils";
 import { JoinTeamButton } from "@/components/JoinTeamButton";
-import { PendingRequestActions } from "@/components/PendingRequestActions";
+import { TeamMemberPanel } from "@/components/TeamMemberPanel";
 
 const { id } = Astro.params;
 const user = Astro.locals.user;
@@ -47,8 +47,6 @@ if (user) {
   }
 }
 
-const joinedFormat = (ts: number) =>
-  new Date(ts).toLocaleDateString("en-US", { month: "short", year: "numeric" });
 ---
 
 <AppLayout title={team.name} activeNav="teams">
@@ -101,87 +99,11 @@ const joinedFormat = (ts: number) =>
       </div>
     </div>
 
-    <!-- Pending join requests — owner/admin only -->
-    {isOwnerOrAdmin && pendingRequests.length > 0 && (
-      <div class="rounded-xl border border-(--color-border) bg-(--color-card) mb-5">
-        <div class="flex items-center justify-between px-4 sm:px-6 py-4 border-b border-(--color-border)">
-          <h3 class="font-display font-semibold text-(--color-foreground)">
-            Join Requests
-          </h3>
-          <span class={badgeVariants({ variant: "warning" })}>{pendingRequests.length} pending</span>
-        </div>
-        <div>
-          {pendingRequests.map((req) => (
-            <PendingRequestActions
-              client:load
-              userId={req.userId}
-              teamId={req.teamId}
-              userName={req.userName}
-              userImage={req.userImage}
-              requestedAt={req.createdAt}
-            />
-          ))}
-        </div>
-      </div>
-    )}
-
-    <!-- Roster table -->
-    <div class="rounded-xl border border-(--color-border) bg-(--color-card)">
-      <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between px-4 sm:px-6 py-4 gap-3 border-b border-(--color-border)">
-        <h3 class="font-display font-semibold text-(--color-foreground)">
-          Squad Roster
-          <span class="font-normal text-sm text-(--color-muted) ml-1">{roster.length} member{roster.length !== 1 ? "s" : ""}</span>
-        </h3>
-        {isOwnerOrAdmin && (
-          <button class={cn(buttonVariants({ variant: "default" }), "h-8 px-3 text-xs shrink-0")}>
-            + Add Member
-          </button>
-        )}
-      </div>
-
-      {roster.length === 0 ? (
-        <div class="px-6 py-8 text-center text-sm text-(--color-muted)">
-          No members on the roster yet.
-        </div>
-      ) : (
-        <table class="w-full">
-          <thead>
-            <tr class="border-b border-(--color-border)">
-              <th class="text-left text-xs font-semibold uppercase tracking-wider text-(--color-muted-fg) px-5 py-3">Member</th>
-              <th class="hidden sm:table-cell text-left text-xs font-semibold uppercase tracking-wider text-(--color-muted-fg) px-5 py-3">#</th>
-              <th class="hidden sm:table-cell text-left text-xs font-semibold uppercase tracking-wider text-(--color-muted-fg) px-5 py-3">Joined</th>
-            </tr>
-          </thead>
-          <tbody>
-            {roster.map((member) => (
-              <tr class="border-b border-(--color-border-soft) last:border-0 hover:bg-(--color-background) transition-colors">
-                <td class="px-5 py-3.5">
-                  <div class="flex items-center gap-3">
-                    {member.userImage ? (
-                      <img
-                        src={member.userImage}
-                        alt={member.userName}
-                        class="w-8 h-8 rounded-full object-cover shrink-0"
-                      />
-                    ) : (
-                      <div class="w-8 h-8 rounded-full bg-(--color-primary) flex items-center justify-center text-white text-xs font-bold shrink-0">
-                        {member.userName.slice(0, 2).toUpperCase()}
-                      </div>
-                    )}
-                    <span class="font-medium text-sm text-(--color-foreground)">{member.userName}</span>
-                  </div>
-                </td>
-                <td class="hidden sm:table-cell px-5 py-3.5 text-sm text-(--color-muted)">
-                  {member.jerseyNumber ?? "—"}
-                </td>
-                <td class="hidden sm:table-cell px-5 py-3.5 text-sm text-(--color-muted)">
-                  {joinedFormat(member.createdAt)}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      )}
-    </div>
+    <TeamMemberPanel
+      client:load
+      initialRoster={roster}
+      pendingRequests={pendingRequests}
+      isOwnerOrAdmin={isOwnerOrAdmin}
+    />
   </div>
 </AppLayout>
