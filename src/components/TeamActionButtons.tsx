@@ -29,8 +29,14 @@ export function TeamActionButtons({ teamId, teamName, action }: TeamActionButton
 
       toast.success(isApprove ? `${teamName} approved` : `${teamName} rejected`);
       setDone(true);
-      // Reload so the row disappears from the pending list.
-      setTimeout(() => window.location.reload(), 1000);
+
+      // Fade out and remove the row without a full page reload.
+      const row = document.querySelector(`tr[data-team-id="${teamId}"]`) as HTMLElement | null;
+      if (row) {
+        row.style.transition = "opacity 0.3s ease";
+        row.style.opacity = "0";
+        setTimeout(() => row.remove(), 300);
+      }
     } catch {
       toast.error("Something went wrong. Please try again.");
     } finally {
