@@ -19,6 +19,7 @@ const baseTeam: Team = {
   name: "FC Velocity",
   city: "Austin, TX",
   division: "U18 Men's",
+  color: "emerald",
   coachId: "user-1",
   status: "pending",
   createdAt: 1000,
@@ -46,7 +47,7 @@ describe("TeamService.createTeam", () => {
     const repo = makeFakeRepo();
     const service = new TeamService(repo);
     const result = await service.createTeam(
-      { name: "X", city: "Y", division: "Z" },
+      { name: "X", city: "Y", division: "Z", color: "emerald" },
       regularUser,
     );
     expect(repo.insert).toHaveBeenCalledOnce();
@@ -57,7 +58,7 @@ describe("TeamService.createTeam", () => {
     const repo = makeFakeRepo();
     const service = new TeamService(repo);
     const result = await service.createTeam(
-      { name: "FC Velocity", city: "Austin, TX", division: "U18 Men's" },
+      { name: "FC Velocity", city: "Austin, TX", division: "U18 Men's", color: "sky" },
       adminUser,
     );
     expect(repo.insert).toHaveBeenCalledOnce();

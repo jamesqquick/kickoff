@@ -33,6 +33,7 @@ export const teams = {
       name: z.string().min(1, "Team name is required"),
       city: z.string().min(1, "City is required"),
       division: z.string().min(1, "Division is required"),
+      color: z.string().default("emerald"),
     }),
     handler: async (input, context) => {
       const user = context.locals.user;
@@ -41,6 +42,60 @@ export const teams = {
       }
       try {
         return await makeTeamService().createTeam(input, user);
+      } catch (err) {
+        if (err instanceof AppError) throw toActionError(err);
+        throw err;
+      }
+    },
+  }),
+
+  update: defineAction({
+    input: z.object({
+      id: z.string(),
+      name: z.string().min(1, "Team name is required"),
+      city: z.string(),
+      division: z.string(),
+      color: z.string().default("emerald"),
+    }),
+    handler: async ({ id, name, city, division, color }, context) => {
+      const user = context.locals.user;
+      if (!user) {
+        throw new ActionError({ code: "UNAUTHORIZED", message: "You must be signed in" });
+      }
+      try {
+        return await makeTeamService().updateTeam(id, { name, city, division, color }, user);
+      } catch (err) {
+        if (err instanceof AppError) throw toActionError(err);
+        throw err;
+      }
+    },
+  }),
+
+  approve: defineAction({
+    input: z.object({ id: z.string() }),
+    handler: async ({ id }, context) => {
+      const user = context.locals.user;
+      if (!user) {
+        throw new ActionError({ code: "UNAUTHORIZED", message: "You must be signed in" });
+      }
+      try {
+        return await makeTeamService().approveTeam(id, user);
+      } catch (err) {
+        if (err instanceof AppError) throw toActionError(err);
+        throw err;
+      }
+    },
+  }),
+
+  reject: defineAction({
+    input: z.object({ id: z.string() }),
+    handler: async ({ id }, context) => {
+      const user = context.locals.user;
+      if (!user) {
+        throw new ActionError({ code: "UNAUTHORIZED", message: "You must be signed in" });
+      }
+      try {
+        return await makeTeamService().rejectTeam(id, user);
       } catch (err) {
         if (err instanceof AppError) throw toActionError(err);
         throw err;

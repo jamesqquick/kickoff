@@ -11,6 +11,7 @@ export const teams = sqliteTable("teams", {
   city: text("city").notNull(),
   division: text("division").notNull(),
   coachId: text("coach_id").notNull(), // FK → user.id (enforced at app level)
+  color: text("color").notNull().default("emerald"), // crest color key, e.g. "emerald"
   status: text("status", { enum: ["pending", "approved", "rejected"] })
     .notNull()
     .default("pending"),
