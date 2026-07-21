@@ -1,0 +1,76 @@
+---
+import AppLayout from "@/layouts/AppLayout.astro";
+import { buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+import PageHeader from "@/components/PageHeader.astro";
+import SectionCard from "@/components/SectionCard.astro";
+import FormField from "@/components/FormField.astro";
+import { SaveTournamentButton } from "@/components/SaveTournamentButton";
+import { makeTournamentService } from "@/services/tournament-service";
+import { NotFoundError } from "@/lib/errors";
+
+const user = Astro.locals.user;
+if (!user || user.role !== "admin") {
+  return Astro.redirect("/");
+}
+
+const { id } = Astro.params;
+
+let tournament;
+try {
+  tournament = await makeTournamentService().getTournament(id!);
+} catch (err) {
+  if (err instanceof NotFoundError) {
+    return Astro.redirect("/admin/tournaments");
+  }
+  throw err;
+}
+---
+
+<AppLayout title={`Edit ${tournament.name}`} activeNav="admin">
+  <div class="p-4 sm:p-6 lg:p-8 max-w-3xl">
+    <p class="text-sm text-(--color-muted) mb-5">
+      <a href="/admin/tournaments" class="hover:text-(--color-primary)">Tournaments</a>
+      <span class="mx-2">/</span>
+      <span class="text-(--color-foreground)">Edit</span>
+    </p>
+
+    <PageHeader
+      title="Edit Tournament"
+      subtitle="Update name, dates, and promote the status when ready."
+    />
+
+    <SectionCard class="p-5 sm:p-7">
+      <h2 class="font-display text-lg font-semibold text-(--color-foreground) mb-1">Tournament Details</h2>
+      <p class="text-sm text-(--color-muted) mb-6">Changes take effect immediately.</p>
+
+      <div class="grid grid-cols-1 gap-4 mb-6">
+        <FormField label="Tournament name" name="name" required value={tournament.name} />
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+        <FormField label="Start date" name="startDate" type="date" value={tournament.startDate ?? undefined} />
+        <FormField label="End date" name="endDate" type="date" value={tournament.endDate ?? undefined} />
+      </div>
+
+      <div class="mb-6">
+        <label class="block text-sm font-medium text-(--color-foreground) mb-1.5">Status</label>
+        <select
+          name="status"
+          class="w-full h-10 px-3 rounded-md border border-(--color-border) bg-(--color-surface) text-sm text-(--color-foreground) focus:outline-none focus:ring-2 focus:ring-(--color-primary) focus:ring-offset-1"
+        >
+          <option value="draft" selected={tournament.status === "draft"}>Draft</option>
+          <option value="active" selected={tournament.status === "active"}>Active</option>
+          <option value="completed" selected={tournament.status === "completed"}>Completed</option>
+        </select>
+      </div>
+
+      <div class="flex justify-between">
+        <a href="/admin/tournaments" class={cn(buttonVariants({ variant: "outline" }))}>
+          ← Cancel
+        </a>
+        <SaveTournamentButton client:load mode="edit" tournamentId={tournament.id} />
+      </div>
+    </SectionCard>
+  </div>
+</AppLayout>

@@ -1,0 +1,98 @@
+---
+import AppLayout from "@/layouts/AppLayout.astro";
+import { buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+import PageHeader from "@/components/PageHeader.astro";
+import { makeTournamentService } from "@/services/tournament-service";
+
+const user = Astro.locals.user;
+if (!user || user.role !== "admin") {
+  return Astro.redirect("/");
+}
+
+const tournaments = await makeTournamentService().listTournaments();
+
+const statusLabel: Record<string, string> = {
+  draft: "Draft",
+  active: "Active",
+  completed: "Completed",
+};
+
+const statusClass: Record<string, string> = {
+  draft: "bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400",
+  active: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300",
+  completed: "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300",
+};
+---
+
+<AppLayout title="Admin — Tournaments" activeNav="admin">
+  <div class="p-4 sm:p-6 lg:p-8">
+    <PageHeader
+      eyebrow="Admin"
+      title="Tournaments"
+      subtitle="Manage tournaments, dates, and status."
+    >
+      <div slot="actions">
+        <a href="/admin/tournaments/new" class={cn(buttonVariants({ variant: "default" }), "h-9 px-4")}>
+          + New Tournament
+        </a>
+      </div>
+    </PageHeader>
+
+    {tournaments.length === 0 ? (
+      <div class="rounded-xl border border-(--color-border) bg-(--color-card) p-12 text-center">
+        <p class="text-(--color-muted) text-sm">No tournaments yet.</p>
+        <a href="/admin/tournaments/new" class={cn(buttonVariants({ variant: "default" }), "mt-4 inline-flex")}>
+          Create the first tournament
+        </a>
+      </div>
+    ) : (
+      <div class="rounded-xl border border-(--color-border) bg-(--color-card)">
+        <table class="w-full">
+          <thead>
+            <tr class="border-b border-(--color-border)">
+              <th class="text-left text-xs font-semibold uppercase tracking-wider text-(--color-muted-fg) px-5 py-3">Name</th>
+              <th class="hidden sm:table-cell text-left text-xs font-semibold uppercase tracking-wider text-(--color-muted-fg) px-5 py-3">Status</th>
+              <th class="hidden md:table-cell text-left text-xs font-semibold uppercase tracking-wider text-(--color-muted-fg) px-5 py-3">Dates</th>
+              <th class="px-5 py-3"></th>
+            </tr>
+          </thead>
+          <tbody>
+            {tournaments.map((t) => (
+              <tr class="border-b border-(--color-border-soft) last:border-0 hover:bg-(--color-background) transition-colors">
+                <td class="px-5 py-3.5">
+                  <span class="font-semibold text-sm text-(--color-foreground)">{t.name}</span>
+                  <p class="text-xs text-(--color-muted) sm:hidden mt-0.5">
+                    <span class={cn("inline-block rounded-full px-2 py-0.5 text-xs font-medium", statusClass[t.status])}>
+                      {statusLabel[t.status]}
+                    </span>
+                  </p>
+                </td>
+                <td class="hidden sm:table-cell px-5 py-3.5">
+                  <span class={cn("inline-block rounded-full px-2 py-0.5 text-xs font-medium", statusClass[t.status])}>
+                    {statusLabel[t.status]}
+                  </span>
+                </td>
+                <td class="hidden md:table-cell px-5 py-3.5 text-sm text-(--color-muted)">
+                  {t.startDate && t.endDate
+                    ? `${t.startDate} – ${t.endDate}`
+                    : t.startDate
+                      ? `From ${t.startDate}`
+                      : "—"}
+                </td>
+                <td class="px-5 py-3.5 text-right">
+                  <a
+                    href={`/admin/tournaments/${t.id}/edit`}
+                    class={cn(buttonVariants({ variant: "outline" }), "h-7 px-3 text-xs")}
+                  >
+                    Edit
+                  </a>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    )}
+  </div>
+</AppLayout>
