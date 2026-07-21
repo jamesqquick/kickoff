@@ -1,0 +1,19 @@
+ARCHITECTURE.md
+  s_c06f7c0b389f12::t_3e3a9ef6bee8cd 228-334
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "bdfdab12c3f2fd2737e151edbb13c619df821bcb",
+  "prompts": {},
+  "sessions": {
+    "s_c06f7c0b389f12": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_07a58a691ffeS41SRJj1PYLqCY",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "James Quick <jquick@cloudflare.com>"
+    }
+  }
+}
