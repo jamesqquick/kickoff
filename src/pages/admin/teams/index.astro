@@ -1,0 +1,39 @@
+---
+import AppLayout from "@/layouts/AppLayout.astro";
+import { buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+import PageHeader from "@/components/PageHeader.astro";
+import AdminBreadcrumb from "@/components/AdminBreadcrumb.astro";
+import { makeTeamService } from "@/services/team-service";
+import { TeamsTable } from "@/components/TeamsTable";
+
+const user = Astro.locals.user;
+if (!user || user.role !== "admin") {
+  return Astro.redirect("/");
+}
+
+const allTeams = await makeTeamService().listTeams();
+---
+
+<AppLayout title="Admin — Teams" activeNav="admin-teams">
+  <div class="p-4 sm:p-6 lg:p-8">
+    <AdminBreadcrumb crumbs={[
+      { label: "Admin", href: "/admin" },
+      { label: "Teams" },
+    ]} />
+
+    <PageHeader
+      eyebrow="Admin"
+      title="Teams"
+      subtitle="Review and manage team registrations."
+    >
+      <div slot="actions">
+        <a href="/teams" class={cn(buttonVariants({ variant: "outline" }), "h-9 px-4")}>
+          ← All Teams
+        </a>
+      </div>
+    </PageHeader>
+
+    <TeamsTable teams={allTeams} client:load />
+  </div>
+</AppLayout>

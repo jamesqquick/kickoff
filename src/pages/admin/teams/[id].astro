@@ -1,0 +1,147 @@
+---
+import AppLayout from "@/layouts/AppLayout.astro";
+import { buttonVariants } from "@/components/ui/button";
+import { cn, teamColorGradient } from "@/lib/utils";
+import TeamCrest from "@/components/TeamCrest.astro";
+import AdminBreadcrumb from "@/components/AdminBreadcrumb.astro";
+import SectionCard from "@/components/SectionCard.astro";
+import StatCard from "@/components/StatCard.astro";
+import { makeTeamService } from "@/services/team-service";
+import { makeTeamMemberService } from "@/services/team-member-service";
+import { NotFoundError } from "@/lib/errors";
+import { AdminTeamActions } from "@/components/AdminTeamActions";
+
+const user = Astro.locals.user;
+if (!user || user.role !== "admin") {
+  return Astro.redirect("/");
+}
+
+const { id } = Astro.params;
+
+let team;
+try {
+  team = await makeTeamService().getTeam(id!);
+} catch (err) {
+  if (err instanceof NotFoundError) {
+    return Astro.redirect("/admin/teams");
+  }
+  throw err;
+}
+
+const roster = await makeTeamMemberService().listByTeam(id!);
+
+const joinedFormat = (ts: number) =>
+  new Date(ts).toLocaleDateString("en-US", { month: "short", year: "numeric" });
+
+const registeredDate = new Date(team.createdAt).toLocaleDateString("en-US", {
+  month: "short",
+  day: "numeric",
+  year: "numeric",
+});
+---
+
+<AppLayout title={`${team.name} — Admin`} activeNav="admin-teams">
+  <div class="p-4 sm:p-6 lg:p-8">
+
+    <AdminBreadcrumb crumbs={[
+      { label: "Admin",  href: "/admin" },
+      { label: "Teams",  href: "/admin/teams" },
+      { label: team.name },
+    ]} />
+
+    <!-- Hero banner -->
+    <div class="relative rounded-xl border border-(--color-border) overflow-hidden p-5 sm:p-7 mb-6 flex flex-col sm:flex-row items-start sm:items-center gap-5 sm:gap-6"
+      style="background: radial-gradient(circle at 15% 30%, rgba(5,150,105,0.18), transparent 40%), radial-gradient(circle at 85% 70%, rgba(234,88,12,0.12), transparent 45%), #ffffff;"
+    >
+      <TeamCrest
+        initials={team.name.slice(0, 2).toUpperCase()}
+        gradient={teamColorGradient(team.color)}
+        size="2xl"
+        class="shadow-lg shrink-0"
+      />
+      <div class="flex-1 min-w-0">
+        <h1 class="font-display text-2xl sm:text-3xl font-bold text-(--color-foreground) mb-1">
+          {team.name}
+        </h1>
+        <p class="text-sm text-(--color-muted)">
+          {team.city} · {team.division}
+        </p>
+        <p class="text-xs text-(--color-muted) mt-0.5">
+          Coach: {team.coachName}
+        </p>
+      </div>
+
+      <!-- Status badge + action buttons (React island — updates in place) -->
+      <div class="flex items-center gap-3 shrink-0">
+        <AdminTeamActions
+          client:load
+          teamId={team.id}
+          teamName={team.name}
+          initialStatus={team.status}
+        />
+      </div>
+    </div>
+
+    <!-- Team detail stat cards -->
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+      <StatCard label="City"       value={team.city}       />
+      <StatCard label="Division"   value={team.division}   />
+      <StatCard label="Registered" value={registeredDate}  />
+    </div>
+
+    <!-- Roster -->
+    <SectionCard title={`Squad Roster · ${roster.length} member${roster.length !== 1 ? "s" : ""}`}>
+      <a
+        slot="header-action"
+        href={`/teams/${team.id}`}
+        class={cn(buttonVariants({ variant: "outline" }), "h-8 px-3 text-xs")}
+      >
+        View public page →
+      </a>
+
+      {roster.length === 0 ? (
+        <div class="px-6 py-8 text-center text-sm text-(--color-muted)">
+          No members on the roster yet.
+        </div>
+      ) : (
+        <table class="w-full">
+          <thead>
+            <tr class="border-b border-(--color-border)">
+              <th class="text-left text-xs font-semibold uppercase tracking-wider text-(--color-muted-fg) px-5 py-3">Member</th>
+              <th class="hidden sm:table-cell text-left text-xs font-semibold uppercase tracking-wider text-(--color-muted-fg) px-5 py-3">#</th>
+              <th class="hidden sm:table-cell text-left text-xs font-semibold uppercase tracking-wider text-(--color-muted-fg) px-5 py-3">Joined</th>
+            </tr>
+          </thead>
+          <tbody>
+            {roster.map((member) => (
+              <tr class="border-b border-(--color-border-soft) last:border-0 hover:bg-(--color-background) transition-colors">
+                <td class="px-5 py-3.5">
+                  <div class="flex items-center gap-3">
+                    {member.userImage ? (
+                      <img
+                        src={member.userImage}
+                        alt={member.userName}
+                        class="w-8 h-8 rounded-full object-cover shrink-0"
+                      />
+                    ) : (
+                      <div class="w-8 h-8 rounded-full bg-(--color-primary) flex items-center justify-center text-white text-xs font-bold shrink-0">
+                        {member.userName.slice(0, 2).toUpperCase()}
+                      </div>
+                    )}
+                    <span class="font-medium text-sm text-(--color-foreground)">{member.userName}</span>
+                  </div>
+                </td>
+                <td class="hidden sm:table-cell px-5 py-3.5 text-sm text-(--color-muted)">
+                  {member.jerseyNumber ?? "—"}
+                </td>
+                <td class="hidden sm:table-cell px-5 py-3.5 text-sm text-(--color-muted)">
+                  {joinedFormat(member.createdAt)}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
+    </SectionCard>
+  </div>
+</AppLayout>

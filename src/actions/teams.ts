@@ -102,4 +102,20 @@ export const teams = {
       }
     },
   }),
+
+  unreject: defineAction({
+    input: z.object({ id: z.string() }),
+    handler: async ({ id }, context) => {
+      const user = context.locals.user;
+      if (!user) {
+        throw new ActionError({ code: "UNAUTHORIZED", message: "You must be signed in" });
+      }
+      try {
+        return await makeTeamService().unRejectTeam(id, user);
+      } catch (err) {
+        if (err instanceof AppError) throw toActionError(err);
+        throw err;
+      }
+    },
+  }),
 };
