@@ -1,0 +1,21 @@
+package.json
+  s_4cd316e627d8f8::t_2abd2c549447fa 26,56-57
+pnpm-lock.yaml
+  s_4cd316e627d8f8::t_9ac2b5f9d1f57a 12-13,99-101,111-112,2823-2828,2835-2840,2847-2852,2859-2864,2871-2876,2884-2890,2898-2904,2912-2918,2926-2932,2939-2944,2951-2956,2961-2964,3810,6123-6125,6129-6131,6135-6137,6141-6143,6147-6149,6153-6155,6159-6161,6165-6167,6171-6173,6177-6179,6183-6185,6202-6217,6785
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "a8a1cf30c00c40dd0359138246870500f2c0f3b6",
+  "prompts": {},
+  "sessions": {
+    "s_4cd316e627d8f8": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_079e11807ffeNLmInNDwKlG6Lm",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "James Quick <jquick@cloudflare.com>"
+    }
+  }
+}
