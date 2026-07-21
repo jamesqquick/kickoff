@@ -34,7 +34,7 @@ export const teams = {
       city: z.string().min(1, "City is required"),
       division: z.string().min(1, "Division is required"),
       color: z.string().default("emerald"),
-      shortName: z.string().max(4).optional(),
+      shortName: z.string().max(2).optional(),
     }),
     handler: async (input, context) => {
       const user = context.locals.user;
@@ -57,7 +57,7 @@ export const teams = {
       city: z.string(),
       division: z.string(),
       color: z.string().default("emerald"),
-      shortName: z.string().max(4).optional(),
+      shortName: z.string().max(2).optional(),
     }),
     handler: async ({ id, name, city, division, color, shortName }, context) => {
       const user = context.locals.user;

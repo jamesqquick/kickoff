@@ -15,7 +15,7 @@ interface Props {
   initialColor?: string;
 }
 
-export function CrestPicker({ initials = "", initialColor }: Props) {
+export function CrestPicker({ initials = "FC", initialColor }: Props) {
   const [selectedColor, setSelectedColor] = useState(
     COLORS.find((c) => c.value === initialColor) ?? COLORS[0],
   );
@@ -46,23 +46,23 @@ export function CrestPicker({ initials = "", initialColor }: Props) {
         </div>
       </div>
 
-      {/* Short name input */}
+      {/* Initials input */}
       <div className="mb-4">
         <label
-          htmlFor="crest-short-name"
+          htmlFor="crest-initials"
           className="block text-sm font-medium mb-1.5"
           style={{ color: "var(--color-foreground)" }}
         >
-          Short name
+          Initials
         </label>
         <input
-          id="crest-short-name"
+          id="crest-initials"
           type="text"
-          maxLength={4}
-          placeholder="e.g. FC"
+          maxLength={2}
+          placeholder="FC"
           value={initialsValue}
           onChange={(e) => setInitialsValue(e.target.value.toUpperCase())}
-          className="w-28 rounded-md border px-3 py-1.5 text-sm font-mono tracking-widest uppercase focus:outline-none focus:ring-2 focus:ring-(--color-primary)"
+          className="w-20 rounded-md border px-3 py-1.5 text-sm font-mono tracking-widest uppercase focus:outline-none focus:ring-2 focus:ring-(--color-primary)"
           style={{
             background: "var(--color-card)",
             borderColor: "var(--color-border)",
@@ -70,7 +70,7 @@ export function CrestPicker({ initials = "", initialColor }: Props) {
           }}
         />
         <p className="text-xs mt-1" style={{ color: "var(--color-muted)" }}>
-          Up to 4 characters — shown on the crest
+          2 characters — shown on the crest
         </p>
       </div>
 
