@@ -120,15 +120,12 @@ export class RosterImportService {
       throw new ValidationError("file", "The file is empty or has no data rows.");
     }
 
-    // Build a set of emails already on this team for duplicate detection.
-    const existing = await this.members.listByTeam(teamId);
-    const existingEmails = new Set(
-      existing
-        .map((m) => m.email?.toLowerCase())
-        .filter(Boolean) as string[],
-    );
-    // Also check users who joined by account (email is null on the row — look them up differently)
-    // We'll treat any email collision with the full roster as a duplicate.
+    if (rawRows.length > 500) {
+      throw new ValidationError("file", "Import is limited to 500 rows at a time. Split your file and re-upload.");
+    }
+
+    // Build a set of all emails already on this team — both imported rows and account-based members.
+    const existingEmails = await this.members.listExistingEmails(teamId);
 
     const results: ValidatedRow[] = [];
 

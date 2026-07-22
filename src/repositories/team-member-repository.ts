@@ -87,8 +87,11 @@ export class TeamMemberRepository {
         inserted++;
       } catch (err) {
         // Skip rows that violate unique constraints (e.g. already on team).
-        // All other errors are re-thrown.
-        const msg = err instanceof Error ? err.message : String(err);
+        // D1 wraps the real SQLite error in err.cause, so check both levels.
+        const msg = [
+          err instanceof Error ? err.message : String(err),
+          err instanceof Error && err.cause instanceof Error ? err.cause.message : "",
+        ].join(" ");
         if (msg.includes("UNIQUE") || msg.includes("unique")) continue;
         throw err;
       }
@@ -236,6 +239,23 @@ export class TeamMemberRepository {
       )
       .limit(1);
     return results[0] ?? null;
+  }
+
+  // Returns a lowercase email Set covering every member of a team — both imported rows
+  // (email column) and account-based members (email from the Better Auth user table).
+  // Used by the import service to detect duplicates before inserting.
+  async listExistingEmails(teamId: string): Promise<Set<string>> {
+    const result = await this.db.$client
+      .prepare(
+        `SELECT LOWER(COALESCE(tm.email, u.email)) AS email
+         FROM team_members tm
+         LEFT JOIN user u ON u.id = tm.user_id
+         WHERE tm.team_id = ?
+           AND (tm.email IS NOT NULL OR u.email IS NOT NULL)`,
+      )
+      .bind(teamId)
+      .all<{ email: string }>();
+    return new Set(result.results.map((r) => r.email).filter(Boolean));
   }
 
   async findByEmailAndTeam(
