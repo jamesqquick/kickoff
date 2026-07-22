@@ -29,7 +29,7 @@ function getTournamentBadge(t: (typeof tournaments)[number]): { label: string; c
 }
 
 function formatDate(d: string): string {
-  return new Date(d).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
+  return new Date(d).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
 }
 
 function formatDates(t: (typeof tournaments)[number]): string {

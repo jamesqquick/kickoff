@@ -67,7 +67,7 @@ const divisionCounts = await Promise.all(
 
 function formatDate(d: string | null) {
   if (!d) return null;
-  return new Date(d).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
+  return new Date(d).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
 }
 ---
 
