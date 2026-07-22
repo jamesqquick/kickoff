@@ -59,7 +59,7 @@ function formatDates(t: (typeof tournaments)[number]): string {
               {active.map((t) => {
                 const badge = getTournamentBadge(t);
                 return (
-                  <a href={`/tournaments/${t.id}`} class="flex items-center justify-between gap-4 px-5 py-4 hover:bg-(--color-background) transition-colors">
+                  <a href={`/tournaments/${t.id}`} class="flex items-center justify-between gap-4 px-5 py-4 hover:bg-(--color-card-hover) transition-colors">
                     <div>
                       <p class="font-semibold text-sm text-(--color-foreground)">{t.name}</p>
                       <p class="text-xs text-(--color-muted) mt-0.5">{formatDates(t)}</p>
@@ -81,7 +81,7 @@ function formatDates(t: (typeof tournaments)[number]): string {
               {upcoming.map((t) => {
                 const badge = getTournamentBadge(t);
                 return (
-                  <a href={`/tournaments/${t.id}`} class="flex items-center justify-between gap-4 px-5 py-4 hover:bg-(--color-background) transition-colors">
+                  <a href={`/tournaments/${t.id}`} class="flex items-center justify-between gap-4 px-5 py-4 hover:bg-(--color-card-hover) transition-colors">
                     <div>
                       <p class="font-semibold text-sm text-(--color-foreground)">{t.name}</p>
                       <p class="text-xs text-(--color-muted) mt-0.5">{formatDates(t)}</p>
@@ -103,7 +103,7 @@ function formatDates(t: (typeof tournaments)[number]): string {
               {past.map((t) => {
                 const badge = getTournamentBadge(t);
                 return (
-                  <a href={`/tournaments/${t.id}`} class="flex items-center justify-between gap-4 px-5 py-4 opacity-70 hover:bg-(--color-background) hover:opacity-100 transition-all">
+                  <a href={`/tournaments/${t.id}`} class="flex items-center justify-between gap-4 px-5 py-4 opacity-70 hover:bg-(--color-card-hover) hover:opacity-100 transition-all">
                     <div>
                       <p class="font-semibold text-sm text-(--color-foreground)">{t.name}</p>
                       <p class="text-xs text-(--color-muted) mt-0.5">{formatDates(t)}</p>
