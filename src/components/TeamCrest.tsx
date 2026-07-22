@@ -26,7 +26,7 @@ export function TeamCrest({ initials, gradient, size = "sm", className }: TeamCr
         className,
       )}
     >
-      {initials}
+      {initials.slice(0, 2)}
     </div>
   );
 }

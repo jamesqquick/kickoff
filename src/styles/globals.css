@@ -112,6 +112,18 @@ h1, h2, h3, h4 {
   letter-spacing: -0.02em;
 }
 
+/* ── Accordion animations ── */
+@keyframes accordion-down {
+  from { height: 0; }
+  to   { height: var(--radix-accordion-content-height); }
+}
+@keyframes accordion-up {
+  from { height: var(--radix-accordion-content-height); }
+  to   { height: 0; }
+}
+.animate-accordion-down { animation: accordion-down 0.2s ease-out; }
+.animate-accordion-up   { animation: accordion-up   0.2s ease-out; }
+
 /* ── Utility: glass card ── */
 .glass-card {
   background: rgba(255, 255, 255, 0.72);

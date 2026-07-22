@@ -82,8 +82,7 @@ export class TeamMemberRepository {
         `SELECT tm.id, tm.user_id AS userId, tm.team_id AS teamId,
                 tm.jersey_number AS jerseyNumber, tm.status,
                 tm.created_at AS createdAt, tm.updated_at AS updatedAt,
-                t.name AS teamName, t.city AS teamCity,
-                t.status AS teamStatus
+                t.name AS teamName, t.city AS teamCity
          FROM team_members tm
          JOIN teams t ON t.id = tm.team_id
          WHERE tm.user_id = ?
@@ -127,17 +126,16 @@ export class TeamMemberRepository {
     return results[0];
   }
 
-  // Count of confirmed teams for a user: approved coached teams UNION approved memberships.
+  // Count of confirmed teams for a user: all coached teams UNION approved memberships.
   // Used by the sidebar badge. UNION deduplicates if a coach is also a member row.
   async countConfirmedForUser(userId: string): Promise<number> {
     const result = await this.db.$client
       .prepare(
         `SELECT COUNT(*) AS cnt FROM (
-           SELECT t.id FROM teams t WHERE t.coach_id = ? AND t.status = 'approved'
+           SELECT t.id FROM teams t WHERE t.coach_id = ?
            UNION
            SELECT tm.team_id FROM team_members tm
-           JOIN teams t ON t.id = tm.team_id
-           WHERE tm.user_id = ? AND tm.status = 'approved' AND t.status = 'approved'
+           WHERE tm.user_id = ? AND tm.status = 'approved'
          ) sub`,
       )
       .bind(userId, userId)
@@ -171,5 +169,4 @@ export interface TeamMemberWithUser extends TeamMember {
 export interface TeamMemberWithTeam extends TeamMember {
   teamName: string;
   teamCity: string;
-  teamStatus: string;
 }

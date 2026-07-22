@@ -89,24 +89,25 @@ INSERT INTO profiles (id, user_id, phone, date_of_birth, address_city, address_s
 
 -- ------------------------------------------------------------
 -- 5. Teams  (Drizzle app table — snake_case columns)
--- 9 teams across all status values, divisions, and cities.
+-- 9 teams across various cities. No global status — approval
+-- happens at the tournament_registrations level.
 -- short_name set where a recognizable abbreviation fits.
 -- ------------------------------------------------------------
-INSERT INTO teams (id, name, short_name, city, coach_id, color, status, created_at, updated_at) VALUES
-  -- coach_a teams: one approved, one pending
-  ('team_a', 'River Hawks',     'RH',   'Austin',     'usr_coach_a', 'emerald', 'approved', 1700000000000, 1700000000000),
-  ('team_b', 'Storm United',    'SU',   'Dallas',     'usr_coach_a', 'blue',    'pending',  1700000000000, 1700000000000),
-  -- admin team: rejected
-  ('team_c', 'Ghost FC',        'GFC',  'Houston',    'usr_admin',   'red',     'rejected', 1700000000000, 1700000000000),
-  -- coach_b teams: both approved
-  ('team_d', 'Coastal FC',      'CFC',  'San Diego',  'usr_coach_b', 'sky',     'approved', 1700000000000, 1700000000000),
-  ('team_e', 'Iron City United','ICU',  'Pittsburgh', 'usr_coach_b', 'orange',  'approved', 1700000000000, 1700000000000),
-  -- coach_c teams: both unapproved — exercises Created-only path on My Teams
-  ('team_f', 'Desert Wolves',   'DW',   'Phoenix',    'usr_coach_c', 'amber',   'pending',  1700000000000, 1700000000000),
-  ('team_i', 'Red Canyon AC',   'RCAC', 'Denver',     'usr_coach_c', 'rose',    'rejected', 1700000000000, 1700000000000),
-  -- coach_d teams: both approved
-  ('team_g', 'Northside FC',    'NFC',  'Chicago',    'usr_coach_d', 'violet',  'approved', 1700000000000, 1700000000000),
-  ('team_h', 'Silver Arrows',   'SA',   'Seattle',    'usr_coach_d', 'slate',   'approved', 1700000000000, 1700000000000);
+INSERT INTO teams (id, name, short_name, city, coach_id, color, created_at, updated_at) VALUES
+  -- coach_a teams
+  ('team_a', 'River Hawks',     'RH',   'Austin',     'usr_coach_a', 'emerald', 1700000000000, 1700000000000),
+  ('team_b', 'Storm United',    'SU',   'Dallas',     'usr_coach_a', 'blue',    1700000000000, 1700000000000),
+  -- admin team
+  ('team_c', 'Ghost FC',        'GF',  'Houston',    'usr_admin',   'red',     1700000000000, 1700000000000),
+  -- coach_b teams
+  ('team_d', 'Coastal FC',      'CF',  'San Diego',  'usr_coach_b', 'sky',     1700000000000, 1700000000000),
+  ('team_e', 'Iron City United','IC',  'Pittsburgh', 'usr_coach_b', 'orange',  1700000000000, 1700000000000),
+  -- coach_c teams
+  ('team_f', 'Desert Wolves',   'DW',   'Phoenix',    'usr_coach_c', 'amber',   1700000000000, 1700000000000),
+  ('team_i', 'Red Canyon AC',   'RC', 'Denver',     'usr_coach_c', 'rose',    1700000000000, 1700000000000),
+  -- coach_d teams
+  ('team_g', 'Northside FC',    'NF',  'Chicago',    'usr_coach_d', 'violet',  1700000000000, 1700000000000),
+  ('team_h', 'Silver Arrows',   'SA',   'Seattle',    'usr_coach_d', 'slate',   1700000000000, 1700000000000);
 
 -- ------------------------------------------------------------
 -- 6. Team Members  (Drizzle app table — snake_case columns)
@@ -196,6 +197,20 @@ INSERT INTO tournaments (id, name, slug, start_date, end_date, registration_dead
 -- 8. Divisions  (per-tournament competitive brackets)
 -- ------------------------------------------------------------
 INSERT INTO divisions (id, tournament_id, name, max_teams, created_at, updated_at) VALUES
+  -- Winter Cup 2024 (tour_1) — past
+  ('div_1a', 'tour_1', 'Open Men''s',    16, 1700000000000, 1700000000000),
+  ('div_1b', 'tour_1', 'Open Women''s',  16, 1700000000000, 1700000000000),
+
+  -- Spring Invitational 2025 (tour_2) — past
+  ('div_2a', 'tour_2', 'Open Men''s',    NULL, 1700000000000, 1700000000000),
+  ('div_2b', 'tour_2', 'Open Women''s',  NULL, 1700000000000, 1700000000000),
+  ('div_2c', 'tour_2', 'U18 Boys',       12,   1700000000000, 1700000000000),
+
+  -- Pacific Coast Cup 2025 (tour_3) — past
+  ('div_3a', 'tour_3', 'Open Men''s',    16, 1700000000000, 1700000000000),
+  ('div_3b', 'tour_3', 'Open Women''s',  16, 1700000000000, 1700000000000),
+  ('div_3c', 'tour_3', 'U18 Boys',       NULL, 1700000000000, 1700000000000),
+
   -- Regional Qualifiers 2026 (tour_4) — three divisions
   ('div_4a', 'tour_4', 'Open Men''s',    16, 1700000000000, 1700000000000),
   ('div_4b', 'tour_4', 'Open Women''s',  16, 1700000000000, 1700000000000),
@@ -204,28 +219,111 @@ INSERT INTO divisions (id, tournament_id, name, max_teams, created_at, updated_a
   -- Summer Classic 2026 (tour_5) — four divisions
   ('div_5a', 'tour_5', 'Open Men''s',    NULL, 1700000000000, 1700000000000),
   ('div_5b', 'tour_5', 'Open Women''s',  NULL, 1700000000000, 1700000000000),
-  ('div_5c', 'tour_5', 'U18 Boys',       12, 1700000000000, 1700000000000),
-  ('div_5d', 'tour_5', 'Masters Men''s', 8,  1700000000000, 1700000000000),
+  ('div_5c', 'tour_5', 'U18 Boys',       12,   1700000000000, 1700000000000),
+  ('div_5d', 'tour_5', 'Masters Men''s', 8,    1700000000000, 1700000000000),
+
+  -- Open State Championship 2026 (tour_6) — upcoming
+  ('div_6a', 'tour_6', 'Open Men''s',    24, 1700000000000, 1700000000000),
+  ('div_6b', 'tour_6', 'Open Women''s',  24, 1700000000000, 1700000000000),
+  ('div_6c', 'tour_6', 'Co-Ed Open',     16, 1700000000000, 1700000000000),
+
+  -- Fall Championship 2026 (tour_7) — upcoming
+  ('div_7a', 'tour_7', 'Open Men''s',    16, 1700000000000, 1700000000000),
+  ('div_7b', 'tour_7', 'Open Women''s',  16, 1700000000000, 1700000000000),
+  ('div_7c', 'tour_7', 'U18 Boys',       12, 1700000000000, 1700000000000),
+  ('div_7d', 'tour_7', 'U18 Girls',      12, 1700000000000, 1700000000000),
 
   -- Youth Invitational 2027 (tour_8) — two divisions
   ('div_8a', 'tour_8', 'U12 Boys',       8, 1700000000000, 1700000000000),
-  ('div_8b', 'tour_8', 'U16 Girls',      8, 1700000000000, 1700000000000);
+  ('div_8b', 'tour_8', 'U16 Girls',      8, 1700000000000, 1700000000000),
+
+  -- Masters League Spring 2027 (tour_9) — upcoming
+  ('div_9a', 'tour_9', 'Masters Men''s', 12, 1700000000000, 1700000000000),
+  ('div_9b', 'tour_9', 'Masters Women''s', 12, 1700000000000, 1700000000000);
 
 -- ------------------------------------------------------------
 -- 9. Tournament Registrations
--- (team_id, division_id, tournament_id, status)
--- One registration per team per tournament — unique constraint enforced.
+-- One registration per team per tournament (UNIQUE enforced).
+-- Covers all 9 tournaments, all 4 statuses, and realistic
+-- use cases: multi-tournament teams, near-full divisions,
+-- rejected submissions with notes, past results.
 -- ------------------------------------------------------------
 INSERT INTO tournament_registrations (id, team_id, division_id, tournament_id, status, registered_at, notes, created_at, updated_at) VALUES
-  -- River Hawks (team_a) in Regional Qualifiers → Open Men's → approved
-  ('reg_1', 'team_a', 'div_4a', 'tour_4', 'approved',   '2026-03-01T10:00:00Z', NULL, 1700000000000, 1700000000000),
-  -- Northside FC (team_g) in Regional Qualifiers → Open Men's → pending
-  ('reg_2', 'team_g', 'div_4a', 'tour_4', 'pending',    '2026-03-10T14:30:00Z', NULL, 1700000000000, 1700000000000),
-  -- Coastal FC (team_d) in Regional Qualifiers → Open Women's → approved
-  ('reg_3', 'team_d', 'div_4b', 'tour_4', 'approved',   '2026-03-05T09:00:00Z', NULL, 1700000000000, 1700000000000),
-  -- Silver Arrows (team_h) in Regional Qualifiers → Open Women's → waitlisted
-  ('reg_4', 'team_h', 'div_4b', 'tour_4', 'waitlisted', '2026-03-12T11:00:00Z', 'Division near capacity', 1700000000000, 1700000000000),
-  -- Iron City United (team_e) in Summer Classic → Masters Men's → approved
-  ('reg_5', 'team_e', 'div_5d', 'tour_5', 'approved',   '2026-04-20T08:00:00Z', NULL, 1700000000000, 1700000000000),
-  -- River Hawks (team_a) in Summer Classic → Open Men's → pending
-  ('reg_6', 'team_a', 'div_5a', 'tour_5', 'pending',    '2026-04-25T16:00:00Z', NULL, 1700000000000, 1700000000000);
+
+  -- ── Winter Cup 2024 (tour_1) — past results ──────────────────────────────
+  ('reg_1',  'team_a', 'div_1a', 'tour_1', 'approved',   '2023-12-01T10:00:00Z', NULL,                                  1700000000000, 1700000000000),
+  ('reg_2',  'team_d', 'div_1b', 'tour_1', 'approved',   '2023-12-03T09:00:00Z', NULL,                                  1700000000000, 1700000000000),
+  ('reg_3',  'team_g', 'div_1a', 'tour_1', 'approved',   '2023-12-05T11:00:00Z', NULL,                                  1700000000000, 1700000000000),
+  ('reg_4',  'team_e', 'div_1a', 'tour_1', 'approved',   '2023-12-07T14:00:00Z', NULL,                                  1700000000000, 1700000000000),
+  ('reg_5',  'team_c', 'div_1a', 'tour_1', 'rejected',   '2023-12-10T16:00:00Z', 'Submitted after deadline.',           1700000000000, 1700000000000),
+
+  -- ── Spring Invitational 2025 (tour_2) — past results ─────────────────────
+  ('reg_6',  'team_a', 'div_2a', 'tour_2', 'approved',   '2025-01-15T10:00:00Z', NULL,                                  1700000000000, 1700000000000),
+  ('reg_7',  'team_g', 'div_2a', 'tour_2', 'approved',   '2025-01-18T09:00:00Z', NULL,                                  1700000000000, 1700000000000),
+  ('reg_8',  'team_d', 'div_2b', 'tour_2', 'approved',   '2025-01-20T11:00:00Z', NULL,                                  1700000000000, 1700000000000),
+  ('reg_9',  'team_h', 'div_2b', 'tour_2', 'rejected',   '2025-01-22T15:00:00Z', 'Roster not submitted in time.',       1700000000000, 1700000000000),
+  ('reg_10', 'team_b', 'div_2c', 'tour_2', 'approved',   '2025-01-25T08:00:00Z', NULL,                                  1700000000000, 1700000000000),
+  ('reg_11', 'team_f', 'div_2c', 'tour_2', 'approved',   '2025-01-26T13:00:00Z', NULL,                                  1700000000000, 1700000000000),
+  ('reg_12', 'team_i', 'div_2c', 'tour_2', 'waitlisted', '2025-01-28T10:00:00Z', 'Division at capacity, on waitlist.',  1700000000000, 1700000000000),
+
+  -- ── Pacific Coast Cup 2025 (tour_3) — past results ───────────────────────
+  ('reg_13', 'team_a', 'div_3a', 'tour_3', 'approved',   '2025-06-01T10:00:00Z', NULL,                                  1700000000000, 1700000000000),
+  ('reg_14', 'team_g', 'div_3a', 'tour_3', 'approved',   '2025-06-03T09:00:00Z', NULL,                                  1700000000000, 1700000000000),
+  ('reg_15', 'team_e', 'div_3a', 'tour_3', 'approved',   '2025-06-05T11:00:00Z', NULL,                                  1700000000000, 1700000000000),
+  ('reg_16', 'team_d', 'div_3b', 'tour_3', 'approved',   '2025-06-04T14:00:00Z', NULL,                                  1700000000000, 1700000000000),
+  ('reg_17', 'team_h', 'div_3b', 'tour_3', 'approved',   '2025-06-06T10:00:00Z', NULL,                                  1700000000000, 1700000000000),
+  ('reg_18', 'team_b', 'div_3c', 'tour_3', 'approved',   '2025-06-07T08:00:00Z', NULL,                                  1700000000000, 1700000000000),
+  ('reg_19', 'team_c', 'div_3a', 'tour_3', 'rejected',   '2025-06-10T16:00:00Z', 'Missing player eligibility docs.',    1700000000000, 1700000000000),
+
+  -- ── Regional Qualifiers 2026 (tour_4) — deadline passed, mix of statuses ─
+  ('reg_20', 'team_a', 'div_4a', 'tour_4', 'approved',   '2026-03-01T10:00:00Z', NULL,                                  1700000000000, 1700000000000),
+  ('reg_21', 'team_g', 'div_4a', 'tour_4', 'pending',    '2026-03-10T14:30:00Z', NULL,                                  1700000000000, 1700000000000),
+  ('reg_22', 'team_e', 'div_4a', 'tour_4', 'approved',   '2026-03-08T09:00:00Z', NULL,                                  1700000000000, 1700000000000),
+  ('reg_23', 'team_d', 'div_4b', 'tour_4', 'approved',   '2026-03-05T09:00:00Z', NULL,                                  1700000000000, 1700000000000),
+  ('reg_24', 'team_h', 'div_4b', 'tour_4', 'waitlisted', '2026-03-12T11:00:00Z', 'Division near capacity.',             1700000000000, 1700000000000),
+  ('reg_25', 'team_b', 'div_4c', 'tour_4', 'pending',    '2026-03-15T09:00:00Z', NULL,                                  1700000000000, 1700000000000),
+  ('reg_26', 'team_i', 'div_4c', 'tour_4', 'waitlisted', '2026-03-18T16:00:00Z', 'Waiting on roster confirmation.',     1700000000000, 1700000000000),
+  ('reg_27', 'team_f', 'div_4c', 'tour_4', 'rejected',   '2026-03-19T17:00:00Z', 'Age verification failed.',            1700000000000, 1700000000000),
+  ('reg_28', 'team_c', 'div_4a', 'tour_4', 'rejected',   '2026-03-20T18:00:00Z', 'Submitted after deadline.',           1700000000000, 1700000000000),
+
+  -- ── Summer Classic 2026 (tour_5) — registration open ─────────────────────
+  ('reg_29', 'team_e', 'div_5d', 'tour_5', 'approved',   '2026-04-20T08:00:00Z', NULL,                                  1700000000000, 1700000000000),
+  ('reg_30', 'team_a', 'div_5a', 'tour_5', 'pending',    '2026-04-25T16:00:00Z', NULL,                                  1700000000000, 1700000000000),
+  ('reg_31', 'team_g', 'div_5a', 'tour_5', 'approved',   '2026-04-12T08:00:00Z', NULL,                                  1700000000000, 1700000000000),
+  ('reg_32', 'team_c', 'div_5a', 'tour_5', 'rejected',   '2026-04-18T13:00:00Z', 'Incomplete roster submission.',       1700000000000, 1700000000000),
+  ('reg_33', 'team_f', 'div_5c', 'tour_5', 'approved',   '2026-04-10T11:00:00Z', NULL,                                  1700000000000, 1700000000000),
+  ('reg_34', 'team_b', 'div_5c', 'tour_5', 'waitlisted', '2026-04-28T10:00:00Z', 'U18 Boys division filling fast.',     1700000000000, 1700000000000),
+  ('reg_35', 'team_h', 'div_5b', 'tour_5', 'pending',    '2026-04-22T14:00:00Z', NULL,                                  1700000000000, 1700000000000),
+  ('reg_36', 'team_d', 'div_5b', 'tour_5', 'approved',   '2026-04-15T09:00:00Z', NULL,                                  1700000000000, 1700000000000),
+  ('reg_37', 'team_i', 'div_5c', 'tour_5', 'pending',    '2026-04-30T11:00:00Z', NULL,                                  1700000000000, 1700000000000),
+
+  -- ── Open State Championship 2026 (tour_6) — registration open ────────────
+  ('reg_38', 'team_a', 'div_6a', 'tour_6', 'pending',    '2026-05-10T10:00:00Z', NULL,                                  1700000000000, 1700000000000),
+  ('reg_39', 'team_g', 'div_6a', 'tour_6', 'approved',   '2026-05-12T09:00:00Z', NULL,                                  1700000000000, 1700000000000),
+  ('reg_40', 'team_e', 'div_6a', 'tour_6', 'pending',    '2026-05-15T11:00:00Z', NULL,                                  1700000000000, 1700000000000),
+  ('reg_41', 'team_d', 'div_6b', 'tour_6', 'approved',   '2026-05-08T14:00:00Z', NULL,                                  1700000000000, 1700000000000),
+  ('reg_42', 'team_h', 'div_6b', 'tour_6', 'pending',    '2026-05-20T10:00:00Z', NULL,                                  1700000000000, 1700000000000),
+  ('reg_43', 'team_c', 'div_6c', 'tour_6', 'rejected',   '2026-05-25T16:00:00Z', 'Not enough registered players.',      1700000000000, 1700000000000),
+  ('reg_44', 'team_b', 'div_6a', 'tour_6', 'waitlisted', '2026-05-28T13:00:00Z', 'Open Men''s filling quickly.',        1700000000000, 1700000000000),
+
+  -- ── Fall Championship 2026 (tour_7) — registration open ──────────────────
+  ('reg_45', 'team_a', 'div_7a', 'tour_7', 'pending',    '2026-09-01T10:00:00Z', NULL,                                  1700000000000, 1700000000000),
+  ('reg_46', 'team_g', 'div_7a', 'tour_7', 'approved',   '2026-09-03T09:00:00Z', NULL,                                  1700000000000, 1700000000000),
+  ('reg_47', 'team_d', 'div_7b', 'tour_7', 'pending',    '2026-09-05T11:00:00Z', NULL,                                  1700000000000, 1700000000000),
+  ('reg_48', 'team_h', 'div_7b', 'tour_7', 'approved',   '2026-09-07T14:00:00Z', NULL,                                  1700000000000, 1700000000000),
+  ('reg_49', 'team_b', 'div_7c', 'tour_7', 'pending',    '2026-09-10T08:00:00Z', NULL,                                  1700000000000, 1700000000000),
+  ('reg_50', 'team_i', 'div_7c', 'tour_7', 'waitlisted', '2026-09-12T10:00:00Z', 'U18 Boys spots limited.',             1700000000000, 1700000000000),
+  ('reg_51', 'team_f', 'div_7d', 'tour_7', 'pending',    '2026-09-15T13:00:00Z', NULL,                                  1700000000000, 1700000000000),
+  ('reg_52', 'team_e', 'div_7a', 'tour_7', 'approved',   '2026-09-08T09:00:00Z', NULL,                                  1700000000000, 1700000000000),
+
+  -- ── Youth Invitational 2027 (tour_8) — registration open, small caps ──────
+  ('reg_53', 'team_b', 'div_8a', 'tour_8', 'approved',   '2026-11-01T10:00:00Z', NULL,                                  1700000000000, 1700000000000),
+  ('reg_54', 'team_f', 'div_8a', 'tour_8', 'waitlisted', '2026-11-05T09:00:00Z', 'U12 Boys at capacity (8 teams).',     1700000000000, 1700000000000),
+  ('reg_55', 'team_i', 'div_8b', 'tour_8', 'pending',    '2026-11-08T11:00:00Z', NULL,                                  1700000000000, 1700000000000),
+  ('reg_56', 'team_d', 'div_8b', 'tour_8', 'approved',   '2026-11-03T14:00:00Z', NULL,                                  1700000000000, 1700000000000),
+
+  -- ── Masters League Spring 2027 (tour_9) — registration open ──────────────
+  ('reg_57', 'team_e', 'div_9a', 'tour_9', 'approved',   '2026-12-01T10:00:00Z', NULL,                                  1700000000000, 1700000000000),
+  ('reg_58', 'team_g', 'div_9a', 'tour_9', 'pending',    '2026-12-05T09:00:00Z', NULL,                                  1700000000000, 1700000000000),
+  ('reg_59', 'team_a', 'div_9a', 'tour_9', 'pending',    '2026-12-10T11:00:00Z', NULL,                                  1700000000000, 1700000000000),
+  ('reg_60', 'team_c', 'div_9b', 'tour_9', 'rejected',   '2026-12-15T16:00:00Z', 'Team does not meet Masters age requirement.', 1700000000000, 1700000000000);

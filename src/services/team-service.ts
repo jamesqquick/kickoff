@@ -21,17 +21,9 @@ export class TeamService {
     return this.teams.listAllWithCoach();
   }
 
-  // Returns all teams the user coaches (any status) for the My Teams page.
+  // Returns all teams the user coaches for the My Teams page.
   async listByCoach(userId: string): Promise<Team[]> {
     return this.teams.listByCoach(userId);
-  }
-
-  async listApprovedTeams(): Promise<Team[]> {
-    return this.teams.listApproved();
-  }
-
-  async listPendingTeams(): Promise<Team[]> {
-    return this.teams.listPending();
   }
 
   async getTeam(id: string): Promise<TeamWithCoach> {
@@ -53,7 +45,6 @@ export class TeamService {
       color: input.color || "emerald",
       shortName: input.shortName?.trim().toUpperCase() || null,
       coachId: currentUser.id,
-      status: "pending",
       createdAt: now,
       updatedAt: now,
     });
@@ -80,39 +71,6 @@ export class TeamService {
       color: input.color || "emerald",
       shortName: input.shortName?.trim().toUpperCase() || null,
     });
-  }
-
-  async approveTeam(id: string, currentUser: AppUser): Promise<Team> {
-    if (currentUser.role !== "admin") {
-      throw new ForbiddenError("approve teams");
-    }
-    const team = await this.teams.findById(id);
-    if (!team) {
-      throw new NotFoundError("Team", id);
-    }
-    return this.teams.updateStatus(id, "approved");
-  }
-
-  async rejectTeam(id: string, currentUser: AppUser): Promise<Team> {
-    if (currentUser.role !== "admin") {
-      throw new ForbiddenError("reject teams");
-    }
-    const team = await this.teams.findById(id);
-    if (!team) {
-      throw new NotFoundError("Team", id);
-    }
-    return this.teams.updateStatus(id, "rejected");
-  }
-
-  async unRejectTeam(id: string, currentUser: AppUser): Promise<Team> {
-    if (currentUser.role !== "admin") {
-      throw new ForbiddenError("un-reject teams");
-    }
-    const team = await this.teams.findById(id);
-    if (!team) {
-      throw new NotFoundError("Team", id);
-    }
-    return this.teams.updateStatus(id, "pending");
   }
 }
 
