@@ -22,6 +22,11 @@ export class TeamService {
     return this.teams.listAllWithCoach();
   }
 
+  // Returns all teams the user coaches (any status) for the My Teams page.
+  async listByCoach(userId: string): Promise<Team[]> {
+    return this.teams.listByCoach(userId);
+  }
+
   async listApprovedTeams(): Promise<Team[]> {
     return this.teams.listApproved();
   }
