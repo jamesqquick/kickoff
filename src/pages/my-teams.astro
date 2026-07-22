@@ -120,9 +120,16 @@ function membershipStatusBadge(status: string): { label: string; variant: "succe
           </SectionCard>
         )}
 
-        {playerMemberships.length > 0 && (
-          <SectionCard title="Teams You Joined">
+        <SectionCard title="Teams You Joined">
+          {playerMemberships.length > 0 && (
             <span slot="header-action" class={badgeVariants({ variant: "default" })}>{playerMemberships.length}</span>
+          )}
+          {playerMemberships.length === 0 ? (
+            <div class="px-6 py-10 text-center">
+              <p class="text-sm text-(--color-muted) mb-3">You haven't joined any teams yet.</p>
+              <p class="text-xs text-(--color-muted-fg)">Ask a coach to add you to their roster.</p>
+            </div>
+          ) : (
             <table class="w-full">
               <thead>
                 <tr class="border-b border-(--color-border)">
@@ -159,8 +166,8 @@ function membershipStatusBadge(status: string): { label: string; variant: "succe
                 })}
               </tbody>
             </table>
-          </SectionCard>
-        )}
+          )}
+        </SectionCard>
 
       </div>
     )}
