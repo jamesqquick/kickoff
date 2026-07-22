@@ -136,9 +136,8 @@ function formatDate(d: string | null) {
     )}
 
     <!-- Details card -->
-    <SectionCard class="p-5 sm:p-6 mb-6">
-      <h2 class="font-display text-lg font-semibold text-(--color-foreground) mb-4">Details</h2>
-      <dl class="space-y-2 text-sm">
+    <SectionCard title="Details" class="mb-6">
+      <dl class="space-y-2 text-sm px-6 py-4">
         {(tournament.startDate || tournament.endDate) && (
           <div class="flex gap-2">
             <dt class="font-semibold text-(--color-foreground) shrink-0">Dates</dt>
@@ -178,22 +177,24 @@ function formatDate(d: string | null) {
     </SectionCard>
 
     <!-- Divisions -->
-    <SectionCard class="p-5 sm:p-7">
-      <h2 class="font-display text-lg font-semibold text-(--color-foreground) mb-1">Divisions</h2>
-      <p class="text-sm text-(--color-muted) mb-5">
-        {status === "past"
+    <SectionCard
+      title="Divisions"
+      subtitle={
+        status === "past"
           ? "This tournament has ended."
           : status === "active"
           ? "This tournament is happening now. Registration is closed."
           : deadlinePassed
           ? "Registration has closed for this tournament."
-          : "Choose your division when you register."}
-      </p>
-
-      <DivisionAccordion
-        client:load
-        divisions={divisionsWithTeams}
-      />
+          : "Choose your division when you register."
+      }
+    >
+      <div class="px-6 py-4">
+        <DivisionAccordion
+          client:load
+          divisions={divisionsWithTeams}
+        />
+      </div>
     </SectionCard>
   </div>
 </AppLayout>
