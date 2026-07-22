@@ -81,3 +81,19 @@ export const tournaments = sqliteTable("tournaments", {
 
 export type Tournament = InferSelectModel<typeof tournaments>;
 export type NewTournament = InferInsertModel<typeof tournaments>;
+
+// teamInvites — one persistent invite link per team, shared by coaches with players.
+// Joining via an invite link auto-approves membership (no pending → approval flow).
+// Regenerating deactivates the old token (is_active = 0) and creates a fresh one.
+export const teamInvites = sqliteTable("team_invites", {
+  id: text("id").primaryKey(),
+  teamId: text("team_id").notNull(),      // FK → teams.id (app-level)
+  token: text("token").notNull().unique(), // 24-char URL-safe random string
+  createdBy: text("created_by").notNull(), // FK → user.id (the coach who generated it)
+  isActive: int("is_active").notNull().default(1), // 1 = usable, 0 = revoked
+  createdAt: int("created_at").notNull(),
+  updatedAt: int("updated_at").notNull(),
+});
+
+export type TeamInvite = InferSelectModel<typeof teamInvites>;
+export type NewTeamInvite = InferInsertModel<typeof teamInvites>;

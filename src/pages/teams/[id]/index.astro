@@ -6,12 +6,15 @@ import { cn } from "@/lib/utils";
 import TeamCrest from "@/components/TeamCrest.astro";
 import { makeTeamService } from "@/services/team-service";
 import { makeTeamMemberService } from "@/services/team-member-service";
+import { makeTeamInviteService } from "@/services/team-invite-service";
 import { TeamMemberRepository } from "@/repositories/team-member-repository";
 import { getDb } from "@/lib/db";
 import { NotFoundError } from "@/lib/errors";
 import { teamStatusVariant, teamColorGradient } from "@/lib/utils";
 import { JoinTeamButton } from "@/components/JoinTeamButton";
 import { TeamMemberPanel } from "@/components/TeamMemberPanel";
+import { InviteLinkPanel } from "@/components/InviteLinkPanel";
+import { WelcomeBanner } from "@/components/WelcomeBanner";
 
 const { id } = Astro.params;
 const user = Astro.locals.user;
@@ -28,6 +31,8 @@ try {
 
 const isOwnerOrAdmin =
   user?.role === "admin" || user?.id === team.coachId;
+
+const justJoined = Astro.url.searchParams.get("joined") === "1";
 
 const roster = await makeTeamMemberService().listByTeam(id!);
 const pendingRequests = isOwnerOrAdmin
@@ -47,10 +52,26 @@ if (user) {
   }
 }
 
+// Resolve the invite link for approved teams only.
+// Pending/rejected teams can't be joined, so there's no point showing a link.
+let inviteUrl: string | null = null;
+if (isOwnerOrAdmin && user && team.status === "approved") {
+  try {
+    const invite = await makeTeamInviteService().getOrCreate(team.id, user);
+    inviteUrl = `${Astro.url.origin}/join/${invite.token}`;
+  } catch {
+    // Non-fatal — the panel simply won't render.
+  }
+}
+
 ---
 
 <AppLayout title={team.name} activeNav="teams">
   <div class="p-4 sm:p-6 lg:p-8">
+    {justJoined && (
+      <WelcomeBanner client:load teamName={team.name} />
+    )}
+
     <!-- Breadcrumb -->
     <p class="text-sm text-(--color-muted) mb-5">
       <a href="/teams" class="hover:text-(--color-primary)">Teams</a>
@@ -98,6 +119,14 @@ if (user) {
         )}
       </div>
     </div>
+
+    {isOwnerOrAdmin && inviteUrl && (
+      <InviteLinkPanel
+        client:load
+        teamId={team.id}
+        initialInviteUrl={inviteUrl}
+      />
+    )}
 
     <TeamMemberPanel
       client:load

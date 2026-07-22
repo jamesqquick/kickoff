@@ -6,13 +6,19 @@ import BrandMark from "@/components/BrandMark.astro";
 import FormField from "@/components/FormField.astro";
 import GoogleAuthButton from "@/components/GoogleAuthButton.astro";
 
-const GOOGLE_OAUTH_URL = "/api/auth/signin/google";
-
 // API routes redirect back here with ?tab=signup&error=... on failure.
 const activeTab = Astro.url.searchParams.get("tab") === "signup" ? "signup" : "signin";
 const error = Astro.url.searchParams.get("error");
 const signInError = activeTab === "signin" ? error : null;
 const signUpError = activeTab === "signup" ? error : null;
+
+// Post-auth redirect: preserved through hidden form fields → API routes → Location header.
+// Only same-origin paths are accepted — the API routes validate and strip external URLs.
+const redirectTo = Astro.url.searchParams.get("redirect") ?? "";
+
+const GOOGLE_OAUTH_URL = redirectTo
+  ? `/api/auth/signin/google?redirect=${encodeURIComponent(redirectTo)}`
+  : "/api/auth/signin/google";
 ---
 
 <BaseLayout title="Sign In">
@@ -85,7 +91,11 @@ const signUpError = activeTab === "signup" ? error : null;
         <!-- ── SIGN IN ── -->
         <div id="panel-signin" class={activeTab === "signup" ? "hidden" : ""}>
           <h2 class="font-display text-2xl font-semibold text-(--color-foreground) mb-1">Welcome back</h2>
-          <p class="text-sm text-(--color-muted) mb-6">Sign in to manage your teams and tournaments.</p>
+          <p class="text-sm text-(--color-muted) mb-6">
+            {redirectTo.startsWith("/join/")
+              ? "Sign in to join the team. You'll be taken back automatically."
+              : "Sign in to manage your teams and tournaments."}
+          </p>
 
           <GoogleAuthButton label="Continue with Google" href={GOOGLE_OAUTH_URL} />
 
@@ -96,6 +106,7 @@ const signUpError = activeTab === "signup" ? error : null;
           </div>
 
           <form method="POST" action="/api/auth/signin">
+            <input type="hidden" name="redirect" value={redirectTo} />
             {signInError && (
               <p class="text-sm text-red-600 mb-4 p-3 rounded-md bg-red-50 border border-red-200">
                 {signInError}
@@ -132,7 +143,11 @@ const signUpError = activeTab === "signup" ? error : null;
         <!-- ── SIGN UP ── -->
         <div id="panel-signup" class={activeTab === "signin" ? "hidden" : ""}>
           <h2 class="font-display text-2xl font-semibold text-(--color-foreground) mb-1">Create an account</h2>
-          <p class="text-sm text-(--color-muted) mb-6">Join Kickoff to manage teams and tournaments.</p>
+          <p class="text-sm text-(--color-muted) mb-6">
+            {redirectTo.startsWith("/join/")
+              ? "Create a free account to join the team. You'll be added automatically."
+              : "Join Kickoff to manage teams and tournaments."}
+          </p>
 
           <GoogleAuthButton label="Sign up with Google" href={GOOGLE_OAUTH_URL} />
 
@@ -143,6 +158,7 @@ const signUpError = activeTab === "signup" ? error : null;
           </div>
 
           <form method="POST" action="/api/auth/signup">
+            <input type="hidden" name="redirect" value={redirectTo} />
             {signUpError && (
               <p class="text-sm text-red-600 mb-4 p-3 rounded-md bg-red-50 border border-red-200">
                 {signUpError}

@@ -1,6 +1,7 @@
 import { teams } from "./teams";
 import { profile } from "./profile";
 import { teamMembers } from "./team-members";
+import { teamInvites } from "./team-invites";
 import { tournaments } from "./tournaments";
 
 // All Astro Actions are registered here.
@@ -9,5 +10,6 @@ export const server = {
   teams,
   profile,
   teamMembers,
+  teamInvites,
   tournaments,
 };
