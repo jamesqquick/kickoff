@@ -55,24 +55,35 @@ function isValidEmail(email: string): boolean {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
 }
 
+// Coerce a cell value to a plain string.
+// With cellDates: true, xlsx returns Date objects for date-like cells.
+// Serialize them as ISO YYYY-MM-DD so parseDate sees the right format.
+function cellToString(v: unknown): string {
+  if (v == null) return "";
+  if (v instanceof Date) return v.toISOString().slice(0, 10);
+  return String(v).trim();
+}
+
 // Parse a file buffer into rows of key→value records.
 // Supports .csv (plain text) and .xlsx (Excel).
+// cellDates: true tells xlsx to return Date objects instead of Excel serial
+// numbers for date-like cells — prevents "36600" from appearing as a DOB.
 function parseFile(
   buffer: ArrayBuffer,
   filename: string,
 ): Record<string, string>[] {
-  const workbook = XLSX.read(buffer, { type: "array" });
+  const workbook = XLSX.read(buffer, { type: "array", cellDates: true });
   const sheet = workbook.Sheets[workbook.SheetNames[0]];
-  // header: 1 → returns array of arrays; then we map manually for case-insensitive keys
-  const raw = XLSX.utils.sheet_to_json<string[]>(sheet, { header: 1, defval: "" });
+  // header: 1 → returns array of arrays; we map manually for case-insensitive keys
+  const raw = XLSX.utils.sheet_to_json<unknown[]>(sheet, { header: 1, defval: "" });
   if (raw.length < 2) return [];
 
-  const headers = (raw[0] as string[]).map(normaliseKey);
+  const headers = (raw[0] as unknown[]).map((h) => normaliseKey(cellToString(h)));
   return raw.slice(1).map((row) => {
-    const cells = row as string[];
+    const cells = row as unknown[];
     const record: Record<string, string> = {};
     headers.forEach((h, i) => {
-      record[h] = cells[i] != null ? String(cells[i]).trim() : "";
+      record[h] = cellToString(cells[i]);
     });
     return record;
   });
