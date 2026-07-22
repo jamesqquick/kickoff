@@ -36,7 +36,7 @@ function membershipStatusBadge(status: string): { label: string; variant: "succe
     <PageHeader title="My Teams" subtitle="Teams you coach or play on.">
       <div slot="actions">
         <a href="/teams/register" class={cn(buttonVariants({ variant: "default" }), "h-9 px-4")}>
-          + Register a Team
+          + Create a Team
         </a>
       </div>
     </PageHeader>
@@ -46,10 +46,10 @@ function membershipStatusBadge(status: string): { label: string; variant: "succe
         <div class="text-4xl mb-3">🛡️</div>
         <h2 class="font-display font-semibold text-(--color-foreground) mb-1">No teams yet</h2>
         <p class="text-sm text-(--color-muted) mb-5 max-w-sm mx-auto">
-          Register a new team or ask a coach to share their invite link.
+          Create a new team or ask a coach to share their invite link.
         </p>
         <a href="/teams/register" class={cn(buttonVariants({ variant: "default" }), "inline-flex")}>
-          Register a Team
+          Create a Team
         </a>
       </div>
     )}

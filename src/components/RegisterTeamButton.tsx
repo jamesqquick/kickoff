@@ -29,13 +29,13 @@ export function RegisterTeamButton() {
     try {
       const { data, error } = await actions.teams.create({ name, city, color, shortName });
       if (error) {
-        toast.error(error.message ?? "Could not register team. Try again.");
+        toast.error(error.message ?? "Could not create team. Try again.");
         return;
       }
-      toast.success("Team registered! Redirecting to your team…");
+      toast.success("Team created! Redirecting to your team…");
       window.location.href = `/teams/${data.id}`;
     } catch {
-      toast.error("Could not register team. Try again.");
+      toast.error("Could not create team. Try again.");
     } finally {
       setLoading(false);
     }
@@ -43,7 +43,7 @@ export function RegisterTeamButton() {
 
   return (
     <Button onClick={handleClick} disabled={loading}>
-      {loading ? "Registering…" : "Register Team"}
+      {loading ? "Creating…" : "Create Team"}
     </Button>
   );
 }
