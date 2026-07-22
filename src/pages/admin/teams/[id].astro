@@ -9,7 +9,6 @@ import StatCard from "@/components/StatCard.astro";
 import { makeTeamService } from "@/services/team-service";
 import { makeTeamMemberService } from "@/services/team-member-service";
 import { NotFoundError } from "@/lib/errors";
-import { AdminTeamActions } from "@/components/AdminTeamActions";
 
 const user = Astro.locals.user;
 if (!user || user.role !== "admin") {
@@ -64,28 +63,17 @@ const registeredDate = new Date(team.createdAt).toLocaleDateString("en-US", {
           {team.name}
         </h1>
         <p class="text-sm text-(--color-muted)">
-          {team.city} · {team.division}
+          {team.city}
         </p>
         <p class="text-xs text-(--color-muted) mt-0.5">
           Coach: {team.coachName}
         </p>
       </div>
-
-      <!-- Status badge + action buttons (React island — updates in place) -->
-      <div class="flex items-center gap-3 shrink-0">
-        <AdminTeamActions
-          client:load
-          teamId={team.id}
-          teamName={team.name}
-          initialStatus={team.status}
-        />
-      </div>
     </div>
 
     <!-- Team detail stat cards -->
-    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
       <StatCard label="City"       value={team.city}       />
-      <StatCard label="Division"   value={team.division}   />
       <StatCard label="Registered" value={registeredDate}  />
     </div>
 
@@ -96,7 +84,7 @@ const registeredDate = new Date(team.createdAt).toLocaleDateString("en-US", {
         href={`/teams/${team.id}`}
         class={cn(buttonVariants({ variant: "outline" }), "h-8 px-3 text-xs")}
       >
-        View public page →
+        View team page →
       </a>
 
       {roster.length === 0 ? (

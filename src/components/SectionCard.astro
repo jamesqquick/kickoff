@@ -1,31 +1,46 @@
 ---
 /**
- * A standard card container with an optional header row (border-b separated).
+ * A standard card container with an optional header (title + subtitle + action slot).
  *
- * Usage — with header:
+ * Usage — title only:
+ *   <SectionCard title="Divisions">
+ *     ...content...
+ *   </SectionCard>
+ *
+ * Usage — title + subtitle:
+ *   <SectionCard title="Details" subtitle="Key information about this tournament.">
+ *     ...content...
+ *   </SectionCard>
+ *
+ * Usage — title + header action:
  *   <SectionCard title="Pending Approvals">
  *     <span slot="header-action">badge here</span>
  *     <table>...</table>
  *   </SectionCard>
  *
- * Usage — padded, no header:
+ * Usage — no header (custom padded content):
  *   <SectionCard class="p-5">
- *     <h3>...</h3>
  *     ...content...
  *   </SectionCard>
  */
 interface Props {
   title?: string;
+  subtitle?: string;
   class?: string;
 }
 
-const { title, class: className } = Astro.props;
+const { title, subtitle, class: className } = Astro.props;
 ---
 
 <div class:list={["rounded-xl border border-(--color-border) bg-(--color-card)", className]}>
   {title && (
-    <div class="flex items-center justify-between px-6 py-4 border-b border-(--color-border)">
-      <h3 class="font-display font-semibold text-(--color-foreground)">{title}</h3>
+    <div class="flex items-start justify-between px-6 py-4 border-b border-(--color-border)">
+      <div>
+        <h3 class="font-display font-semibold text-(--color-foreground)">{title}</h3>
+        {subtitle && (
+          <p class="text-sm text-(--color-muted) mt-0.5">{subtitle}</p>
+        )}
+      </div>
       <slot name="header-action" />
     </div>
   )}

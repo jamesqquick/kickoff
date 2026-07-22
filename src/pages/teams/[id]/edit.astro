@@ -67,17 +67,6 @@ if (!isOwnerOrAdmin) {
         initialColor={team.color}
       />
 
-      <div class="h-px bg-(--color-border) mb-6" />
-
-      <h3 class="font-display font-semibold text-(--color-foreground) mb-4">Division</h3>
-      <FormField
-        label="Division"
-        name="division"
-        value={team.division}
-        placeholder="e.g. U18 Men's"
-        class="mb-8"
-      />
-
       <div class="flex justify-between">
         <a href={`/teams/${team.id}`} class={cn(buttonVariants({ variant: "outline" }))}>
           ← Cancel

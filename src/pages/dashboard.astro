@@ -14,7 +14,7 @@ import SectionCard from "@/components/SectionCard.astro";
 import StatCard from "@/components/StatCard.astro";
 import TeamCrest from "@/components/TeamCrest.astro";
 import MatchCard from "@/components/MatchCard.astro";
-import { TeamActionButtons } from "@/components/TeamActionButtons";
+
 ---
 
 <AppLayout title="Dashboard" activeNav="dashboard">
@@ -83,12 +83,13 @@ import { TeamActionButtons } from "@/components/TeamActionButtons";
               </div>
               <!-- Payment badge -->
               <span class={badgeVariants({ variant: row.payV as any })}>{row.payment}</span>
-              <!-- Action button -->
-              <TeamActionButtons
-                client:load
-                teamName={row.name}
-                action={i === 0 ? "approve" : "review"}
-              />
+              <!-- Action button (placeholder — real approvals are on the tournament registrations page) -->
+              <a
+                href="/admin/tournaments"
+                class={cn(buttonVariants({ variant: "outline" }), "h-7 px-3 text-xs shrink-0")}
+              >
+                Review
+              </a>
             </div>
           ))}
         </SectionCard>

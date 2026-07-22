@@ -72,8 +72,7 @@ export class TeamInviteService {
     if (!invite) throw new NotFoundError("Invite", token);
 
     const team = await this.teams.findByIdWithCoach(invite.teamId);
-    // Treat a non-approved team the same as a missing invite — no information leakage.
-    if (!team || team.status !== "approved") throw new NotFoundError("Invite", token);
+    if (!team) throw new NotFoundError("Invite", token);
 
     return { invite, team };
   }

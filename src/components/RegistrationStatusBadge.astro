@@ -1,0 +1,20 @@
+---
+interface Props {
+  open: boolean;
+  withPrefix?: boolean;
+}
+
+const { open, withPrefix = false } = Astro.props;
+
+const label = withPrefix
+  ? open ? "Registration Open" : "Registration Closed"
+  : open ? "Open" : "Closed";
+
+const cls = open
+  ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300"
+  : "bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400";
+---
+
+<span class={`inline-block rounded-full px-2.5 py-0.5 text-xs font-medium ${cls}`}>
+  {label}
+</span>

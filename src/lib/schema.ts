@@ -12,9 +12,6 @@ export const teams = sqliteTable("teams", {
   coachId: text("coach_id").notNull(), // FK → user.id (enforced at app level)
   color: text("color").notNull().default("emerald"), // crest color key, e.g. "emerald"
   shortName: text("short_name"), // crest initials, e.g. "FC" — nullable; display falls back to name slice
-  status: text("status", { enum: ["pending", "approved", "rejected"] })
-    .notNull()
-    .default("pending"),
   createdAt: int("created_at").notNull(),
   updatedAt: int("updated_at").notNull(),
 });
@@ -23,7 +20,6 @@ export const teams = sqliteTable("teams", {
 // Never duplicate these as manual TypeScript interfaces.
 export type Team = InferSelectModel<typeof teams>;
 export type NewTeam = InferInsertModel<typeof teams>;
-export type TeamStatus = Team["status"];
 
 // teamMembers — join table linking users (or pre-registered imported players) to teams.
 // userId is nullable: imported players have no account yet (status = 'pending_signup').
