@@ -85,6 +85,26 @@ export const teamMembers = {
     },
   }),
 
+  updateJerseyNumber: defineAction({
+    input: z.object({
+      memberId: z.string(),
+      teamId: z.string(),
+      jerseyNumber: z.number().int().min(0).nullable(),
+    }),
+    handler: async ({ memberId, teamId, jerseyNumber }, context) => {
+      const user = context.locals.user;
+      if (!user) {
+        throw new ActionError({ code: "UNAUTHORIZED", message: "You must be signed in" });
+      }
+      try {
+        await makeTeamMemberService().updateJerseyNumber(memberId, jerseyNumber, teamId, user);
+        return { success: true };
+      } catch (err) {
+        throw toActionError(err);
+      }
+    },
+  }),
+
   denyRequest: defineAction({
     input: z.object({ userId: z.string(), teamId: z.string() }),
     handler: async ({ userId, teamId }, context) => {

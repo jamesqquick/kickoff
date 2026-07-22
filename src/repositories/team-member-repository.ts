@@ -258,6 +258,16 @@ export class TeamMemberRepository {
     return new Set(result.results.map((r) => r.email).filter(Boolean));
   }
 
+  async updateJerseyNumber(
+    memberId: string,
+    jerseyNumber: number | null,
+  ): Promise<void> {
+    await this.db
+      .update(teamMembers)
+      .set({ jerseyNumber, updatedAt: Date.now() })
+      .where(eq(teamMembers.id, memberId));
+  }
+
   async findByEmailAndTeam(
     email: string,
     teamId: string,

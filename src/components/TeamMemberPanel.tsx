@@ -72,7 +72,7 @@ export function TeamMemberPanel({
             <RosterImportButton teamId={teamId} />
           )}
         </div>
-        <RosterTable members={roster} isOwnerOrAdmin={isOwnerOrAdmin} />
+        <RosterTable teamId={teamId} members={roster} isOwnerOrAdmin={isOwnerOrAdmin} />
       </div>
     </>
   );

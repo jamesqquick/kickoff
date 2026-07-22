@@ -140,6 +140,21 @@ export class TeamMemberService {
     return this.members.listByTeam(teamId);
   }
 
+  // Coach or admin can update a member's jersey number.
+  async updateJerseyNumber(
+    memberId: string,
+    jerseyNumber: number | null,
+    teamId: string,
+    currentUser: AppUser,
+  ): Promise<void> {
+    const team = await this.teams.findById(teamId);
+    if (!team) throw new NotFoundError("Team", teamId);
+    if (currentUser.role !== "admin" && team.coachId !== currentUser.id) {
+      throw new ForbiddenError("updateJerseyNumber");
+    }
+    await this.members.updateJerseyNumber(memberId, jerseyNumber);
+  }
+
   // All team memberships for a user across all statuses. Public.
   async listByUser(userId: string): Promise<TeamMemberWithTeam[]> {
     return this.members.listByUser(userId);
