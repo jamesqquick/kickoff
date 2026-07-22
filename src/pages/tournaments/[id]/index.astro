@@ -175,6 +175,34 @@ function formatDate(d: string | null) {
       </SectionCard>
     )}
 
+    <!-- Registration info -->
+    <SectionCard class="p-5 sm:p-6 mb-6">
+      <div class="flex items-center justify-between gap-4">
+        <div>
+          <h2 class="font-display text-base font-semibold text-(--color-foreground) mb-0.5">Registration</h2>
+          <p class="text-sm text-(--color-muted)">
+            {status === "past"
+              ? "Registration is closed — this tournament has ended."
+              : status === "active"
+              ? "Registration is closed — this tournament is underway."
+              : deadlinePassed
+              ? `Registration closed on ${formatDate(tournament.registrationDeadline)}.`
+              : tournament.registrationDeadline
+              ? `Open until ${formatDate(tournament.registrationDeadline)}.`
+              : "Open — no registration deadline set."}
+          </p>
+        </div>
+        <span class={cn(
+          "shrink-0 inline-block rounded-full px-2.5 py-1 text-xs font-semibold",
+          (status === "upcoming" && !deadlinePassed)
+            ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300"
+            : "bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400"
+        )}>
+          {(status === "upcoming" && !deadlinePassed) ? "Open" : "Closed"}
+        </span>
+      </div>
+    </SectionCard>
+
     <!-- Divisions -->
     <SectionCard class="p-5 sm:p-7">
       <h2 class="font-display text-lg font-semibold text-(--color-foreground) mb-1">Divisions</h2>
