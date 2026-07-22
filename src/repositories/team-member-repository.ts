@@ -61,25 +61,39 @@ export class TeamMemberRepository {
       playerId: string | null;
       userId: string | null;    // non-null when email matched an existing account
     }[],
-  ): Promise<TeamMember[]> {
-    if (rows.length === 0) return [];
+  ): Promise<number> {
+    if (rows.length === 0) return 0;
     const now = Date.now();
-    const values = rows.map((r) => ({
-      id: crypto.randomUUID(),
-      teamId: r.teamId,
-      email: r.email,
-      displayName: r.displayName,
-      userId: r.userId ?? null,
-      jerseyNumber: r.jerseyNumber,
-      dateOfBirth: r.dateOfBirth,
-      phone: r.phone,
-      playerId: r.playerId,
-      status: (r.userId ? "approved" : "pending_signup") as TeamMember["status"],
-      createdAt: now,
-      updatedAt: now,
-    }));
-    // D1 batch: insert in one round-trip
-    return await this.db.insert(teamMembers).values(values).returning();
+    let inserted = 0;
+    // Insert one row at a time — D1 multi-row insert + RETURNING can be unreliable
+    // and a single constraint violation would abort the whole batch.
+    // Individual inserts skip duplicate rows gracefully.
+    for (const r of rows) {
+      try {
+        await this.db.insert(teamMembers).values({
+          id: crypto.randomUUID(),
+          teamId: r.teamId,
+          email: r.email,
+          displayName: r.displayName,
+          userId: r.userId ?? null,
+          jerseyNumber: r.jerseyNumber,
+          dateOfBirth: r.dateOfBirth,
+          phone: r.phone,
+          playerId: r.playerId,
+          status: (r.userId ? "approved" : "pending_signup") as TeamMember["status"],
+          createdAt: now,
+          updatedAt: now,
+        });
+        inserted++;
+      } catch (err) {
+        // Skip rows that violate unique constraints (e.g. already on team).
+        // All other errors are re-thrown.
+        const msg = err instanceof Error ? err.message : String(err);
+        if (msg.includes("UNIQUE") || msg.includes("unique")) continue;
+        throw err;
+      }
+    }
+    return inserted;
   }
 
   // Claim all pending_signup rows for a given email when the user signs in/up.

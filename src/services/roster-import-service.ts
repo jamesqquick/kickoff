@@ -238,7 +238,7 @@ export class RosterImportService {
       }),
     );
 
-    await this.members.bulkInsertImported(
+    const inserted = await this.members.bulkInsertImported(
       resolved.map((r) => ({
         teamId,
         email: r.email,
@@ -252,7 +252,7 @@ export class RosterImportService {
     );
 
     const alreadyHadAccount = resolved.filter((r) => r.userId !== null).length;
-    return { imported: resolved.length, alreadyHadAccount };
+    return { imported: inserted, alreadyHadAccount };
   }
 }
 

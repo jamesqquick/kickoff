@@ -69,7 +69,9 @@ export const rosterImport = {
         return result;
       } catch (err) {
         if (err instanceof AppError) throw toActionError(err);
-        throw err;
+        // Prevent raw D1 / SQL error messages from reaching the client toast.
+        console.error("[rosterImport.confirm] Unexpected error:", err);
+        throw new ActionError({ code: "INTERNAL_SERVER_ERROR", message: "Import failed. Please try again." });
       }
     },
   }),
