@@ -58,7 +58,7 @@ export function RegisterForTournamentForm({ tournamentId, divisions, coachTeams 
           <select
             value={selectedTeamId}
             onChange={(e) => setSelectedTeamId(e.target.value)}
-            className="w-full rounded-md border border-(--color-border) bg-(--color-background) px-3 py-2 text-sm text-(--color-foreground) focus:outline-none focus:ring-2 focus:ring-(--color-primary) cursor-pointer"
+            className="w-full rounded-md border border-(--color-border) bg-(--color-background) px-3 py-2 text-sm text-(--color-foreground) cursor-pointer"
           >
             {coachTeams.map((t) => (
               <option key={t.id} value={t.id}>{t.name}</option>
