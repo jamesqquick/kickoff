@@ -56,6 +56,15 @@ const deadlinePassed = tournament.registrationDeadline
 // Live (active) and ended (past) tournaments are closed for new registrations.
 const canRegister = user && coachTeams.length > 0 && !deadlinePassed && status === "upcoming";
 
+// CTA state for the header button.
+type CtaState = "register" | "registered" | "sign-in" | "no-teams" | "closed";
+const ctaState: CtaState =
+  existingReg                               ? "registered" :
+  canRegister                               ? "register"   :
+  !user                                     ? "sign-in"    :
+  coachTeams.length === 0 && !deadlinePassed && status === "upcoming" ? "no-teams" :
+  "closed";
+
 // Badge label and colour reflect registration state, not just tournament state.
 const badgeLabel =
   status === "active" ? "Happening Now" :
@@ -107,14 +116,36 @@ function formatDate(d: string | null) {
           )}
         </div>
       </div>
-      {user?.role === "admin" && (
-        <a
-          href={`/admin/tournaments/${tournament.id}/edit`}
-          class={cn(buttonVariants({ variant: "outline" }), "shrink-0")}
-        >
-          Edit →
-        </a>
-      )}
+      <div class="flex items-center gap-2 shrink-0 flex-wrap justify-end">
+        {ctaState === "register" && (
+          <a href="#divisions" class={cn(buttonVariants({ variant: "default" }), "h-9 px-4")}>
+            Register Your Team →
+          </a>
+        )}
+        {ctaState === "registered" && (
+          <span class="inline-flex items-center gap-1.5 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300 px-3 py-1.5 text-sm font-medium">
+            ✓ Registered
+          </span>
+        )}
+        {ctaState === "sign-in" && !deadlinePassed && status === "upcoming" && (
+          <a href={`/signin?redirect=/tournaments/${tournament.id}`} class={cn(buttonVariants({ variant: "default" }), "h-9 px-4")}>
+            Sign in to Register
+          </a>
+        )}
+        {ctaState === "no-teams" && (
+          <a href="/teams/register" class={cn(buttonVariants({ variant: "default" }), "h-9 px-4")}>
+            Create a Team to Register
+          </a>
+        )}
+        {user?.role === "admin" && (
+          <a
+            href={`/admin/tournaments/${tournament.id}/edit`}
+            class={cn(buttonVariants({ variant: "outline" }), "h-9 px-4")}
+          >
+            Edit →
+          </a>
+        )}
+      </div>
     </div>
 
     {tournament.description && (
@@ -124,7 +155,7 @@ function formatDate(d: string | null) {
     )}
 
     <!-- Divisions -->
-    <SectionCard class="p-5 sm:p-7">
+    <SectionCard id="divisions" class="p-5 sm:p-7">
       <h2 class="font-display text-lg font-semibold text-(--color-foreground) mb-1">Divisions</h2>
       <p class="text-sm text-(--color-muted) mb-5">
         {canRegister
