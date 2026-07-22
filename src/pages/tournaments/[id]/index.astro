@@ -74,38 +74,10 @@ const badgeClass =
 
 // Registration callout config — shown when the user has submitted a registration.
 const regCallout = existingRegDetails ? {
-  pending: {
-    border: "border-amber-200 dark:border-amber-800",
-    bg: "bg-amber-50 dark:bg-amber-900/20",
-    icon: "⏳",
-    iconColor: "text-amber-500",
-    label: "Pending",
-    labelColor: "text-amber-800 dark:text-amber-300",
-  },
-  approved: {
-    border: "border-emerald-200 dark:border-emerald-800",
-    bg: "bg-emerald-50 dark:bg-emerald-900/20",
-    icon: "✓",
-    iconColor: "text-emerald-600 dark:text-emerald-400",
-    label: "Approved",
-    labelColor: "text-emerald-800 dark:text-emerald-300",
-  },
-  waitlisted: {
-    border: "border-blue-200 dark:border-blue-800",
-    bg: "bg-blue-50 dark:bg-blue-900/20",
-    icon: "📋",
-    iconColor: "text-blue-500",
-    label: "Waitlisted",
-    labelColor: "text-blue-800 dark:text-blue-300",
-  },
-  rejected: {
-    border: "border-red-200 dark:border-red-800",
-    bg: "bg-red-50 dark:bg-red-900/20",
-    icon: "✕",
-    iconColor: "text-red-500",
-    label: "Not Accepted",
-    labelColor: "text-red-800 dark:text-red-300",
-  },
+  pending:    { border: "border-amber-200 dark:border-amber-800",   bg: "bg-amber-50 dark:bg-amber-900/20",     label: "Pending",      labelColor: "text-amber-800 dark:text-amber-300"   },
+  approved:   { border: "border-emerald-200 dark:border-emerald-800", bg: "bg-emerald-50 dark:bg-emerald-900/20", label: "Approved",     labelColor: "text-emerald-800 dark:text-emerald-300" },
+  waitlisted: { border: "border-blue-200 dark:border-blue-800",     bg: "bg-blue-50 dark:bg-blue-900/20",       label: "Waitlisted",   labelColor: "text-blue-800 dark:text-blue-300"     },
+  rejected:   { border: "border-red-200 dark:border-red-800",       bg: "bg-red-50 dark:bg-red-900/20",         label: "Not Accepted", labelColor: "text-red-800 dark:text-red-300"       },
 }[existingRegDetails.status] : null;
 
 const justRegistered = Astro.url.searchParams.get("registered") === "1";
@@ -190,8 +162,7 @@ function formatDate(d: string | null) {
 
     <!-- Your Registration callout — only visible when the user has a registration -->
     {regCallout && (
-      <div class={cn("rounded-lg border px-5 py-4 flex items-start gap-4 mb-6", regCallout.border, regCallout.bg)}>
-        <span class={cn("text-xl mt-0.5 shrink-0", regCallout.iconColor)}>{regCallout.icon}</span>
+      <div class={cn("rounded-lg border px-5 py-4 text-center mb-6", regCallout.border, regCallout.bg)}>
         <p class={cn("text-sm font-semibold", regCallout.labelColor)}>
           Registration {regCallout.label}
         </p>
