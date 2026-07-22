@@ -64,7 +64,7 @@ function membershipStatusBadge(status: string): { label: string; variant: "succe
       <div class="space-y-6">
 
         {coachedTeams.length > 0 && (
-          <SectionCard title="Coaching">
+          <SectionCard title="Teams You Created">
             <span slot="header-action" class={badgeVariants({ variant: "default" })}>{coachedTeams.length}</span>
             <table class="w-full">
               <thead>
@@ -121,7 +121,7 @@ function membershipStatusBadge(status: string): { label: string; variant: "succe
         )}
 
         {playerMemberships.length > 0 && (
-          <SectionCard title="Playing On">
+          <SectionCard title="Teams You Joined">
             <span slot="header-action" class={badgeVariants({ variant: "default" })}>{playerMemberships.length}</span>
             <table class="w-full">
               <thead>
