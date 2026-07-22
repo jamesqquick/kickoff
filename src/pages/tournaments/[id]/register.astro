@@ -1,0 +1,112 @@
+---
+import AppLayout from "@/layouts/AppLayout.astro";
+import PageHeader from "@/components/PageHeader.astro";
+import SectionCard from "@/components/SectionCard.astro";
+import { RegisterForTournamentForm } from "@/components/RegisterForTournamentForm";
+import { makeTournamentService } from "@/services/tournament-service";
+import { makeDivisionService } from "@/services/division-service";
+import { makeTeamService } from "@/services/team-service";
+import { TournamentRegistrationRepository } from "@/repositories/tournament-registration-repository";
+import { getDb } from "@/lib/db";
+import { NotFoundError } from "@/lib/errors";
+import { getTournamentStatus } from "@/lib/utils";
+
+const { id } = Astro.params;
+const user = Astro.locals.user;
+
+// Must be signed in.
+if (!user) {
+  return Astro.redirect(`/signin?redirect=/tournaments/${id}/register`);
+}
+
+let tournament;
+let divisions;
+try {
+  tournament = await makeTournamentService().getTournament(id!);
+  divisions = await makeDivisionService().getDivisionsForTournament(id!);
+} catch (err) {
+  if (err instanceof NotFoundError) {
+    return Astro.redirect("/tournaments");
+  }
+  throw err;
+}
+
+const status = getTournamentStatus(tournament);
+const deadlinePassed = tournament.registrationDeadline
+  ? new Date() > new Date(tournament.registrationDeadline)
+  : false;
+
+// Registration must be open — redirect back to the tournament page if not.
+if (status !== "upcoming" || deadlinePassed) {
+  return Astro.redirect(`/tournaments/${id}`);
+}
+
+// Coach must have at least one team.
+const coachTeams = await makeTeamService().listByCoach(user.id);
+if (coachTeams.length === 0) {
+  return Astro.redirect(`/teams/register`);
+}
+
+// Already registered — redirect back to tournament page.
+const regRepo = new TournamentRegistrationRepository(getDb());
+const existingReg = await Promise.all(
+  coachTeams.map((t) => regRepo.findByTeamAndTournament(t.id, tournament.id))
+).then((results) => results.find(Boolean) ?? null);
+
+if (existingReg) {
+  return Astro.redirect(`/tournaments/${id}`);
+}
+
+// Build division list with current registration counts for capacity display.
+const divisionCounts = await Promise.all(
+  divisions.map(async (d) => ({
+    ...d,
+    count: await regRepo.countByDivision(d.id),
+  }))
+);
+
+function formatDate(d: string | null) {
+  if (!d) return null;
+  return new Date(d).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
+}
+---
+
+<AppLayout title={`Register — ${tournament.name}`} activeNav="tournaments">
+  <div class="p-4 sm:p-6 lg:p-8 max-w-2xl">
+
+    <!-- Breadcrumb -->
+    <p class="text-sm text-(--color-muted) mb-5">
+      <a href="/tournaments" class="hover:text-(--color-primary)">Tournaments</a>
+      <span class="mx-2">/</span>
+      <a href={`/tournaments/${tournament.id}`} class="hover:text-(--color-primary)">{tournament.name}</a>
+      <span class="mx-2">/</span>
+      <span class="text-(--color-foreground)">Register</span>
+    </p>
+
+    <PageHeader
+      title="Register Your Team"
+      subtitle={`Submitting a registration for ${tournament.name}. An admin will review and confirm your spot.`}
+    />
+
+    <!-- Tournament summary -->
+    <div class="rounded-lg border border-(--color-border) bg-(--color-card) px-5 py-4 mb-6 flex flex-wrap gap-x-6 gap-y-1 text-sm text-(--color-muted)">
+      {tournament.startDate && tournament.endDate && (
+        <span>📅 {formatDate(tournament.startDate)} – {formatDate(tournament.endDate)}</span>
+      )}
+      {tournament.location && <span>📍 {tournament.location}</span>}
+      {tournament.registrationDeadline && (
+        <span>⏳ Registration deadline: {formatDate(tournament.registrationDeadline)}</span>
+      )}
+    </div>
+
+    <SectionCard class="p-5 sm:p-7">
+      <RegisterForTournamentForm
+        client:load
+        tournamentId={tournament.id}
+        divisions={divisionCounts}
+        coachTeams={coachTeams.map((t) => ({ id: t.id, name: t.name }))}
+      />
+    </SectionCard>
+
+  </div>
+</AppLayout>

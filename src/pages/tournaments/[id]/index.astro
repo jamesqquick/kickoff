@@ -4,7 +4,6 @@ import { buttonVariants } from "@/components/ui/button";
 import { cn, getTournamentStatus } from "@/lib/utils";
 import PageHeader from "@/components/PageHeader.astro";
 import SectionCard from "@/components/SectionCard.astro";
-import { RegisterForTournamentButton } from "@/components/RegisterForTournamentButton";
 import { makeTournamentService } from "@/services/tournament-service";
 import { makeDivisionService } from "@/services/division-service";
 import { makeTeamService } from "@/services/team-service";
@@ -29,7 +28,6 @@ try {
 
 const status = getTournamentStatus(tournament);
 
-// For coaches: resolve which teams they coach + whether they're already registered.
 const coachTeams = user ? await makeTeamService().listByCoach(user.id) : [];
 
 const regRepo = new TournamentRegistrationRepository(getDb());
@@ -39,7 +37,6 @@ const existingReg = user && coachTeams.length > 0
     ).then((results) => results.find(Boolean) ?? null)
   : null;
 
-// Registration counts per division for capacity display.
 const divisionCounts = await Promise.all(
   divisions.map(async (d) => ({
     divisionId: d.id,
@@ -53,17 +50,7 @@ const deadlinePassed = tournament.registrationDeadline
   : false;
 
 // Registration is only open for upcoming tournaments whose deadline hasn't passed.
-// Live (active) and ended (past) tournaments are closed for new registrations.
 const canRegister = user && coachTeams.length > 0 && !deadlinePassed && status === "upcoming";
-
-// CTA state for the header button.
-type CtaState = "register" | "registered" | "sign-in" | "no-teams" | "closed";
-const ctaState: CtaState =
-  existingReg                               ? "registered" :
-  canRegister                               ? "register"   :
-  !user                                     ? "sign-in"    :
-  coachTeams.length === 0 && !deadlinePassed && status === "upcoming" ? "no-teams" :
-  "closed";
 
 // Badge label and colour reflect registration state, not just tournament state.
 const badgeLabel =
@@ -73,10 +60,21 @@ const badgeLabel =
                         "Upcoming";
 
 const badgeClass =
-  status === "active"                     ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300" :
-  status === "past"                       ? "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300" :
-  !deadlinePassed /* registration open */ ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300" :
-                                            "bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400";
+  status === "active"   ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300" :
+  status === "past"     ? "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300" :
+  !deadlinePassed       ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300" :
+                          "bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400";
+
+// CTA state for the header button.
+type CtaState = "register" | "registered" | "sign-in" | "no-teams" | "closed";
+const ctaState: CtaState =
+  existingReg                                                          ? "registered" :
+  canRegister                                                          ? "register"   :
+  !user && !deadlinePassed && status === "upcoming"                    ? "sign-in"    :
+  user && coachTeams.length === 0 && !deadlinePassed && status === "upcoming" ? "no-teams"  :
+  "closed";
+
+const justRegistered = Astro.url.searchParams.get("registered") === "1";
 
 function formatDate(d: string | null) {
   if (!d) return null;
@@ -86,12 +84,24 @@ function formatDate(d: string | null) {
 
 <AppLayout title={tournament.name} activeNav="tournaments">
   <div class="p-4 sm:p-6 lg:p-8 max-w-4xl">
+
     <!-- Breadcrumb -->
     <p class="text-sm text-(--color-muted) mb-5">
       <a href="/tournaments" class="hover:text-(--color-primary)">Tournaments</a>
       <span class="mx-2">/</span>
       <span class="text-(--color-foreground)">{tournament.name}</span>
     </p>
+
+    <!-- Success banner -->
+    {justRegistered && (
+      <div class="mb-6 rounded-lg border border-emerald-200 bg-emerald-50 dark:border-emerald-800 dark:bg-emerald-900/20 px-5 py-4 flex items-center gap-3">
+        <span class="text-emerald-600 dark:text-emerald-400 text-lg">✓</span>
+        <div>
+          <p class="text-sm font-semibold text-emerald-800 dark:text-emerald-300">Registration submitted!</p>
+          <p class="text-xs text-emerald-700 dark:text-emerald-400 mt-0.5">Your registration is pending admin review. We'll be in touch.</p>
+        </div>
+      </div>
+    )}
 
     <!-- Header -->
     <div class="flex items-start justify-between gap-4 mb-6">
@@ -116,9 +126,10 @@ function formatDate(d: string | null) {
           )}
         </div>
       </div>
+
       <div class="flex items-center gap-2 shrink-0 flex-wrap justify-end">
         {ctaState === "register" && (
-          <a href="#divisions" class={cn(buttonVariants({ variant: "default" }), "h-9 px-4")}>
+          <a href={`/tournaments/${tournament.id}/register`} class={cn(buttonVariants({ variant: "default" }), "h-9 px-4")}>
             Register Your Team →
           </a>
         )}
@@ -127,7 +138,7 @@ function formatDate(d: string | null) {
             ✓ Registered
           </span>
         )}
-        {ctaState === "sign-in" && !deadlinePassed && status === "upcoming" && (
+        {ctaState === "sign-in" && (
           <a href={`/signin?redirect=/tournaments/${tournament.id}`} class={cn(buttonVariants({ variant: "default" }), "h-9 px-4")}>
             Sign in to Register
           </a>
@@ -154,19 +165,17 @@ function formatDate(d: string | null) {
       </SectionCard>
     )}
 
-    <!-- Divisions -->
-    <SectionCard id="divisions" class="p-5 sm:p-7">
+    <!-- Divisions — read-only capacity display -->
+    <SectionCard class="p-5 sm:p-7">
       <h2 class="font-display text-lg font-semibold text-(--color-foreground) mb-1">Divisions</h2>
       <p class="text-sm text-(--color-muted) mb-5">
-        {canRegister
-          ? "Select a division below to register your team."
-          : deadlinePassed
-          ? "Registration has closed for this tournament."
-          : status === "past"
+        {status === "past"
           ? "This tournament has ended."
           : status === "active"
-          ? "Registration is closed — this tournament is underway."
-          : "Sign in as a coach to register your team."}
+          ? "This tournament is happening now. Registration is closed."
+          : deadlinePassed
+          ? "Registration has closed for this tournament."
+          : "Choose your division when you register."}
       </p>
 
       {divisions.length === 0 ? (
@@ -180,27 +189,12 @@ function formatDate(d: string | null) {
             const full = division.maxTeams !== null && count >= division.maxTeams;
             return (
               <div class="flex items-center justify-between gap-4 px-4 py-4">
-                <div>
-                  <p class="font-medium text-sm text-(--color-foreground)">{division.name}</p>
-                  {division.maxTeams !== null && (
-                    <p class="text-xs text-(--color-muted) mt-0.5">
-                      {count} / {division.maxTeams} teams
-                      {full && <span class="ml-1 text-red-500 font-medium">· Full</span>}
-                    </p>
-                  )}
-                </div>
-                <div class="shrink-0">
-                  {canRegister && !full ? (
-                    <RegisterForTournamentButton
-                      client:load
-                      division={division}
-                      coachTeams={coachTeams}
-                      registeredTeamId={existingReg?.teamId ?? null}
-                    />
-                  ) : full ? (
-                    <span class="text-xs text-red-500 font-medium">Full</span>
-                  ) : null}
-                </div>
+                <p class="font-medium text-sm text-(--color-foreground)">{division.name}</p>
+                {division.maxTeams !== null && (
+                  <span class={`text-xs shrink-0 ${full ? "text-red-500 font-medium" : "text-(--color-muted)"}`}>
+                    {full ? "Full" : `${count} / ${division.maxTeams} teams`}
+                  </span>
+                )}
               </div>
             );
           })}
