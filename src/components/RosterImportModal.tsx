@@ -77,7 +77,7 @@ export function RosterImportModal({ teamId, onImported, onClose }: Props) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-      <div className="w-full max-w-2xl rounded-xl border border-(--color-border) bg-(--color-card) shadow-xl flex flex-col max-h-[90vh]">
+      <div className="w-full max-w-5xl rounded-xl border border-(--color-border) bg-(--color-card) shadow-xl flex flex-col max-h-[90vh]">
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-(--color-border) shrink-0">
           <h2 className="font-display font-semibold text-(--color-foreground)">
@@ -93,8 +93,8 @@ export function RosterImportModal({ teamId, onImported, onClose }: Props) {
           </button>
         </div>
 
-        {/* Body */}
-        <div className="overflow-y-auto flex-1">
+        {/* Body — vertical scroll only; horizontal scroll is on the table wrapper */}
+        <div className="overflow-y-auto overflow-x-hidden flex-1">
           {step === "upload" && (
             <div className="p-6">
               <p className="text-sm text-(--color-muted) mb-5">
@@ -154,8 +154,8 @@ export function RosterImportModal({ teamId, onImported, onClose }: Props) {
 
           {(step === "preview" || step === "confirming") && (
             <div>
-              {/* Preview table */}
-              <div className="overflow-x-auto">
+              {/* Preview table — independently horizontally scrollable */}
+              <div className="overflow-x-auto w-full">
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b border-(--color-border) bg-(--color-background)">
