@@ -52,7 +52,9 @@ const deadlinePassed = tournament.registrationDeadline
   ? new Date() > new Date(tournament.registrationDeadline)
   : false;
 
-const canRegister = user && coachTeams.length > 0 && !deadlinePassed && status !== "past";
+// Registration is only open for upcoming tournaments whose deadline hasn't passed.
+// Live (active) and ended (past) tournaments are closed for new registrations.
+const canRegister = user && coachTeams.length > 0 && !deadlinePassed && status === "upcoming";
 
 const statusLabel: Record<string, string> = { upcoming: "Upcoming", active: "Live", past: "Ended" };
 const statusClass: Record<string, string> = {
@@ -125,7 +127,9 @@ function formatDate(d: string | null) {
           ? "Registration has closed for this tournament."
           : status === "past"
           ? "This tournament has ended."
-          : "Sign in as a coach with an approved team to register."}
+          : status === "active"
+          ? "Registration is closed — this tournament is underway."
+          : "Sign in as a coach to register your team."}
       </p>
 
       {divisions.length === 0 ? (
