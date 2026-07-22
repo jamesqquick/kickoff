@@ -60,15 +60,15 @@ export function RegistrationReviewTable({ initialRegistrations }: Props) {
           No {activeTab === "all" ? "" : activeTab} registrations.
         </p>
       ) : (
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto rounded-xl border border-(--color-border) bg-(--color-card)">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-(--color-border)">
-                <th className="text-left text-xs font-semibold uppercase tracking-wider text-(--color-muted-fg) px-3 py-2">Team</th>
-                <th className="text-left text-xs font-semibold uppercase tracking-wider text-(--color-muted-fg) px-3 py-2">Division</th>
-                <th className="hidden sm:table-cell text-left text-xs font-semibold uppercase tracking-wider text-(--color-muted-fg) px-3 py-2">Registered</th>
-                <th className="text-left text-xs font-semibold uppercase tracking-wider text-(--color-muted-fg) px-3 py-2">Status</th>
-                <th className="text-right text-xs font-semibold uppercase tracking-wider text-(--color-muted-fg) px-3 py-2">Actions</th>
+                <th className="text-left text-xs font-semibold uppercase tracking-wider text-(--color-muted-fg) px-5 py-3">Team</th>
+                <th className="text-left text-xs font-semibold uppercase tracking-wider text-(--color-muted-fg) px-5 py-3">Division</th>
+                <th className="hidden sm:table-cell text-left text-xs font-semibold uppercase tracking-wider text-(--color-muted-fg) px-5 py-3">Registered</th>
+                <th className="text-left text-xs font-semibold uppercase tracking-wider text-(--color-muted-fg) px-5 py-3">Status</th>
+                <th className="text-right text-xs font-semibold uppercase tracking-wider text-(--color-muted-fg) px-5 py-3">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -77,22 +77,24 @@ export function RegistrationReviewTable({ initialRegistrations }: Props) {
                   key={r.id}
                   className="border-b border-(--color-border-soft) last:border-0 hover:bg-(--color-background) transition-colors"
                 >
-                  <td className="px-3 py-3 font-medium text-(--color-foreground)">{r.teamName}</td>
-                  <td className="px-3 py-3 text-(--color-muted)">{r.divisionName}</td>
-                  <td className="hidden sm:table-cell px-3 py-3 text-(--color-muted)">
-                    {new Date(r.registeredAt).toLocaleDateString()}
+                  <td className="px-5 py-3.5 font-medium text-(--color-foreground)">{r.teamName}</td>
+                  <td className="px-5 py-3.5 text-(--color-muted)">{r.divisionName}</td>
+                  <td className="hidden sm:table-cell px-5 py-3.5 text-(--color-muted)">
+                    {new Date(r.registeredAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
                   </td>
-                  <td className="px-3 py-3">
+                  <td className="px-5 py-3.5">
                     <span className={cn("inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium", STATUS_COLORS[r.status])}>
                       {r.status.charAt(0).toUpperCase() + r.status.slice(1)}
                     </span>
                   </td>
-                  <td className="px-3 py-3 text-right">
-                    <RegistrationStatusButton
-                      registrationId={r.id}
-                      currentStatus={r.status}
-                      onSuccess={(newStatus) => handleStatusChange(r.id, newStatus)}
-                    />
+                  <td className="px-5 py-3.5">
+                    <div className="flex items-center justify-end gap-1.5">
+                      <RegistrationStatusButton
+                        registrationId={r.id}
+                        currentStatus={r.status}
+                        onSuccess={(newStatus) => handleStatusChange(r.id, newStatus)}
+                      />
+                    </div>
                   </td>
                 </tr>
               ))}
