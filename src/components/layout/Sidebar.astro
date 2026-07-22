@@ -55,18 +55,13 @@ const navGroups = [
       },
     ],
   },
-  {
-    label: "Logistics",
-    items: [
-      { id: "schedule", label: "Schedule", href: "/teams/1/schedule", icon: "calendar", count: undefined },
-    ],
-  },
   ...(isAdmin ? [{
     label: "Admin",
     items: [
       { id: "admin",             label: "Dashboard",   href: "/admin",             icon: "grid-2x2", count: undefined },
       { id: "admin-tournaments", label: "Tournaments", href: "/admin/tournaments", icon: "trophy",   count: undefined },
       { id: "admin-teams",       label: "Teams",       href: "/admin/teams",       icon: "shield",   count: undefined },
+      { id: "admin-schedule",    label: "Schedule",    href: "/admin/schedule",    icon: "calendar", count: undefined },
     ],
   }] : []),
   {
