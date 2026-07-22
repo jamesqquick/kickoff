@@ -1,4 +1,4 @@
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import type { TeamStatus } from "@/lib/schema";
 import type { AppDatabase } from "@/lib/db";
 import { teams } from "@/lib/schema";
@@ -60,6 +60,15 @@ export class TeamRepository {
       )
       .all<TeamWithCoach>();
     return result.results;
+  }
+
+  // All teams where the given user is the coach, regardless of status.
+  // Used by the My Teams page to show the coach their own teams.
+  async listByCoach(userId: string): Promise<Team[]> {
+    return this.db
+      .select()
+      .from(teams)
+      .where(eq(teams.coachId, userId));
   }
 
   async listApproved(): Promise<Team[]> {
