@@ -1,5 +1,4 @@
 import type { TeamMemberWithUser } from "@/repositories/team-member-repository";
-import { badgeVariants } from "@/components/ui/badge";
 
 interface Props {
   members: TeamMemberWithUser[];
@@ -29,9 +28,6 @@ export function RosterTable({ members, isOwnerOrAdmin = false }: Props) {
             #
           </th>
           <th className="hidden sm:table-cell text-left text-xs font-semibold uppercase tracking-wider text-(--color-muted-fg) px-5 py-3">
-            Status
-          </th>
-          <th className="hidden sm:table-cell text-left text-xs font-semibold uppercase tracking-wider text-(--color-muted-fg) px-5 py-3">
             Joined
           </th>
         </tr>
@@ -39,7 +35,6 @@ export function RosterTable({ members, isOwnerOrAdmin = false }: Props) {
       <tbody>
         {members.map((member) => {
           // Pending signup rows have no account — fall back to displayName / email.
-          const isPendingSignup = member.status === "pending_signup";
           const displayName = member.userName ?? member.displayName ?? member.email ?? "Unknown";
           const initials = displayName.slice(0, 2).toUpperCase();
 
@@ -63,7 +58,7 @@ export function RosterTable({ members, isOwnerOrAdmin = false }: Props) {
                     </div>
                   )}
 
-                  {/* Name — link only for real accounts */}
+                  {/* Name — link to profile only when the member has an account */}
                   {isOwnerOrAdmin && member.userId ? (
                     <div>
                       <a
@@ -76,33 +71,21 @@ export function RosterTable({ members, isOwnerOrAdmin = false }: Props) {
                         <p className="text-xs text-(--color-muted)">{member.email}</p>
                       )}
                     </div>
-                  ) : isPendingSignup ? (
+                  ) : (
                     <div>
                       <span className="font-medium text-sm text-(--color-foreground)">
                         {displayName}
                       </span>
-                      {member.email && (
+                      {member.email && !member.userId && (
                         <p className="text-xs text-(--color-muted)">{member.email}</p>
                       )}
                     </div>
-                  ) : (
-                    <span className="font-medium text-sm text-(--color-foreground)">
-                      {displayName}
-                    </span>
                   )}
                 </div>
               </td>
 
               <td className="hidden sm:table-cell px-5 py-3.5 text-sm text-(--color-muted)">
                 {member.jerseyNumber ?? "—"}
-              </td>
-
-              <td className="hidden sm:table-cell px-5 py-3.5">
-                {isPendingSignup && (
-                  <span className={badgeVariants({ variant: "warning" })}>
-                    Pending signup
-                  </span>
-                )}
               </td>
 
               <td className="hidden sm:table-cell px-5 py-3.5 text-sm text-(--color-muted)">
