@@ -6,7 +6,9 @@ import BrandMark from "@/components/BrandMark.astro";
 import FormField from "@/components/FormField.astro";
 import GoogleAuthButton from "@/components/GoogleAuthButton.astro";
 
-const GOOGLE_OAUTH_URL = "/api/auth/signin/google";
+const GOOGLE_OAUTH_URL = redirectTo
+  ? `/api/auth/signin/google?redirect=${encodeURIComponent(redirectTo)}`
+  : "/api/auth/signin/google";
 
 // API routes redirect back here with ?tab=signup&error=... on failure.
 const activeTab = Astro.url.searchParams.get("tab") === "signup" ? "signup" : "signin";
