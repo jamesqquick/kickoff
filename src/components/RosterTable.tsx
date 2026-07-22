@@ -1,6 +1,7 @@
 import { useState, useRef } from "react";
 import { toast } from "sonner";
 import { actions } from "astro:actions";
+import { Input } from "@/components/ui/input";
 import type { TeamMemberWithUser } from "@/repositories/team-member-repository";
 
 interface Props {
@@ -75,7 +76,7 @@ function JerseyCell({
 
   if (editing) {
     return (
-      <input
+      <Input
         ref={inputRef}
         type="number"
         min={0}
@@ -87,7 +88,7 @@ function JerseyCell({
           if (e.key === "Enter") save();
           if (e.key === "Escape") cancel();
         }}
-        className="w-14 rounded border border-(--color-primary) bg-(--color-card) px-1.5 py-0.5 text-sm text-(--color-foreground) text-center focus:outline-none"
+        className="h-8 w-16 px-2 text-center [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
         autoFocus
       />
     );
