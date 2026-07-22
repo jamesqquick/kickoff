@@ -10,6 +10,7 @@
 -- ------------------------------------------------------------
 -- 1. Clear existing data (reverse dependency order)
 -- ------------------------------------------------------------
+DELETE FROM team_invites;
 DELETE FROM team_members;
 DELETE FROM profiles;
 DELETE FROM teams;
@@ -72,7 +73,15 @@ INSERT INTO team_members (id, user_id, team_id, jersey_number, status, created_a
   ('tm_5', 'usr_player1', 'team_c', 99,   'approved', 1700000000000, 1700000000000);
 
 -- ------------------------------------------------------------
--- 7. Tournaments  (Drizzle app table — snake_case columns)
+-- 7. Team Invites  (Drizzle app table — snake_case columns)
+-- One active invite for team_a (approved). team_b is pending so no invite.
+-- token is a 24-char base64url string; use a fixed value for test predictability.
+-- ------------------------------------------------------------
+INSERT INTO team_invites (id, team_id, token, created_by, is_active, created_at, updated_at) VALUES
+  ('inv_team_a', 'team_a', 'seed_invite_token_team_a_xx', 'usr_coach_a', 1, 1700000000000, 1700000000000);
+
+-- ------------------------------------------------------------
+-- 8. Tournaments  (Drizzle app table — snake_case columns)
 -- Covers all three derived statuses: past, active, upcoming.
 -- ------------------------------------------------------------
 INSERT INTO tournaments (id, name, slug, start_date, end_date, created_at, updated_at) VALUES

@@ -2,11 +2,20 @@ import { defineMiddleware } from "astro:middleware";
 import { getAuth } from "@/lib/auth";
 import type { AppUser } from "@/lib/auth";
 
-// Routes that don't require authentication
+// Routes that don't require authentication — exact matches.
 const PUBLIC_ROUTES = new Set(["/signin", "/"]);
+
+// Route prefixes that are public — no authentication required.
+// /join/* is public so unauthenticated players can see the team card before signing in.
+const PUBLIC_PREFIXES = ["/join/"];
 
 // Better Auth's own API routes — always pass through
 const AUTH_API_PATTERN = /^\/api\/auth\//;
+
+function isPublicRoute(pathname: string): boolean {
+  if (PUBLIC_ROUTES.has(pathname)) return true;
+  return PUBLIC_PREFIXES.some((prefix) => pathname.startsWith(prefix));
+}
 
 export const onRequest = defineMiddleware(async (context, next) => {
   const { request, locals, redirect, url } = context;
@@ -25,7 +34,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
   locals.session = session?.session ?? null;
 
   // Redirect unauthenticated users away from protected routes
-  if (!locals.user && !PUBLIC_ROUTES.has(url.pathname)) {
+  if (!locals.user && !isPublicRoute(url.pathname)) {
     return redirect("/signin");
   }
 

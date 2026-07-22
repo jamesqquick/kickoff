@@ -1,0 +1,161 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import { buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+import { makeTeamInviteService } from "@/services/team-invite-service";
+import { TeamMemberRepository } from "@/repositories/team-member-repository";
+import { getDb } from "@/lib/db";
+import { NotFoundError } from "@/lib/errors";
+import TeamCrest from "@/components/TeamCrest.astro";
+import BrandMark from "@/components/BrandMark.astro";
+import { teamColorGradient } from "@/lib/utils";
+import { JoinViaInviteButton } from "@/components/JoinViaInviteButton";
+
+const { token } = Astro.params;
+const user = Astro.locals.user;
+
+let teamData;
+try {
+  teamData = await makeTeamInviteService().resolveToken(token!);
+} catch (err) {
+  if (err instanceof NotFoundError) {
+    return Astro.redirect("/teams");
+  }
+  throw err;
+}
+
+const { team } = teamData;
+
+// Resolve current user's membership status so the island starts with the right UI.
+type JoinStatus = "none" | "pending" | "approved";
+let myStatus: JoinStatus = "none";
+let isCoach = false;
+
+if (user) {
+  isCoach = user.id === team.coachId;
+  if (!isCoach) {
+    const existing = await new TeamMemberRepository(getDb()).findByUserAndTeam(user.id, team.id);
+    if (existing) {
+      // Treat rejected the same as none — the invite re-approves them.
+      myStatus = existing.status === "rejected" ? "none" : (existing.status as JoinStatus);
+    }
+  }
+}
+
+// Build the sign-in URL with this page as the post-auth redirect destination.
+const signInUrl = `/signin?redirect=${encodeURIComponent(Astro.url.pathname)}`;
+---
+
+<BaseLayout title={`Join ${team.name}`}>
+  <div class="min-h-screen flex flex-col">
+    <!-- Minimal nav -->
+    <header class="flex items-center gap-2.5 px-6 py-4 border-b border-(--color-border) bg-(--color-background)">
+      <a href="/" class="flex items-center gap-2.5">
+        <BrandMark size="sm" />
+        <span class="font-display font-bold text-lg text-(--color-foreground)">Kickoff</span>
+      </a>
+    </header>
+
+    <!-- Content -->
+    <main class="flex-1 flex items-center justify-center px-4 py-12 bg-(--color-background)">
+      <div class="w-full max-w-md">
+        <!-- Team card -->
+        <div class="rounded-2xl border border-(--color-border) bg-(--color-card) overflow-hidden">
+          <!-- Team hero -->
+          <div
+            class="relative px-6 py-8 flex flex-col items-center gap-4 text-center"
+            style="background: radial-gradient(circle at 30% 20%, rgba(5,150,105,0.14), transparent 50%), radial-gradient(circle at 80% 80%, rgba(234,88,12,0.10), transparent 50%), var(--color-card);"
+          >
+            <TeamCrest
+              initials={team.shortName ?? team.name.slice(0, 2).toUpperCase()}
+              gradient={teamColorGradient(team.color)}
+              size="2xl"
+              class="shadow-md"
+            />
+            <div>
+              <h1 class="font-display text-2xl font-bold text-(--color-foreground)">{team.name}</h1>
+              <p class="text-sm text-(--color-muted) mt-0.5">{team.city} · Coach: {team.coachName}</p>
+            </div>
+          </div>
+
+          <!-- Divider -->
+          <div class="border-t border-(--color-border)" />
+
+          <!-- Action area -->
+          <div class="px-6 py-6 flex flex-col gap-4">
+            {!user ? (
+              /* Unauthenticated — prompt to sign in or create account */
+              <>
+                <div class="text-center">
+                  <p class="font-semibold text-(--color-foreground)">You've been invited to join this team</p>
+                  <p class="text-sm text-(--color-muted) mt-1">
+                    Sign in or create a free account to join. You'll be added to the roster instantly — no approval needed.
+                  </p>
+                </div>
+                <a
+                  href={signInUrl}
+                  class={cn(buttonVariants({ variant: "default", size: "xl" }), "w-full")}
+                >
+                  Sign in to join →
+                </a>
+                <a
+                  href={`${signInUrl}&tab=signup`}
+                  class={cn(buttonVariants({ variant: "outline", size: "xl" }), "w-full")}
+                >
+                  Create a free account →
+                </a>
+                <p class="text-xs text-center text-(--color-muted)">
+                  You'll be taken back here after signing in.
+                </p>
+              </>
+            ) : isCoach ? (
+              /* Coach visiting their own invite link */
+              <>
+                <div class="text-center">
+                  <p class="font-semibold text-(--color-foreground)">This is your team's invite link</p>
+                  <p class="text-sm text-(--color-muted) mt-1">Share it with players so they can join instantly.</p>
+                </div>
+                <a
+                  href={`/teams/${team.id}`}
+                  class={cn(buttonVariants({ variant: "default" }), "w-full")}
+                >
+                  Go to team page →
+                </a>
+              </>
+            ) : myStatus === "approved" ? (
+              /* Already a member */
+              <>
+                <div class="text-center">
+                  <p class="font-semibold text-(--color-foreground)">You're already on this team</p>
+                  <p class="text-sm text-(--color-muted) mt-1">Head to the team page to see your roster and schedule.</p>
+                </div>
+                <a
+                  href={`/teams/${team.id}`}
+                  class={cn(buttonVariants({ variant: "default" }), "w-full")}
+                >
+                  Go to team page →
+                </a>
+              </>
+            ) : (
+              /* Authenticated player who can join */
+              <>
+                <div class="text-center">
+                  <p class="font-semibold text-(--color-foreground)">You've been invited to join this team</p>
+                  <p class="text-sm text-(--color-muted) mt-1">
+                    Click below to join instantly. No approval needed — the coach shared this link with you.
+                  </p>
+                </div>
+                <JoinViaInviteButton
+                  client:load
+                  token={token!}
+                  teamId={team.id}
+                  initialStatus={myStatus}
+                />
+              </>
+            )}
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</BaseLayout>

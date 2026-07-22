@@ -6,12 +6,14 @@ import { cn } from "@/lib/utils";
 import TeamCrest from "@/components/TeamCrest.astro";
 import { makeTeamService } from "@/services/team-service";
 import { makeTeamMemberService } from "@/services/team-member-service";
+import { makeTeamInviteService } from "@/services/team-invite-service";
 import { TeamMemberRepository } from "@/repositories/team-member-repository";
 import { getDb } from "@/lib/db";
 import { NotFoundError } from "@/lib/errors";
 import { teamStatusVariant, teamColorGradient } from "@/lib/utils";
 import { JoinTeamButton } from "@/components/JoinTeamButton";
 import { TeamMemberPanel } from "@/components/TeamMemberPanel";
+import { InviteLinkPanel } from "@/components/InviteLinkPanel";
 
 const { id } = Astro.params;
 const user = Astro.locals.user;
@@ -44,6 +46,17 @@ if (user) {
   );
   if (existing) {
     myStatus = existing.status as JoinStatus;
+  }
+}
+
+// Resolve the invite link for coaches — create one lazily if it doesn't exist yet.
+let inviteUrl: string | null = null;
+if (isOwnerOrAdmin && user) {
+  try {
+    const invite = await makeTeamInviteService().getOrCreate(team.id, user);
+    inviteUrl = `${Astro.url.origin}/join/${invite.token}`;
+  } catch {
+    // Non-fatal — the panel simply won't render.
   }
 }
 
@@ -98,6 +111,14 @@ if (user) {
         )}
       </div>
     </div>
+
+    {isOwnerOrAdmin && inviteUrl && (
+      <InviteLinkPanel
+        client:load
+        teamId={team.id}
+        initialInviteUrl={inviteUrl}
+      />
+    )}
 
     <TeamMemberPanel
       client:load
