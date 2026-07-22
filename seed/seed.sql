@@ -219,14 +219,26 @@ INSERT INTO divisions (id, tournament_id, name, max_teams, created_at, updated_a
 -- ------------------------------------------------------------
 INSERT INTO tournament_registrations (id, team_id, division_id, tournament_id, status, registered_at, notes, created_at, updated_at) VALUES
   -- River Hawks (team_a) in Regional Qualifiers → Open Men's → approved
-  ('reg_1', 'team_a', 'div_4a', 'tour_4', 'approved',   '2026-03-01T10:00:00Z', NULL, 1700000000000, 1700000000000),
+  ('reg_1',  'team_a', 'div_4a', 'tour_4', 'approved',   '2026-03-01T10:00:00Z', NULL,                      1700000000000, 1700000000000),
   -- Northside FC (team_g) in Regional Qualifiers → Open Men's → pending
-  ('reg_2', 'team_g', 'div_4a', 'tour_4', 'pending',    '2026-03-10T14:30:00Z', NULL, 1700000000000, 1700000000000),
+  ('reg_2',  'team_g', 'div_4a', 'tour_4', 'pending',    '2026-03-10T14:30:00Z', NULL,                      1700000000000, 1700000000000),
   -- Coastal FC (team_d) in Regional Qualifiers → Open Women's → approved
-  ('reg_3', 'team_d', 'div_4b', 'tour_4', 'approved',   '2026-03-05T09:00:00Z', NULL, 1700000000000, 1700000000000),
+  ('reg_3',  'team_d', 'div_4b', 'tour_4', 'approved',   '2026-03-05T09:00:00Z', NULL,                      1700000000000, 1700000000000),
   -- Silver Arrows (team_h) in Regional Qualifiers → Open Women's → waitlisted
-  ('reg_4', 'team_h', 'div_4b', 'tour_4', 'waitlisted', '2026-03-12T11:00:00Z', 'Division near capacity', 1700000000000, 1700000000000),
+  ('reg_4',  'team_h', 'div_4b', 'tour_4', 'waitlisted', '2026-03-12T11:00:00Z', 'Division near capacity',  1700000000000, 1700000000000),
   -- Iron City United (team_e) in Summer Classic → Masters Men's → approved
-  ('reg_5', 'team_e', 'div_5d', 'tour_5', 'approved',   '2026-04-20T08:00:00Z', NULL, 1700000000000, 1700000000000),
+  ('reg_5',  'team_e', 'div_5d', 'tour_5', 'approved',   '2026-04-20T08:00:00Z', NULL,                      1700000000000, 1700000000000),
   -- River Hawks (team_a) in Summer Classic → Open Men's → pending
-  ('reg_6', 'team_a', 'div_5a', 'tour_5', 'pending',    '2026-04-25T16:00:00Z', NULL, 1700000000000, 1700000000000);
+  ('reg_6',  'team_a', 'div_5a', 'tour_5', 'pending',    '2026-04-25T16:00:00Z', NULL,                      1700000000000, 1700000000000),
+  -- Storm United (team_b) in Regional Qualifiers → U18 Boys → pending
+  ('reg_7',  'team_b', 'div_4c', 'tour_4', 'pending',    '2026-03-15T09:00:00Z', NULL,                      1700000000000, 1700000000000),
+  -- Ghost FC (team_c) in Summer Classic → Open Men's → rejected
+  ('reg_8',  'team_c', 'div_5a', 'tour_5', 'rejected',   '2026-04-18T13:00:00Z', 'Incomplete roster submission', 1700000000000, 1700000000000),
+  -- Desert Wolves (team_f) in Summer Classic → U18 Boys → approved
+  ('reg_9',  'team_f', 'div_5c', 'tour_5', 'approved',   '2026-04-10T11:00:00Z', NULL,                      1700000000000, 1700000000000),
+  -- Red Canyon AC (team_i) in Regional Qualifiers → U18 Boys → waitlisted
+  ('reg_10', 'team_i', 'div_4c', 'tour_4', 'waitlisted', '2026-03-18T16:00:00Z', 'Waiting on roster confirmation', 1700000000000, 1700000000000),
+  -- Northside FC (team_g) in Summer Classic → Open Men's → approved (plays in two tournaments)
+  ('reg_11', 'team_g', 'div_5a', 'tour_5', 'approved',   '2026-04-12T08:00:00Z', NULL,                      1700000000000, 1700000000000),
+  -- Silver Arrows (team_h) in Summer Classic → Open Women's → pending (plays in two tournaments)
+  ('reg_12', 'team_h', 'div_5b', 'tour_5', 'pending',    '2026-04-22T14:00:00Z', NULL,                      1700000000000, 1700000000000);
