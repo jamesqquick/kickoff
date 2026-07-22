@@ -163,45 +163,49 @@ export function RosterImportModal({ teamId, onImported, onClose }: Props) {
                       <th className="text-left text-xs font-semibold uppercase tracking-wider text-(--color-muted-fg) px-4 py-3">Name</th>
                       <th className="text-left text-xs font-semibold uppercase tracking-wider text-(--color-muted-fg) px-4 py-3">Email</th>
                       <th className="text-left text-xs font-semibold uppercase tracking-wider text-(--color-muted-fg) px-4 py-3">Jersey</th>
-                      <th className="text-left text-xs font-semibold uppercase tracking-wider text-(--color-muted-fg) px-4 py-3">Issue</th>
+                      <th className="text-left text-xs font-semibold uppercase tracking-wider text-(--color-muted-fg) px-4 py-3">DOB</th>
+                      <th className="text-left text-xs font-semibold uppercase tracking-wider text-(--color-muted-fg) px-4 py-3">Phone</th>
+                      <th className="text-left text-xs font-semibold uppercase tracking-wider text-(--color-muted-fg) px-4 py-3">Player ID</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {rows.map((row) => (
-                      <tr
-                        key={row.rowNumber}
-                        className={`border-b border-(--color-border-soft) last:border-0 ${
-                          row.status === "error"
-                            ? "bg-red-500/5"
-                            : row.status === "duplicate"
-                              ? "bg-amber-500/5"
-                              : ""
-                        }`}
-                      >
-                        <td className="px-4 py-2.5 text-(--color-muted) text-xs">{row.rowNumber}</td>
-                        <td className="px-4 py-2.5 font-medium text-(--color-foreground)">
-                          {row.name || <span className="text-red-500 italic">missing</span>}
-                        </td>
-                        <td className="px-4 py-2.5 text-(--color-muted)">
-                          {row.email || <span className="text-red-500 italic">missing</span>}
-                        </td>
-                        <td className="px-4 py-2.5 text-(--color-muted)">
-                          {row.jerseyNumber ?? "—"}
-                        </td>
-                        <td className="px-4 py-2.5">
-                          {row.status === "error" && (
-                            <span className="text-xs text-red-600 dark:text-red-400">
-                              {row.errors[0]}
-                            </span>
-                          )}
-                          {row.status === "duplicate" && (
-                            <span className="text-xs text-amber-600 dark:text-amber-400">
-                              Already on team
-                            </span>
-                          )}
-                        </td>
-                      </tr>
-                    ))}
+                    {rows.map((row) => {
+                      const isError = row.status === "error";
+                      const isDuplicate = row.status === "duplicate";
+                      // Which specific fields have errors
+                      const badEmail = isError && (!row.email || row.errors.some((e) => e.toLowerCase().includes("email")));
+                      const badName  = isError && !row.name;
+                      const badDob   = isError && row.errors.some((e) => e.toLowerCase().includes("date") || e.toLowerCase().includes("birth"));
+
+                      return (
+                        <tr
+                          key={row.rowNumber}
+                          className={`border-b border-(--color-border-soft) last:border-0 ${
+                            isError ? "bg-red-500/5" : isDuplicate ? "bg-amber-500/5" : ""
+                          }`}
+                        >
+                          <td className="px-4 py-2.5 text-(--color-muted) text-xs whitespace-nowrap">{row.rowNumber}</td>
+                          <td className={`px-4 py-2.5 whitespace-nowrap ${badName ? "font-bold text-red-600 dark:text-red-400" : "font-medium text-(--color-foreground)"}`}>
+                            {row.name}
+                          </td>
+                          <td className={`px-4 py-2.5 whitespace-nowrap ${badEmail ? "font-bold text-red-600 dark:text-red-400" : "text-(--color-muted)"}`}>
+                            {row.email}
+                          </td>
+                          <td className="px-4 py-2.5 text-(--color-muted) whitespace-nowrap">
+                            {row.jerseyNumber ?? ""}
+                          </td>
+                          <td className={`px-4 py-2.5 whitespace-nowrap ${badDob ? "font-bold text-red-600 dark:text-red-400" : "text-(--color-muted)"}`}>
+                            {row.dateOfBirth ?? ""}
+                          </td>
+                          <td className="px-4 py-2.5 text-(--color-muted) whitespace-nowrap">
+                            {row.phone ?? ""}
+                          </td>
+                          <td className="px-4 py-2.5 text-(--color-muted) whitespace-nowrap">
+                            {row.playerId ?? ""}
+                          </td>
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>
