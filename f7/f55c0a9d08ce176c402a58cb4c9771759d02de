@@ -1,0 +1,19 @@
+src/components/layout/Sidebar.astro
+  s_e42e9bf3125b72::t_5933e85dd46695 61
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "f7f55c0a9d08ce176c402a58cb4c9771759d02de",
+  "prompts": {},
+  "sessions": {
+    "s_e42e9bf3125b72": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_0798da914ffevOl1rB5znE5URD",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "James Quick <jquick@cloudflare.com>"
+    }
+  }
+}
