@@ -1,0 +1,31 @@
+seed/README.md
+  s_e42e9bf3125b72::t_47564e80b52216 17,19-30,34-44,50-56,60-77,81,83,85-86,88,90-91
+src/components/layout/Sidebar.astro
+  s_e42e9bf3125b72::t_66fce25e362a96 4-5,10,23-28,49-55,62-64,70-71
+src/pages/dashboard.astro
+  s_e42e9bf3125b72::t_273f7dd0f8e28d 2-7
+src/pages/my-teams.astro
+  s_e42e9bf3125b72::t_5defc62eb43884 1-175
+src/repositories/team-member-repository.ts
+  s_e42e9bf3125b72::t_c8117e97e63573 130-147
+src/repositories/team-repository.ts
+  s_e42e9bf3125b72::t_e00738ab886318 1,65-73
+src/services/team-service.ts
+  s_e42e9bf3125b72::t_a0c1dd5b5f36bd 25-29
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "197dc1f9e0df8a9cdd1bc8595f9e1973aa05ec43",
+  "prompts": {},
+  "sessions": {
+    "s_e42e9bf3125b72": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_0798da914ffevOl1rB5znE5URD",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "James Quick <jquick@cloudflare.com>"
+    }
+  }
+}
