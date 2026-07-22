@@ -81,8 +81,6 @@ const regCallout = existingRegDetails ? {
     iconColor: "text-amber-500",
     label: "Pending",
     labelColor: "text-amber-800 dark:text-amber-300",
-    message: "Awaiting admin review. You'll be notified when a decision is made.",
-    messageColor: "text-amber-700 dark:text-amber-400",
   },
   approved: {
     border: "border-emerald-200 dark:border-emerald-800",
@@ -91,8 +89,6 @@ const regCallout = existingRegDetails ? {
     iconColor: "text-emerald-600 dark:text-emerald-400",
     label: "Approved",
     labelColor: "text-emerald-800 dark:text-emerald-300",
-    message: `Your team is confirmed in the ${existingRegDetails.divisionName} division. See you on the pitch!`,
-    messageColor: "text-emerald-700 dark:text-emerald-400",
   },
   waitlisted: {
     border: "border-blue-200 dark:border-blue-800",
@@ -101,8 +97,6 @@ const regCallout = existingRegDetails ? {
     iconColor: "text-blue-500",
     label: "Waitlisted",
     labelColor: "text-blue-800 dark:text-blue-300",
-    message: `You're on the waitlist for the ${existingRegDetails.divisionName} division. We'll notify you if a spot opens up.`,
-    messageColor: "text-blue-700 dark:text-blue-400",
   },
   rejected: {
     border: "border-red-200 dark:border-red-800",
@@ -111,8 +105,6 @@ const regCallout = existingRegDetails ? {
     iconColor: "text-red-500",
     label: "Not Accepted",
     labelColor: "text-red-800 dark:text-red-300",
-    message: existingRegDetails.notes ?? "Your registration was not accepted for this tournament.",
-    messageColor: "text-red-700 dark:text-red-400",
   },
 }[existingRegDetails.status] : null;
 
@@ -200,12 +192,9 @@ function formatDate(d: string | null) {
     {regCallout && (
       <div class={cn("rounded-lg border px-5 py-4 flex items-start gap-4 mb-6", regCallout.border, regCallout.bg)}>
         <span class={cn("text-xl mt-0.5 shrink-0", regCallout.iconColor)}>{regCallout.icon}</span>
-        <div>
-          <p class={cn("text-sm font-semibold", regCallout.labelColor)}>
-            Registration {regCallout.label}
-          </p>
-          <p class={cn("text-xs mt-0.5", regCallout.messageColor)}>{regCallout.message}</p>
-        </div>
+        <p class={cn("text-sm font-semibold", regCallout.labelColor)}>
+          Registration {regCallout.label}
+        </p>
       </div>
     )}
 
