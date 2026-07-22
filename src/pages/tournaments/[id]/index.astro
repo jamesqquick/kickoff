@@ -56,12 +56,18 @@ const deadlinePassed = tournament.registrationDeadline
 // Live (active) and ended (past) tournaments are closed for new registrations.
 const canRegister = user && coachTeams.length > 0 && !deadlinePassed && status === "upcoming";
 
-const statusLabel: Record<string, string> = { upcoming: "Upcoming", active: "Live", past: "Ended" };
-const statusClass: Record<string, string> = {
-  upcoming: "bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400",
-  active:   "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300",
-  past:     "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300",
-};
+// Badge label and colour reflect registration state, not just tournament state.
+const badgeLabel =
+  status === "active" ? "Underway" :
+  status === "past"   ? "Ended" :
+  !deadlinePassed     ? "Registration Open" :
+                        "Upcoming";
+
+const badgeClass =
+  status === "active"                     ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300" :
+  status === "past"                       ? "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300" :
+  !deadlinePassed /* registration open */ ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300" :
+                                            "bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400";
 
 function formatDate(d: string | null) {
   if (!d) return null;
@@ -85,8 +91,8 @@ function formatDate(d: string | null) {
           <h1 class="font-display text-2xl sm:text-3xl font-bold text-(--color-foreground)">
             {tournament.name}
           </h1>
-          <span class={cn("shrink-0 inline-block rounded-full px-2.5 py-0.5 text-xs font-medium", statusClass[status])}>
-            {statusLabel[status]}
+          <span class={cn("shrink-0 inline-block rounded-full px-2.5 py-0.5 text-xs font-medium", badgeClass)}>
+            {badgeLabel}
           </span>
         </div>
         <div class="flex flex-wrap gap-x-4 gap-y-1 text-sm text-(--color-muted)">

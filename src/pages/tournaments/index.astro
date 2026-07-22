@@ -7,17 +7,27 @@ import { makeTournamentService } from "@/services/tournament-service";
 
 const tournaments = await makeTournamentService().listTournaments();
 
-const active = tournaments.filter((t) => getTournamentStatus(t) === "active");
+const today = new Date().toISOString().slice(0, 10);
+
+const active   = tournaments.filter((t) => getTournamentStatus(t) === "active");
 const upcoming = tournaments.filter((t) => getTournamentStatus(t) === "upcoming");
-const past = tournaments.filter((t) => getTournamentStatus(t) === "past");
+const past     = tournaments.filter((t) => getTournamentStatus(t) === "past");
 
-const statusLabel = { upcoming: "Upcoming", active: "Live", past: "Past" };
+// A tournament is open for registration when it's upcoming and the deadline
+// hasn't passed (or no deadline is set).
+function isRegistrationOpen(t: (typeof tournaments)[number]): boolean {
+  return getTournamentStatus(t) === "upcoming" &&
+    (!t.registrationDeadline || t.registrationDeadline >= today);
+}
 
-const statusClass: Record<string, string> = {
-  upcoming: "bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400",
-  active: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300",
-  past: "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300",
-};
+function getTournamentBadge(t: (typeof tournaments)[number]): { label: string; class: string } {
+  const status = getTournamentStatus(t);
+  if (status === "active") return { label: "Underway", class: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300" };
+  if (status === "past")   return { label: "Ended",    class: "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300" };
+  // upcoming
+  if (isRegistrationOpen(t)) return { label: "Registration Open", class: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300" };
+  return { label: "Upcoming", class: "bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400" };
+}
 
 function formatDates(t: (typeof tournaments)[number]): string {
   if (t.startDate && t.endDate) return `${t.startDate} – ${t.endDate}`;
@@ -30,7 +40,7 @@ function formatDates(t: (typeof tournaments)[number]): string {
   <div class="p-4 sm:p-6 lg:p-8">
     <PageHeader
       title="Tournaments"
-      subtitle="Browse active and upcoming tournaments."
+      subtitle="Browse tournaments open for registration and upcoming events."
     />
 
     {tournaments.length === 0 ? (
@@ -41,25 +51,28 @@ function formatDates(t: (typeof tournaments)[number]): string {
       <div class="space-y-8">
         {active.length > 0 && (
           <section>
-            <h2 class="text-xs font-semibold uppercase tracking-wider text-(--color-muted-fg) mb-3">Live Now</h2>
+            <h2 class="text-xs font-semibold uppercase tracking-wider text-(--color-muted-fg) mb-3">Underway</h2>
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {active.map((t) => (
-                <div class="rounded-xl border border-emerald-200 dark:border-emerald-800 bg-(--color-card) p-5 flex flex-col gap-3">
-                  <div class="flex items-start justify-between gap-2">
-                    <h3 class="font-display font-semibold text-(--color-foreground)">{t.name}</h3>
-                    <span class={cn("shrink-0 inline-block rounded-full px-2 py-0.5 text-xs font-medium", statusClass["active"])}>
-                      {statusLabel["active"]}
-                    </span>
+              {active.map((t) => {
+                const badge = getTournamentBadge(t);
+                return (
+                  <div class="rounded-xl border border-emerald-200 dark:border-emerald-800 bg-(--color-card) p-5 flex flex-col gap-3">
+                    <div class="flex items-start justify-between gap-2">
+                      <h3 class="font-display font-semibold text-(--color-foreground)">{t.name}</h3>
+                      <span class={cn("shrink-0 inline-block rounded-full px-2 py-0.5 text-xs font-medium", badge.class)}>
+                        {badge.label}
+                      </span>
+                    </div>
+                    <p class="text-sm text-(--color-muted)">{formatDates(t)}</p>
+                    <a
+                      href={`/tournaments/${t.id}`}
+                      class={cn(buttonVariants({ variant: "outline" }), "mt-auto h-8 px-3 text-xs w-full justify-center")}
+                    >
+                      View →
+                    </a>
                   </div>
-                  <p class="text-sm text-(--color-muted)">{formatDates(t)}</p>
-                  <a
-                    href={`/tournaments/${t.id}`}
-                    class={cn(buttonVariants({ variant: "default" }), "mt-auto h-8 px-3 text-xs w-full justify-center")}
-                  >
-                    View & Register →
-                  </a>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </section>
         )}
@@ -68,17 +81,20 @@ function formatDates(t: (typeof tournaments)[number]): string {
           <section>
             <h2 class="text-xs font-semibold uppercase tracking-wider text-(--color-muted-fg) mb-3">Upcoming</h2>
             <div class="rounded-xl border border-(--color-border) bg-(--color-card) divide-y divide-(--color-border-soft)">
-              {upcoming.map((t) => (
-                <a href={`/tournaments/${t.id}`} class="flex items-center justify-between gap-4 px-5 py-4 hover:bg-(--color-background) transition-colors">
-                  <div>
-                    <p class="font-semibold text-sm text-(--color-foreground)">{t.name}</p>
-                    <p class="text-xs text-(--color-muted) mt-0.5">{formatDates(t)}</p>
-                  </div>
-                  <span class={cn("shrink-0 inline-block rounded-full px-2 py-0.5 text-xs font-medium", statusClass["upcoming"])}>
-                    {statusLabel["upcoming"]}
-                  </span>
-                </a>
-              ))}
+              {upcoming.map((t) => {
+                const badge = getTournamentBadge(t);
+                return (
+                  <a href={`/tournaments/${t.id}`} class="flex items-center justify-between gap-4 px-5 py-4 hover:bg-(--color-background) transition-colors">
+                    <div>
+                      <p class="font-semibold text-sm text-(--color-foreground)">{t.name}</p>
+                      <p class="text-xs text-(--color-muted) mt-0.5">{formatDates(t)}</p>
+                    </div>
+                    <span class={cn("shrink-0 inline-block rounded-full px-2 py-0.5 text-xs font-medium", badge.class)}>
+                      {badge.label}
+                    </span>
+                  </a>
+                );
+              })}
             </div>
           </section>
         )}
@@ -87,17 +103,20 @@ function formatDates(t: (typeof tournaments)[number]): string {
           <section>
             <h2 class="text-xs font-semibold uppercase tracking-wider text-(--color-muted-fg) mb-3">Past</h2>
             <div class="rounded-xl border border-(--color-border) bg-(--color-card) divide-y divide-(--color-border-soft)">
-              {past.map((t) => (
-                <div class="flex items-center justify-between gap-4 px-5 py-4 opacity-70">
-                  <div>
-                    <p class="font-semibold text-sm text-(--color-foreground)">{t.name}</p>
-                    <p class="text-xs text-(--color-muted) mt-0.5">{formatDates(t)}</p>
+              {past.map((t) => {
+                const badge = getTournamentBadge(t);
+                return (
+                  <div class="flex items-center justify-between gap-4 px-5 py-4 opacity-70">
+                    <div>
+                      <p class="font-semibold text-sm text-(--color-foreground)">{t.name}</p>
+                      <p class="text-xs text-(--color-muted) mt-0.5">{formatDates(t)}</p>
+                    </div>
+                    <span class={cn("shrink-0 inline-block rounded-full px-2 py-0.5 text-xs font-medium", badge.class)}>
+                      {badge.label}
+                    </span>
                   </div>
-                  <span class={cn("shrink-0 inline-block rounded-full px-2 py-0.5 text-xs font-medium", statusClass["past"])}>
-                    {statusLabel["past"]}
-                  </span>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </section>
         )}
