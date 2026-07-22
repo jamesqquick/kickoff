@@ -73,7 +73,7 @@ export function tournamentStatusClass(status: TournamentStatus): string {
  * Maps a tournament status to its display label.
  */
 export function tournamentStatusLabel(status: TournamentStatus): string {
-  if (status === "active") return "Underway";
+  if (status === "active") return "Happening Now";
   if (status === "past")   return "Ended";
   return "Upcoming";
 }

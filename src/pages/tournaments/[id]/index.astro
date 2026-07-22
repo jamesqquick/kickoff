@@ -58,7 +58,7 @@ const canRegister = user && coachTeams.length > 0 && !deadlinePassed && status =
 
 // Badge label and colour reflect registration state, not just tournament state.
 const badgeLabel =
-  status === "active" ? "Underway" :
+  status === "active" ? "Happening Now" :
   status === "past"   ? "Ended" :
   !deadlinePassed     ? "Registration Open" :
                         "Upcoming";
