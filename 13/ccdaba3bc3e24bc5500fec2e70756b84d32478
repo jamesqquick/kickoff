@@ -1,0 +1,57 @@
+migrations/0010_team_invites.sql
+  s_e7e295abfbdab4::t_2f4238419a3144 1-13
+src/actions/index.ts
+  s_e7e295abfbdab4::t_c95eae674d6b50 4,15
+src/actions/team-invites.ts
+  s_e7e295abfbdab4::t_56990833798b38 1-58
+src/components/InviteLinkPanel.tsx
+  s_e7e295abfbdab4::t_4773fd84267dd5 1-85
+src/components/JoinTeamButton.tsx
+  s_e7e295abfbdab4::t_7bb17cd2ae3fa6 20
+src/components/JoinViaInviteButton.tsx
+  s_e7e295abfbdab4::t_3e23164ebc19b8 1-59
+src/components/WelcomeBanner.tsx
+  s_e7e295abfbdab4::t_380cab5d4631ac 1-68
+src/components/layout/Sidebar.astro
+  s_e7e295abfbdab4::t_60c8e98d06f75a 56-62
+src/lib/http.ts
+  s_e7e295abfbdab4::t_aed5e280063ed3 15-30
+src/middleware.ts
+  s_e7e295abfbdab4::t_1d01b01a49d451 5,8-11,15-19,36-39
+src/pages/admin/schedule.astro
+  s_e7e295abfbdab4::t_a3ee6a50e96cf7 1-17
+src/pages/api/auth/signin.ts
+  s_e7e295abfbdab4::t_b8ac188a23344a 4,8,20,23
+src/pages/api/auth/signin/google.ts
+  s_e7e295abfbdab4::t_e49b5bea678528 3,10-15,17,26-30
+src/pages/api/auth/signup.ts
+  s_e7e295abfbdab4::t_85613c9c0d54f9 4,10,23,30-34
+src/pages/join/[token].astro
+  s_e7e295abfbdab4::t_1a53628bbf9497 1-192
+src/pages/schedule.astro
+  s_e7e295abfbdab4::t_c82b17c90204f9 1-17
+src/pages/signin.astro
+  s_e7e295abfbdab4::t_4536378958fa5a 14-21,94-98,109,146-150,161
+src/pages/teams/[id]/schedule.astro
+  s_e7e295abfbdab4::t_a667aae0d242b1 15
+src/repositories/team-invite-repository.ts
+  s_e7e295abfbdab4::t_108c7e0643841d 1-44
+src/services/team-invite-service.ts
+  s_e7e295abfbdab4::t_9c255129a30e2c 1-123
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "13ccdaba3bc3e24bc5500fec2e70756b84d32478",
+  "prompts": {},
+  "sessions": {
+    "s_e7e295abfbdab4": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_075f4937bffebdN17RN60lXRYJ",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "James Quick <jquick@cloudflare.com>"
+    }
+  }
+}
