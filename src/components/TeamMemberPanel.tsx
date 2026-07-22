@@ -2,15 +2,18 @@ import { useState } from "react";
 import { badgeVariants } from "@/components/ui/badge";
 import { PendingRequestActions } from "@/components/PendingRequestActions";
 import { RosterTable } from "@/components/RosterTable";
+import { RosterImportButton } from "@/components/RosterImportButton";
 import type { TeamMemberWithUser } from "@/repositories/team-member-repository";
 
 interface Props {
+  teamId: string;
   initialRoster: TeamMemberWithUser[];
   pendingRequests: TeamMemberWithUser[];
   isOwnerOrAdmin: boolean;
 }
 
 export function TeamMemberPanel({
+  teamId,
   initialRoster,
   pendingRequests,
   isOwnerOrAdmin,
@@ -42,10 +45,10 @@ export function TeamMemberPanel({
           <div>
             {pendingRequests.map((req) => (
               <PendingRequestActions
-                key={req.userId}
-                userId={req.userId}
+                key={req.id}
+                userId={req.userId!}
                 teamId={req.teamId}
-                userName={req.userName}
+                userName={req.userName ?? req.displayName ?? req.email ?? "Unknown"}
                 userImage={req.userImage}
                 requestedAt={req.createdAt}
                 onApproved={handleMemberApproved}
@@ -65,6 +68,9 @@ export function TeamMemberPanel({
               {roster.length} member{roster.length !== 1 ? "s" : ""}
             </span>
           </h3>
+          {isOwnerOrAdmin && (
+            <RosterImportButton teamId={teamId} />
+          )}
         </div>
         <RosterTable members={roster} isOwnerOrAdmin={isOwnerOrAdmin} />
       </div>

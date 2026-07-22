@@ -48,6 +48,67 @@ export class TeamMemberRepository {
     return results[0];
   }
 
+  // Bulk-insert imported roster rows. Rows without an existing account get status = 'pending_signup'.
+  // Rows where the email matches an existing account get status = 'approved' and userId set.
+  async bulkInsertImported(
+    rows: {
+      teamId: string;
+      email: string;
+      displayName: string;
+      jerseyNumber: number | null;
+      dateOfBirth: string | null;
+      phone: string | null;
+      playerId: string | null;
+      userId: string | null;    // non-null when email matched an existing account
+    }[],
+  ): Promise<TeamMember[]> {
+    if (rows.length === 0) return [];
+    const now = Date.now();
+    const values = rows.map((r) => ({
+      id: crypto.randomUUID(),
+      teamId: r.teamId,
+      email: r.email,
+      displayName: r.displayName,
+      userId: r.userId ?? null,
+      jerseyNumber: r.jerseyNumber,
+      dateOfBirth: r.dateOfBirth,
+      phone: r.phone,
+      playerId: r.playerId,
+      status: (r.userId ? "approved" : "pending_signup") as TeamMember["status"],
+      createdAt: now,
+      updatedAt: now,
+    }));
+    // D1 batch: insert in one round-trip
+    return await this.db.insert(teamMembers).values(values).returning();
+  }
+
+  // Claim all pending_signup rows for a given email when the user signs in/up.
+  // Sets userId and flips status to 'approved'. Returns the number of rows claimed.
+  async claimByEmail(email: string, userId: string): Promise<number> {
+    const pending = await this.db
+      .select({ id: teamMembers.id })
+      .from(teamMembers)
+      .where(
+        and(
+          eq(teamMembers.email, email),
+          eq(teamMembers.status, "pending_signup"),
+        ),
+      );
+
+    if (pending.length === 0) return 0;
+
+    const now = Date.now();
+    await Promise.all(
+      pending.map((row) =>
+        this.db
+          .update(teamMembers)
+          .set({ userId, status: "approved", updatedAt: now })
+          .where(eq(teamMembers.id, row.id)),
+      ),
+    );
+    return pending.length;
+  }
+
   async remove(userId: string, teamId: string): Promise<void> {
     await this.db
       .delete(teamMembers)
@@ -56,19 +117,21 @@ export class TeamMemberRepository {
       );
   }
 
-  // Approved roster for a team — JOINs user table for name/image.
+  // Approved roster for a team — LEFT JOINs user table so pending_signup rows (no userId) are included.
   // Uses raw SQL because the Better Auth `user` table is not in the Drizzle schema.
   async listByTeam(teamId: string): Promise<TeamMemberWithUser[]> {
     const result = await this.db.$client
       .prepare(
         `SELECT tm.id, tm.user_id AS userId, tm.team_id AS teamId,
+                tm.email, tm.display_name AS displayName,
                 tm.jersey_number AS jerseyNumber, tm.status,
+                tm.date_of_birth AS dateOfBirth, tm.phone, tm.player_id AS playerId,
                 tm.created_at AS createdAt, tm.updated_at AS updatedAt,
                 u.name AS userName, u.image AS userImage
          FROM team_members tm
-         JOIN user u ON u.id = tm.user_id
-         WHERE tm.team_id = ? AND tm.status = 'approved'
-         ORDER BY tm.created_at ASC`,
+         LEFT JOIN user u ON u.id = tm.user_id
+         WHERE tm.team_id = ? AND tm.status IN ('approved', 'pending_signup')
+         ORDER BY tm.status ASC, tm.created_at ASC`,
       )
       .bind(teamId)
       .all<TeamMemberWithUser>();
@@ -80,7 +143,9 @@ export class TeamMemberRepository {
     const result = await this.db.$client
       .prepare(
         `SELECT tm.id, tm.user_id AS userId, tm.team_id AS teamId,
+                tm.email, tm.display_name AS displayName,
                 tm.jersey_number AS jerseyNumber, tm.status,
+                tm.date_of_birth AS dateOfBirth, tm.phone, tm.player_id AS playerId,
                 tm.created_at AS createdAt, tm.updated_at AS updatedAt,
                 t.name AS teamName, t.city AS teamCity,
                 t.status AS teamStatus
@@ -94,12 +159,14 @@ export class TeamMemberRepository {
     return result.results;
   }
 
-  // Pending join requests for a team — same JOIN as listByTeam but status = 'pending'.
+  // Pending join requests (self-requested) for a team — always have userId.
   async listPendingByTeam(teamId: string): Promise<TeamMemberWithUser[]> {
     const result = await this.db.$client
       .prepare(
         `SELECT tm.id, tm.user_id AS userId, tm.team_id AS teamId,
+                tm.email, tm.display_name AS displayName,
                 tm.jersey_number AS jerseyNumber, tm.status,
+                tm.date_of_birth AS dateOfBirth, tm.phone, tm.player_id AS playerId,
                 tm.created_at AS createdAt, tm.updated_at AS updatedAt,
                 u.name AS userName, u.image AS userImage
          FROM team_members tm
@@ -158,12 +225,27 @@ export class TeamMemberRepository {
       .limit(1);
     return results[0] ?? null;
   }
+
+  async findByEmailAndTeam(
+    email: string,
+    teamId: string,
+  ): Promise<TeamMember | null> {
+    const results = await this.db
+      .select()
+      .from(teamMembers)
+      .where(
+        and(eq(teamMembers.email, email), eq(teamMembers.teamId, teamId)),
+      )
+      .limit(1);
+    return results[0] ?? null;
+  }
 }
 
 // TeamMember row enriched with user profile data from the Better Auth user table.
-// Used by team roster and pending-request views.
+// userName and userImage are null for pending_signup rows (no account yet).
+// Use displayName as the fallback for pending_signup rows.
 export interface TeamMemberWithUser extends TeamMember {
-  userName: string;
+  userName: string | null;
   userImage: string | null;
 }
 
