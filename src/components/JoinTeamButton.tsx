@@ -17,11 +17,7 @@ export function JoinTeamButton({ teamId, initialStatus }: Props) {
   const [loading, setLoading] = useState(false);
 
   if (status === "approved") {
-    return (
-      <Button disabled variant="outline">
-        You&apos;re on this team
-      </Button>
-    );
+    return null;
   }
 
   if (status === "pending") {

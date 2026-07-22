@@ -1,9 +1,11 @@
 import type { APIRoute } from "astro";
 import { getAuth } from "@/lib/auth";
 import { redirectWithError } from "@/lib/http";
+import { sameOriginRedirect } from "@/lib/http";
 
 export const POST: APIRoute = async ({ request }) => {
   const form = await request.formData();
+  const redirectTo = sameOriginRedirect(String(form.get("redirect") ?? ""));
 
   try {
     const { headers } = await getAuth().api.signInEmail({
@@ -15,9 +17,9 @@ export const POST: APIRoute = async ({ request }) => {
       returnHeaders: true, // capture Better Auth's Set-Cookie
     });
 
-    headers.set("Location", "/dashboard");
+    headers.set("Location", redirectTo ?? "/dashboard");
     return new Response(null, { status: 302, headers });
   } catch {
-    return redirectWithError("/signin", "Invalid email or password");
+    return redirectWithError("/signin", "Invalid email or password", redirectTo ? { redirect: redirectTo } : undefined);
   }
 };

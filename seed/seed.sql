@@ -12,6 +12,7 @@
 -- ------------------------------------------------------------
 DELETE FROM tournament_registrations;
 DELETE FROM divisions;
+DELETE FROM team_invites;
 DELETE FROM team_members;
 DELETE FROM profiles;
 DELETE FROM teams;
@@ -165,7 +166,19 @@ INSERT INTO team_members (id, user_id, team_id, jersey_number, status, created_a
   -- referee and newbie have no team_members rows by design
 
 -- ------------------------------------------------------------
--- 7. Tournaments  (Drizzle app table — snake_case columns)
+-- 7. Team Invites  (Drizzle app table — snake_case columns)
+-- One active invite per approved team. Pending/rejected teams have none.
+-- Tokens are fixed strings for test predictability.
+-- ------------------------------------------------------------
+INSERT INTO team_invites (id, team_id, token, created_by, is_active, created_at, updated_at) VALUES
+  ('inv_team_a', 'team_a', 'seed_token_river_hawks_xxxxx', 'usr_coach_a', 1, 1700000000000, 1700000000000),
+  ('inv_team_d', 'team_d', 'seed_token_coastal_fc_xxxxxx', 'usr_coach_b', 1, 1700000000000, 1700000000000),
+  ('inv_team_e', 'team_e', 'seed_token_iron_city_xxxxxxx', 'usr_coach_b', 1, 1700000000000, 1700000000000),
+  ('inv_team_g', 'team_g', 'seed_token_northside_fc_xxxx', 'usr_coach_d', 1, 1700000000000, 1700000000000),
+  ('inv_team_h', 'team_h', 'seed_token_silver_arrows_xxx', 'usr_coach_d', 1, 1700000000000, 1700000000000);
+
+-- ------------------------------------------------------------
+-- 8. Tournaments  (Drizzle app table — snake_case columns)
 -- 9 tournaments covering past / active / upcoming across divisions.
 -- ------------------------------------------------------------
 INSERT INTO tournaments (id, name, slug, start_date, end_date, registration_deadline, location, description, created_at, updated_at) VALUES
