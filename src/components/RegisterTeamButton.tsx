@@ -11,13 +11,8 @@ export function RegisterTeamButton() {
       ((document.querySelector(`[name="${name}"]`) as HTMLInputElement | null)?.value ?? "").trim();
     // Prefer a checked radio; fall back to a hidden/text input (used while the
     // division picker is not yet implemented).
-    const getField = (name: string) =>
-      ((document.querySelector(`[name="${name}"]:checked`) as HTMLInputElement | null)?.value ?? "").trim() ||
-      getText(name);
-
     const name = getText("name");
     const city = getText("city");
-    const division = getField("division");
     const color = getText("color");
     const shortName = getText("shortName") || undefined;
 
@@ -32,7 +27,7 @@ export function RegisterTeamButton() {
 
     setLoading(true);
     try {
-      const { data, error } = await actions.teams.create({ name, city, division, color, shortName });
+      const { data, error } = await actions.teams.create({ name, city, color, shortName });
       if (error) {
         toast.error(error.message ?? "Could not register team. Try again.");
         return;

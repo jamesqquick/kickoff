@@ -83,7 +83,7 @@ export class TeamMemberRepository {
                 tm.jersey_number AS jerseyNumber, tm.status,
                 tm.created_at AS createdAt, tm.updated_at AS updatedAt,
                 t.name AS teamName, t.city AS teamCity,
-                t.division AS teamDivision, t.status AS teamStatus
+                t.status AS teamStatus
          FROM team_members tm
          JOIN teams t ON t.id = tm.team_id
          WHERE tm.user_id = ?
@@ -171,6 +171,5 @@ export interface TeamMemberWithUser extends TeamMember {
 export interface TeamMemberWithTeam extends TeamMember {
   teamName: string;
   teamCity: string;
-  teamDivision: string;
   teamStatus: string;
 }

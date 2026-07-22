@@ -118,7 +118,7 @@ const myTeams = await makeTeamMemberService().listByUser(user.id);
                     >
                       {membership.teamName}
                     </a>
-                    <p class="text-xs text-(--color-muted) truncate">{membership.teamDivision} · {membership.teamCity}</p>
+                    <p class="text-xs text-(--color-muted) truncate">{membership.teamCity}</p>
                   </div>
                   <span class={badgeVariants({ variant: membership.status === "approved" ? "success" : "warning" })}>
                     {membership.status === "approved" ? "Active" : "Pending"}

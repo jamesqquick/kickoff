@@ -10,6 +10,11 @@ function makeFakeRepo(teams: Team[] = []): TeamRepository {
   return {
     list: vi.fn(async () => teams),
     findById: vi.fn(async (id: string) => teams.find((t) => t.id === id)),
+    findByIdWithCoach: vi.fn(async (id: string) => {
+      const t = teams.find((t) => t.id === id);
+      return t ? { ...t, coachName: "Test Coach" } : undefined;
+    }),
+    listAllWithCoach: vi.fn(async () => teams.map((t) => ({ ...t, coachName: "Test Coach" }))),
     insert: vi.fn(async (row) => ({ ...row } as Team)),
     updateStatus: vi.fn(async (id: string, status) => {
       const team = teams.find((t) => t.id === id);
@@ -22,7 +27,6 @@ const baseTeam: Team = {
   id: "team-1",
   name: "FC Velocity",
   city: "Austin, TX",
-  division: "U18 Men's",
   color: "emerald",
   shortName: null,
   coachId: "user-1",
@@ -38,7 +42,7 @@ describe("TeamService.getTeam", () => {
   it("returns the team when found", async () => {
     const service = new TeamService(makeFakeRepo([baseTeam]));
     const result = await service.getTeam("team-1");
-    expect(result).toEqual(baseTeam);
+    expect(result).toMatchObject(baseTeam);
   });
 
   it("throws NotFoundError when team does not exist", async () => {
@@ -52,7 +56,7 @@ describe("TeamService.createTeam", () => {
     const repo = makeFakeRepo();
     const service = new TeamService(repo);
     const result = await service.createTeam(
-      { name: "X", city: "Y", division: "Z", color: "emerald" },
+      { name: "X", city: "Y", color: "emerald" },
       regularUser,
     );
     expect(repo.insert).toHaveBeenCalledOnce();
@@ -63,7 +67,7 @@ describe("TeamService.createTeam", () => {
     const repo = makeFakeRepo();
     const service = new TeamService(repo);
     const result = await service.createTeam(
-      { name: "FC Velocity", city: "Austin, TX", division: "U18 Men's", color: "sky" },
+      { name: "FC Velocity", city: "Austin, TX", color: "sky" },
       adminUser,
     );
     expect(repo.insert).toHaveBeenCalledOnce();

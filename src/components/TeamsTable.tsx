@@ -2,6 +2,8 @@ import { useState, useEffect } from "react";
 import { ExternalLink } from "lucide-react";
 import { cn, teamColorGradient, teamStatusClass } from "@/lib/utils";
 import { buttonVariants } from "@/components/ui/button";
+import { FilterTabs } from "@/components/ui/FilterTabs";
+import type { FilterTab } from "@/components/ui/FilterTabs";
 import { TeamCrest } from "@/components/TeamCrest";
 import { TeamActionButtons } from "@/components/TeamActionButtons";
 import type { TeamStatus } from "@/lib/schema";
@@ -9,7 +11,7 @@ import type { TeamWithCoach } from "@/repositories/team-repository";
 
 type StatusFilter = "all" | "pending" | "approved" | "rejected";
 
-const TABS: { label: string; value: StatusFilter }[] = [
+const TABS: FilterTab<StatusFilter>[] = [
   { label: "Pending",  value: "pending"  },
   { label: "All",      value: "all"      },
   { label: "Approved", value: "approved" },
@@ -61,33 +63,12 @@ export function TeamsTable({ teams: initialTeams }: Props) {
 
   return (
     <div>
-      {/* Status filter tabs */}
-      <div className="mb-4 flex gap-1 border-b border-(--color-border) overflow-x-auto scrollbar-none">
-        {TABS.map(({ label, value }) => (
-          <button
-            key={value}
-            onClick={() => setActiveTab(value)}
-            className={cn(
-              "px-4 py-2 text-sm font-medium transition-colors cursor-pointer",
-              activeTab === value
-                ? "border-b-2 border-(--color-primary) text-(--color-foreground)"
-                : "text-(--color-muted) hover:text-(--color-foreground)",
-            )}
-          >
-            {label}
-            <span
-              className={cn(
-                "ml-1.5 rounded-full px-1.5 py-0.5 text-xs",
-                activeTab === value
-                  ? "bg-(--color-primary) text-white"
-                  : "bg-(--color-muted-bg) text-(--color-muted)",
-              )}
-            >
-              {countFor(value)}
-            </span>
-          </button>
-        ))}
-      </div>
+      <FilterTabs
+        tabs={TABS}
+        activeTab={activeTab}
+        onTabChange={setActiveTab}
+        countFor={countFor}
+      />
 
       {filteredTeams.length === 0 ? (
         <div className="rounded-xl border border-(--color-border) bg-(--color-card) p-12 text-center">
@@ -102,9 +83,6 @@ export function TeamsTable({ teams: initialTeams }: Props) {
               <tr className="border-b border-(--color-border)">
                 <th className="text-left text-xs font-semibold uppercase tracking-wider text-(--color-muted-fg) px-5 py-3">
                   Team
-                </th>
-                <th className="hidden md:table-cell text-left text-xs font-semibold uppercase tracking-wider text-(--color-muted-fg) px-5 py-3">
-                  Division
                 </th>
                 <th className="hidden md:table-cell text-left text-xs font-semibold uppercase tracking-wider text-(--color-muted-fg) px-5 py-3">
                   City
@@ -147,13 +125,10 @@ export function TeamsTable({ teams: initialTeams }: Props) {
                           {team.name}
                         </a>
                         <p className="text-xs text-(--color-muted) md:hidden">
-                          {team.division} · {team.city}
+                          {team.city}
                         </p>
                       </div>
                     </div>
-                  </td>
-                  <td className="hidden md:table-cell px-5 py-3.5 text-sm text-(--color-muted)">
-                    {team.division}
                   </td>
                   <td className="hidden md:table-cell px-5 py-3.5 text-sm text-(--color-muted)">
                     {team.city}
@@ -185,7 +160,7 @@ export function TeamsTable({ teams: initialTeams }: Props) {
                             title="View team"
                           >
                             <ExternalLink className="h-3.5 w-3.5 shrink-0" />
-                            <span className="hidden xl:inline">View →</span>
+                            <span className="hidden xl:inline">View</span>
                           </a>
                           <TeamActionButtons
                             teamId={team.id}

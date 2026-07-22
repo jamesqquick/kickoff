@@ -26,6 +26,9 @@ export function SaveTournamentButton({ mode, tournamentId }: Props) {
     const name = get("name");
     const startDate = get("startDate") || null;
     const endDate = get("endDate") || null;
+    const registrationDeadline = get("registrationDeadline") || null;
+    const location = get("location") || null;
+    const description = get("description") || null;
 
     if (!name) {
       toast.error("Tournament name is required.");
@@ -35,26 +38,35 @@ export function SaveTournamentButton({ mode, tournamentId }: Props) {
     setLoading(true);
     try {
       if (mode === "create") {
-        const { error } = await actions.tournaments.create({ name, startDate, endDate });
+        const { data, error } = await actions.tournaments.create({
+          name,
+          startDate,
+          endDate,
+          registrationDeadline,
+          location,
+          description,
+        });
         if (error) {
           toast.error(error.message ?? "Could not create tournament. Try again.");
           return;
         }
-        toast.success("Tournament created.");
-        window.location.href = "/admin/tournaments";
+        toast.success("Tournament created. Add divisions below.");
+        window.location.href = `/admin/tournaments/${data.id}/edit`;
       } else {
         const { error } = await actions.tournaments.update({
           id: tournamentId,
           name,
           startDate,
           endDate,
+          registrationDeadline,
+          location,
+          description,
         });
         if (error) {
           toast.error(error.message ?? "Could not save changes. Try again.");
           return;
         }
         toast.success("Tournament updated.");
-        window.location.href = "/admin/tournaments";
       }
     } catch {
       toast.error("Something went wrong. Try again.");

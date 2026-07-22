@@ -21,6 +21,9 @@ export const tournaments = {
       name: z.string().min(1, "Tournament name is required"),
       startDate: z.string().nullable().optional(),
       endDate: z.string().nullable().optional(),
+      registrationDeadline: z.string().nullable().optional(),
+      location: z.string().nullable().optional(),
+      description: z.string().nullable().optional(),
     }),
     handler: async (input, context) => {
       const user = context.locals.user;
@@ -42,6 +45,9 @@ export const tournaments = {
       name: z.string().min(1, "Tournament name is required").optional(),
       startDate: z.string().nullable().optional(),
       endDate: z.string().nullable().optional(),
+      registrationDeadline: z.string().nullable().optional(),
+      location: z.string().nullable().optional(),
+      description: z.string().nullable().optional(),
     }),
     handler: async ({ id, ...input }, context) => {
       const user = context.locals.user;

@@ -35,7 +35,7 @@ export class TournamentRepository {
 
   async update(
     id: string,
-    fields: Partial<Pick<Tournament, "name" | "slug" | "startDate" | "endDate">>,
+    fields: Partial<Pick<Tournament, "name" | "slug" | "startDate" | "endDate" | "registrationDeadline" | "location" | "description">>,
   ): Promise<Tournament> {
     const results = await this.db
       .update(tournaments)

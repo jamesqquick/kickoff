@@ -10,6 +10,8 @@
 -- ------------------------------------------------------------
 -- 1. Clear existing data (reverse dependency order)
 -- ------------------------------------------------------------
+DELETE FROM tournament_registrations;
+DELETE FROM divisions;
 DELETE FROM team_members;
 DELETE FROM profiles;
 DELETE FROM teams;
@@ -89,21 +91,21 @@ INSERT INTO profiles (id, user_id, phone, date_of_birth, address_city, address_s
 -- 9 teams across all status values, divisions, and cities.
 -- short_name set where a recognizable abbreviation fits.
 -- ------------------------------------------------------------
-INSERT INTO teams (id, name, short_name, city, division, coach_id, color, status, created_at, updated_at) VALUES
+INSERT INTO teams (id, name, short_name, city, coach_id, color, status, created_at, updated_at) VALUES
   -- coach_a teams: one approved, one pending
-  ('team_a', 'River Hawks',     'RH',   'Austin',      'Open Men''s',    'usr_coach_a', 'emerald', 'approved', 1700000000000, 1700000000000),
-  ('team_b', 'Storm United',    'SU',   'Dallas',      'U18 Boys',       'usr_coach_a', 'blue',    'pending',  1700000000000, 1700000000000),
+  ('team_a', 'River Hawks',     'RH',   'Austin',     'usr_coach_a', 'emerald', 'approved', 1700000000000, 1700000000000),
+  ('team_b', 'Storm United',    'SU',   'Dallas',     'usr_coach_a', 'blue',    'pending',  1700000000000, 1700000000000),
   -- admin team: rejected
-  ('team_c', 'Ghost FC',        'GFC',  'Houston',     'Open Men''s',    'usr_admin',   'red',     'rejected', 1700000000000, 1700000000000),
-  -- coach_b teams: both approved, different divisions
-  ('team_d', 'Coastal FC',      'CFC',  'San Diego',   'Open Women''s',  'usr_coach_b', 'sky',     'approved', 1700000000000, 1700000000000),
-  ('team_e', 'Iron City United','ICU',  'Pittsburgh',  'Masters Men''s', 'usr_coach_b', 'orange',  'approved', 1700000000000, 1700000000000),
+  ('team_c', 'Ghost FC',        'GFC',  'Houston',    'usr_admin',   'red',     'rejected', 1700000000000, 1700000000000),
+  -- coach_b teams: both approved
+  ('team_d', 'Coastal FC',      'CFC',  'San Diego',  'usr_coach_b', 'sky',     'approved', 1700000000000, 1700000000000),
+  ('team_e', 'Iron City United','ICU',  'Pittsburgh', 'usr_coach_b', 'orange',  'approved', 1700000000000, 1700000000000),
   -- coach_c teams: both unapproved — exercises Created-only path on My Teams
-  ('team_f', 'Desert Wolves',   'DW',   'Phoenix',     'U16 Boys',       'usr_coach_c', 'amber',   'pending',  1700000000000, 1700000000000),
-  ('team_i', 'Red Canyon AC',   'RCAC', 'Denver',      'U18 Girls',      'usr_coach_c', 'rose',    'rejected', 1700000000000, 1700000000000),
+  ('team_f', 'Desert Wolves',   'DW',   'Phoenix',    'usr_coach_c', 'amber',   'pending',  1700000000000, 1700000000000),
+  ('team_i', 'Red Canyon AC',   'RCAC', 'Denver',     'usr_coach_c', 'rose',    'rejected', 1700000000000, 1700000000000),
   -- coach_d teams: both approved
-  ('team_g', 'Northside FC',    'NFC',  'Chicago',     'Open Men''s',    'usr_coach_d', 'violet',  'approved', 1700000000000, 1700000000000),
-  ('team_h', 'Silver Arrows',   'SA',   'Seattle',     'Open Women''s',  'usr_coach_d', 'slate',   'approved', 1700000000000, 1700000000000);
+  ('team_g', 'Northside FC',    'NFC',  'Chicago',    'usr_coach_d', 'violet',  'approved', 1700000000000, 1700000000000),
+  ('team_h', 'Silver Arrows',   'SA',   'Seattle',    'usr_coach_d', 'slate',   'approved', 1700000000000, 1700000000000);
 
 -- ------------------------------------------------------------
 -- 6. Team Members  (Drizzle app table — snake_case columns)
@@ -166,13 +168,51 @@ INSERT INTO team_members (id, user_id, team_id, jersey_number, status, created_a
 -- 7. Tournaments  (Drizzle app table — snake_case columns)
 -- 9 tournaments covering past / active / upcoming across divisions.
 -- ------------------------------------------------------------
-INSERT INTO tournaments (id, name, slug, start_date, end_date, created_at, updated_at) VALUES
-  ('tour_1', 'Winter Cup 2024',            'winter-cup-2024',            '2024-01-15', '2024-01-28', 1700000000000, 1700000000000),
-  ('tour_2', 'Spring Invitational 2025',   'spring-invitational-2025',   '2025-03-01', '2025-03-15', 1700000000000, 1700000000000),
-  ('tour_3', 'Pacific Coast Cup 2025',     'pacific-coast-cup-2025',     '2025-08-10', '2025-08-24', 1700000000000, 1700000000000),
-  ('tour_4', 'Regional Qualifiers 2026',   'regional-qualifiers-2026',   '2026-04-05', '2026-04-12', 1700000000000, 1700000000000),
-  ('tour_5', 'Summer Classic 2026',        'summer-classic-2026',        '2026-06-01', '2026-08-31', 1700000000000, 1700000000000),
-  ('tour_6', 'Open State Championship 2026','open-state-championship-2026','2026-07-01','2026-07-20', 1700000000000, 1700000000000),
-  ('tour_7', 'Fall Championship 2026',     'fall-championship-2026',     '2026-12-01', '2026-12-20', 1700000000000, 1700000000000),
-  ('tour_8', 'Youth Invitational 2027',    'youth-invitational-2027',    '2027-02-14', '2027-02-21', 1700000000000, 1700000000000),
-  ('tour_9', 'Masters League Spring 2027', 'masters-league-spring-2027', '2027-04-01', '2027-04-30', 1700000000000, 1700000000000);
+INSERT INTO tournaments (id, name, slug, start_date, end_date, registration_deadline, location, description, created_at, updated_at) VALUES
+  ('tour_1', 'Winter Cup 2024',             'winter-cup-2024',             '2024-01-15', '2024-01-28', NULL,         NULL,                     NULL,                                              1700000000000, 1700000000000),
+  ('tour_2', 'Spring Invitational 2025',    'spring-invitational-2025',    '2025-03-01', '2025-03-15', NULL,         NULL,                     NULL,                                              1700000000000, 1700000000000),
+  ('tour_3', 'Pacific Coast Cup 2025',      'pacific-coast-cup-2025',      '2025-08-10', '2025-08-24', NULL,         'San Diego Sports Park',  NULL,                                              1700000000000, 1700000000000),
+  ('tour_4', 'Regional Qualifiers 2026',    'regional-qualifiers-2026',    '2026-04-05', '2026-04-12', '2026-03-20', 'Austin FC Stadium',      'Regional qualifier for the state championship.', 1700000000000, 1700000000000),
+  ('tour_5', 'Summer Classic 2026',         'summer-classic-2026',         '2026-06-01', '2026-08-31', '2026-05-15', 'Zilker Park Fields',     'Open summer league across all age groups.',      1700000000000, 1700000000000),
+  ('tour_6', 'Open State Championship 2026','open-state-championship-2026','2026-07-01', '2026-07-20', '2026-06-15', 'Round Rock Multiplex',   NULL,                                              1700000000000, 1700000000000),
+  ('tour_7', 'Fall Championship 2026',      'fall-championship-2026',      '2026-12-01', '2026-12-20', '2026-11-01', NULL,                     NULL,                                              1700000000000, 1700000000000),
+  ('tour_8', 'Youth Invitational 2027',     'youth-invitational-2027',     '2027-02-14', '2027-02-21', '2027-01-31', 'Cedar Park Center',      'Annual youth invitational for U12–U18 divisions.',1700000000000, 1700000000000),
+  ('tour_9', 'Masters League Spring 2027',  'masters-league-spring-2027',  '2027-04-01', '2027-04-30', '2027-03-15', NULL,                     NULL,                                              1700000000000, 1700000000000);
+
+-- ------------------------------------------------------------
+-- 8. Divisions  (per-tournament competitive brackets)
+-- ------------------------------------------------------------
+INSERT INTO divisions (id, tournament_id, name, max_teams, created_at, updated_at) VALUES
+  -- Regional Qualifiers 2026 (tour_4) — three divisions
+  ('div_4a', 'tour_4', 'Open Men''s',    16, 1700000000000, 1700000000000),
+  ('div_4b', 'tour_4', 'Open Women''s',  16, 1700000000000, 1700000000000),
+  ('div_4c', 'tour_4', 'U18 Boys',       NULL, 1700000000000, 1700000000000),
+
+  -- Summer Classic 2026 (tour_5) — four divisions
+  ('div_5a', 'tour_5', 'Open Men''s',    NULL, 1700000000000, 1700000000000),
+  ('div_5b', 'tour_5', 'Open Women''s',  NULL, 1700000000000, 1700000000000),
+  ('div_5c', 'tour_5', 'U18 Boys',       12, 1700000000000, 1700000000000),
+  ('div_5d', 'tour_5', 'Masters Men''s', 8,  1700000000000, 1700000000000),
+
+  -- Youth Invitational 2027 (tour_8) — two divisions
+  ('div_8a', 'tour_8', 'U12 Boys',       8, 1700000000000, 1700000000000),
+  ('div_8b', 'tour_8', 'U16 Girls',      8, 1700000000000, 1700000000000);
+
+-- ------------------------------------------------------------
+-- 9. Tournament Registrations
+-- (team_id, division_id, tournament_id, status)
+-- One registration per team per tournament — unique constraint enforced.
+-- ------------------------------------------------------------
+INSERT INTO tournament_registrations (id, team_id, division_id, tournament_id, status, registered_at, notes, created_at, updated_at) VALUES
+  -- River Hawks (team_a) in Regional Qualifiers → Open Men's → approved
+  ('reg_1', 'team_a', 'div_4a', 'tour_4', 'approved',   '2026-03-01T10:00:00Z', NULL, 1700000000000, 1700000000000),
+  -- Northside FC (team_g) in Regional Qualifiers → Open Men's → pending
+  ('reg_2', 'team_g', 'div_4a', 'tour_4', 'pending',    '2026-03-10T14:30:00Z', NULL, 1700000000000, 1700000000000),
+  -- Coastal FC (team_d) in Regional Qualifiers → Open Women's → approved
+  ('reg_3', 'team_d', 'div_4b', 'tour_4', 'approved',   '2026-03-05T09:00:00Z', NULL, 1700000000000, 1700000000000),
+  -- Silver Arrows (team_h) in Regional Qualifiers → Open Women's → waitlisted
+  ('reg_4', 'team_h', 'div_4b', 'tour_4', 'waitlisted', '2026-03-12T11:00:00Z', 'Division near capacity', 1700000000000, 1700000000000),
+  -- Iron City United (team_e) in Summer Classic → Masters Men's → approved
+  ('reg_5', 'team_e', 'div_5d', 'tour_5', 'approved',   '2026-04-20T08:00:00Z', NULL, 1700000000000, 1700000000000),
+  -- River Hawks (team_a) in Summer Classic → Open Men's → pending
+  ('reg_6', 'team_a', 'div_5a', 'tour_5', 'pending',    '2026-04-25T16:00:00Z', NULL, 1700000000000, 1700000000000);
