@@ -33,9 +33,10 @@ export const onRequest = defineMiddleware(async (context, next) => {
   locals.user = (session?.user ?? null) as AppUser | null;
   locals.session = session?.session ?? null;
 
-  // Redirect unauthenticated users away from protected routes
+  // Redirect unauthenticated users away from protected routes.
+  // Include the original path as ?redirect= so they return after signing in.
   if (!locals.user && !isPublicRoute(url.pathname)) {
-    return redirect("/signin");
+    return redirect(`/signin?redirect=${encodeURIComponent(url.pathname)}`);
   }
 
   // Redirect authenticated users away from sign-in

@@ -15,23 +15,25 @@ const { token } = Astro.params;
 const user = Astro.locals.user;
 
 let teamData;
+let invalidToken = false;
 try {
   teamData = await makeTeamInviteService().resolveToken(token!);
 } catch (err) {
   if (err instanceof NotFoundError) {
-    return Astro.redirect("/teams");
+    invalidToken = true;
+  } else {
+    throw err;
   }
-  throw err;
 }
 
-const { team } = teamData;
+// Resolve team info and membership status only when the token is valid.
+const team = teamData?.team;
 
-// Resolve current user's membership status so the island starts with the right UI.
 type JoinStatus = "none" | "pending" | "approved";
 let myStatus: JoinStatus = "none";
 let isCoach = false;
 
-if (user) {
+if (team && user) {
   isCoach = user.id === team.coachId;
   if (!isCoach) {
     const existing = await new TeamMemberRepository(getDb()).findByUserAndTeam(user.id, team.id);
@@ -46,7 +48,7 @@ if (user) {
 const signInUrl = `/signin?redirect=${encodeURIComponent(Astro.url.pathname)}`;
 ---
 
-<BaseLayout title={`Join ${team.name}`}>
+<BaseLayout title={invalidToken ? "Invalid Invite Link" : `Join ${team!.name}`}>
   <div class="min-h-screen flex flex-col">
     <!-- Minimal nav -->
     <header class="flex items-center gap-2.5 px-6 py-4 border-b border-(--color-border) bg-(--color-background)">
@@ -59,7 +61,17 @@ const signInUrl = `/signin?redirect=${encodeURIComponent(Astro.url.pathname)}`;
     <!-- Content -->
     <main class="flex-1 flex items-center justify-center px-4 py-12 bg-(--color-background)">
       <div class="w-full max-w-md">
-        <!-- Team card -->
+        {invalidToken ? (
+          <div class="rounded-2xl border border-(--color-border) bg-(--color-card) overflow-hidden">
+            <div class="px-6 py-10 flex flex-col items-center gap-4 text-center">
+              <div class="w-12 h-12 rounded-full bg-red-50 flex items-center justify-center text-red-500 text-xl font-bold">!</div>
+              <div>
+                <p class="font-semibold text-(--color-foreground)">This invite link is no longer valid</p>
+                <p class="text-sm text-(--color-muted) mt-1">The link may have been regenerated or revoked. Ask your coach for a new one.</p>
+              </div>
+            </div>
+          </div>
+        ) : (
         <div class="rounded-2xl border border-(--color-border) bg-(--color-card) overflow-hidden">
           <!-- Team hero -->
           <div
@@ -67,14 +79,14 @@ const signInUrl = `/signin?redirect=${encodeURIComponent(Astro.url.pathname)}`;
             style="background: radial-gradient(circle at 30% 20%, rgba(5,150,105,0.14), transparent 50%), radial-gradient(circle at 80% 80%, rgba(234,88,12,0.10), transparent 50%), var(--color-card);"
           >
             <TeamCrest
-              initials={team.shortName ?? team.name.slice(0, 2).toUpperCase()}
-              gradient={teamColorGradient(team.color)}
+              initials={team!.shortName ?? team!.name.slice(0, 2).toUpperCase()}
+              gradient={teamColorGradient(team!.color)}
               size="2xl"
               class="shadow-md"
             />
             <div>
-              <h1 class="font-display text-2xl font-bold text-(--color-foreground)">{team.name}</h1>
-              <p class="text-sm text-(--color-muted) mt-0.5">{team.city} · Coach: {team.coachName}</p>
+              <h1 class="font-display text-2xl font-bold text-(--color-foreground)">{team!.name}</h1>
+              <p class="text-sm text-(--color-muted) mt-0.5">{team!.city} · Coach: {team!.coachName}</p>
             </div>
           </div>
 
@@ -116,7 +128,7 @@ const signInUrl = `/signin?redirect=${encodeURIComponent(Astro.url.pathname)}`;
                   <p class="text-sm text-(--color-muted) mt-1">Share it with players so they can join instantly.</p>
                 </div>
                 <a
-                  href={`/teams/${team.id}`}
+                  href={`/teams/${team!.id}`}
                   class={cn(buttonVariants({ variant: "default" }), "w-full")}
                 >
                   Go to team page →
@@ -130,7 +142,7 @@ const signInUrl = `/signin?redirect=${encodeURIComponent(Astro.url.pathname)}`;
                   <p class="text-sm text-(--color-muted) mt-1">Head to the team page to see your roster and schedule.</p>
                 </div>
                 <a
-                  href={`/teams/${team.id}`}
+                  href={`/teams/${team!.id}`}
                   class={cn(buttonVariants({ variant: "default" }), "w-full")}
                 >
                   Go to team page →
@@ -148,13 +160,14 @@ const signInUrl = `/signin?redirect=${encodeURIComponent(Astro.url.pathname)}`;
                 <JoinViaInviteButton
                   client:load
                   token={token!}
-                  teamId={team.id}
+                  teamId={team!.id}
                   initialStatus={myStatus}
                 />
               </>
             )}
           </div>
         </div>
+        )}
       </div>
     </main>
   </div>
