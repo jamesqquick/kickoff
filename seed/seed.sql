@@ -197,6 +197,20 @@ INSERT INTO tournaments (id, name, slug, start_date, end_date, registration_dead
 -- 8. Divisions  (per-tournament competitive brackets)
 -- ------------------------------------------------------------
 INSERT INTO divisions (id, tournament_id, name, max_teams, created_at, updated_at) VALUES
+  -- Winter Cup 2024 (tour_1) — past
+  ('div_1a', 'tour_1', 'Open Men''s',    16, 1700000000000, 1700000000000),
+  ('div_1b', 'tour_1', 'Open Women''s',  16, 1700000000000, 1700000000000),
+
+  -- Spring Invitational 2025 (tour_2) — past
+  ('div_2a', 'tour_2', 'Open Men''s',    NULL, 1700000000000, 1700000000000),
+  ('div_2b', 'tour_2', 'Open Women''s',  NULL, 1700000000000, 1700000000000),
+  ('div_2c', 'tour_2', 'U18 Boys',       12,   1700000000000, 1700000000000),
+
+  -- Pacific Coast Cup 2025 (tour_3) — past
+  ('div_3a', 'tour_3', 'Open Men''s',    16, 1700000000000, 1700000000000),
+  ('div_3b', 'tour_3', 'Open Women''s',  16, 1700000000000, 1700000000000),
+  ('div_3c', 'tour_3', 'U18 Boys',       NULL, 1700000000000, 1700000000000),
+
   -- Regional Qualifiers 2026 (tour_4) — three divisions
   ('div_4a', 'tour_4', 'Open Men''s',    16, 1700000000000, 1700000000000),
   ('div_4b', 'tour_4', 'Open Women''s',  16, 1700000000000, 1700000000000),
@@ -205,12 +219,27 @@ INSERT INTO divisions (id, tournament_id, name, max_teams, created_at, updated_a
   -- Summer Classic 2026 (tour_5) — four divisions
   ('div_5a', 'tour_5', 'Open Men''s',    NULL, 1700000000000, 1700000000000),
   ('div_5b', 'tour_5', 'Open Women''s',  NULL, 1700000000000, 1700000000000),
-  ('div_5c', 'tour_5', 'U18 Boys',       12, 1700000000000, 1700000000000),
-  ('div_5d', 'tour_5', 'Masters Men''s', 8,  1700000000000, 1700000000000),
+  ('div_5c', 'tour_5', 'U18 Boys',       12,   1700000000000, 1700000000000),
+  ('div_5d', 'tour_5', 'Masters Men''s', 8,    1700000000000, 1700000000000),
+
+  -- Open State Championship 2026 (tour_6) — upcoming
+  ('div_6a', 'tour_6', 'Open Men''s',    24, 1700000000000, 1700000000000),
+  ('div_6b', 'tour_6', 'Open Women''s',  24, 1700000000000, 1700000000000),
+  ('div_6c', 'tour_6', 'Co-Ed Open',     16, 1700000000000, 1700000000000),
+
+  -- Fall Championship 2026 (tour_7) — upcoming
+  ('div_7a', 'tour_7', 'Open Men''s',    16, 1700000000000, 1700000000000),
+  ('div_7b', 'tour_7', 'Open Women''s',  16, 1700000000000, 1700000000000),
+  ('div_7c', 'tour_7', 'U18 Boys',       12, 1700000000000, 1700000000000),
+  ('div_7d', 'tour_7', 'U18 Girls',      12, 1700000000000, 1700000000000),
 
   -- Youth Invitational 2027 (tour_8) — two divisions
   ('div_8a', 'tour_8', 'U12 Boys',       8, 1700000000000, 1700000000000),
-  ('div_8b', 'tour_8', 'U16 Girls',      8, 1700000000000, 1700000000000);
+  ('div_8b', 'tour_8', 'U16 Girls',      8, 1700000000000, 1700000000000),
+
+  -- Masters League Spring 2027 (tour_9) — upcoming
+  ('div_9a', 'tour_9', 'Masters Men''s', 12, 1700000000000, 1700000000000),
+  ('div_9b', 'tour_9', 'Masters Women''s', 12, 1700000000000, 1700000000000);
 
 -- ------------------------------------------------------------
 -- 9. Tournament Registrations
