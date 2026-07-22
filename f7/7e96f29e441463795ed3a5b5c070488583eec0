@@ -1,0 +1,19 @@
+src/services/team-invite-service.ts
+  s_40e30943df94fe::t_d42eab83070dbc 1-123
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "f77e96f29e441463795ed3a5b5c070488583eec0",
+  "prompts": {},
+  "sessions": {
+    "s_40e30943df94fe": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_0798fbc23ffeAM4WJr0pw1okmZ",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "James Quick <jquick@cloudflare.com>"
+    }
+  }
+}
