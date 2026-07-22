@@ -23,6 +23,10 @@ export const GET: APIRoute = async ({ request, url }) => {
     return redirectWithError("/signin", "Could not start Google sign-in");
   }
 
-  headers.set("Location", response.url);
+  // Append prompt=select_account so users can switch Google accounts if needed.
+  const googleUrl = new URL(response.url);
+  googleUrl.searchParams.set("prompt", "select_account");
+
+  headers.set("Location", googleUrl.toString());
   return new Response(null, { status: 302, headers });
 };
