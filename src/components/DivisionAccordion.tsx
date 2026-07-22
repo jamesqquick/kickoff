@@ -1,15 +1,18 @@
-import { cn } from "@/lib/utils";
+import { cn, teamColorGradient } from "@/lib/utils";
 import {
   Accordion,
   AccordionItem,
   AccordionTrigger,
   AccordionContent,
 } from "@/components/ui/accordion";
+import { TeamCrest } from "@/components/TeamCrest";
 import type { Division } from "@/lib/schema";
 
 interface RegisteredTeam {
   teamId: string;
   teamName: string;
+  teamColor: string;
+  teamShortName: string | null;
   status: "approved" | "pending" | "waitlisted" | "rejected";
 }
 
@@ -68,9 +71,14 @@ export function DivisionAccordion({ divisions }: Props) {
                   {approvedTeams.map((team) => (
                     <li
                       key={team.teamId}
-                      className="rounded-md bg-(--color-background) px-3 py-2.5 text-sm text-(--color-foreground)"
+                      className="flex items-center gap-3 rounded-md bg-(--color-background) px-3 py-2.5"
                     >
-                      {team.teamName}
+                      <TeamCrest
+                        initials={team.teamShortName ?? team.teamName.slice(0, 2).toUpperCase()}
+                        gradient={teamColorGradient(team.teamColor)}
+                        size="sm"
+                      />
+                      <span className="text-sm text-(--color-foreground)">{team.teamName}</span>
                     </li>
                   ))}
                 </ul>

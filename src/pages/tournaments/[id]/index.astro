@@ -45,7 +45,13 @@ const allRegistrations = await regRepo.listByTournament(tournament.id);
 const divisionsWithTeams = divisions.map((d) => {
   const teams = allRegistrations
     .filter((r) => r.divisionId === d.id)
-    .map((r) => ({ teamId: r.teamId, teamName: r.teamName, status: r.status }));
+    .map((r) => ({
+      teamId: r.teamId,
+      teamName: r.teamName,
+      teamColor: r.teamColor,
+      teamShortName: r.teamShortName,
+      status: r.status,
+    }));
   return { ...d, count: teams.filter((t) => t.status === "approved").length, teams };
 });
 

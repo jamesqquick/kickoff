@@ -5,6 +5,8 @@ import type { TournamentRegistration, NewTournamentRegistration, RegistrationSta
 
 export interface RegistrationWithDetails extends TournamentRegistration {
   teamName: string;
+  teamColor: string;
+  teamShortName: string | null;
   divisionName: string;
 }
 
@@ -24,6 +26,8 @@ export class TournamentRegistrationRepository {
         createdAt: tournamentRegistrations.createdAt,
         updatedAt: tournamentRegistrations.updatedAt,
         teamName: teams.name,
+        teamColor: teams.color,
+        teamShortName: teams.shortName,
         divisionName: divisions.name,
       })
       .from(tournamentRegistrations)
