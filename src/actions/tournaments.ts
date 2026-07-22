@@ -1,7 +1,6 @@
 import { defineAction, ActionError } from "astro:actions";
 import { z } from "astro:schema";
 import { makeTournamentService } from "@/services/tournament-service";
-import { AppError } from "@/lib/errors";
 import { toActionError } from "./utils";
 
 export const tournaments = {
@@ -10,8 +9,7 @@ export const tournaments = {
       try {
         return await makeTournamentService().listTournaments();
       } catch (err) {
-        if (err instanceof AppError) throw toActionError(err);
-        throw err;
+        throw toActionError(err);
       }
     },
   }),
@@ -33,8 +31,7 @@ export const tournaments = {
       try {
         return await makeTournamentService().createTournament(input, user);
       } catch (err) {
-        if (err instanceof AppError) throw toActionError(err);
-        throw err;
+        throw toActionError(err);
       }
     },
   }),
@@ -57,8 +54,7 @@ export const tournaments = {
       try {
         return await makeTournamentService().updateTournament(id, input, user);
       } catch (err) {
-        if (err instanceof AppError) throw toActionError(err);
-        throw err;
+        throw toActionError(err);
       }
     },
   }),
@@ -73,8 +69,7 @@ export const tournaments = {
       try {
         await makeTournamentService().deleteTournament(id, user);
       } catch (err) {
-        if (err instanceof AppError) throw toActionError(err);
-        throw err;
+        throw toActionError(err);
       }
     },
   }),

@@ -2,7 +2,6 @@ import { defineAction, ActionError } from "astro:actions";
 import { z } from "astro:schema";
 import { getAuth } from "@/lib/auth";
 import { makeProfileService } from "@/services/profile-service";
-import { AppError } from "@/lib/errors";
 import { toActionError } from "./utils";
 
 export const profile = {
@@ -52,8 +51,7 @@ export const profile = {
           addressCountry: input.addressCountry || undefined,
         });
       } catch (err) {
-        if (err instanceof AppError) throw toActionError(err);
-        throw err;
+        throw toActionError(err);
       }
     },
   }),
@@ -84,11 +82,12 @@ export const profile = {
           },
           headers: context.request.headers,
         });
-      } catch (err: unknown) {
-        // Better Auth throws when the current password is wrong.
-        const message =
-          err instanceof Error ? err.message : "Could not update password. Please try again.";
-        throw new ActionError({ code: "BAD_REQUEST", message });
+      } catch {
+        // Better Auth throws when the current password is wrong; don't expose the raw message.
+        throw new ActionError({
+          code: "BAD_REQUEST",
+          message: "Current password is incorrect.",
+        });
       }
     },
   }),

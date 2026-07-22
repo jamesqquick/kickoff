@@ -2,7 +2,6 @@ import { defineAction, ActionError } from "astro:actions";
 import { z } from "astro:schema";
 import { makeRosterImportService } from "@/services/roster-import-service";
 import { getDb } from "@/lib/db";
-import { AppError } from "@/lib/errors";
 import { toActionError } from "./utils";
 
 // Zod shape for a single validated row passed back from the client on confirm.
@@ -42,8 +41,7 @@ export const rosterImport = {
         );
         return { rows };
       } catch (err) {
-        if (err instanceof AppError) throw toActionError(err);
-        throw err;
+        throw toActionError(err);
       }
     },
   }),
@@ -68,10 +66,7 @@ export const rosterImport = {
         );
         return result;
       } catch (err) {
-        if (err instanceof AppError) throw toActionError(err);
-        // Prevent raw D1 / SQL error messages from reaching the client toast.
-        console.error("[rosterImport.confirm] Unexpected error:", err);
-        throw new ActionError({ code: "INTERNAL_SERVER_ERROR", message: "Import failed. Please try again." });
+        throw toActionError(err);
       }
     },
   }),

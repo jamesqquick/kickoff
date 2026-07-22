@@ -1,7 +1,6 @@
 import { defineAction, ActionError } from "astro:actions";
 import { z } from "astro:schema";
 import { makeTeamService } from "@/services/team-service";
-import { AppError } from "@/lib/errors";
 import { toActionError } from "./utils";
 
 export const teams = {
@@ -10,8 +9,7 @@ export const teams = {
       try {
         return await makeTeamService().listTeams();
       } catch (err) {
-        if (err instanceof AppError) throw toActionError(err);
-        throw err;
+        throw toActionError(err);
       }
     },
   }),
@@ -22,8 +20,7 @@ export const teams = {
       try {
         return await makeTeamService().getTeam(id);
       } catch (err) {
-        if (err instanceof AppError) throw toActionError(err);
-        throw err;
+        throw toActionError(err);
       }
     },
   }),
@@ -43,8 +40,7 @@ export const teams = {
       try {
         return await makeTeamService().createTeam(input, user);
       } catch (err) {
-        if (err instanceof AppError) throw toActionError(err);
-        throw err;
+        throw toActionError(err);
       }
     },
   }),
@@ -65,8 +61,7 @@ export const teams = {
       try {
         return await makeTeamService().updateTeam(id, { name, city, color, shortName }, user);
       } catch (err) {
-        if (err instanceof AppError) throw toActionError(err);
-        throw err;
+        throw toActionError(err);
       }
     },
   }),
