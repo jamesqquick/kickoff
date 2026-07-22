@@ -1,0 +1,19 @@
+AGENTS.md
+  s_e7e295abfbdab4::t_e198370c2941e3 67-119
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "93a93ac1847eeb086fbc33bebf86e0531015ec50",
+  "prompts": {},
+  "sessions": {
+    "s_e7e295abfbdab4": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_075f4937bffebdN17RN60lXRYJ",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "James Quick <jquick@cloudflare.com>"
+    }
+  }
+}
