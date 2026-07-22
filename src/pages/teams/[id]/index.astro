@@ -49,9 +49,10 @@ if (user) {
   }
 }
 
-// Resolve the invite link for coaches — create one lazily if it doesn't exist yet.
+// Resolve the invite link for approved teams only.
+// Pending/rejected teams can't be joined, so there's no point showing a link.
 let inviteUrl: string | null = null;
-if (isOwnerOrAdmin && user) {
+if (isOwnerOrAdmin && user && team.status === "approved") {
   try {
     const invite = await makeTeamInviteService().getOrCreate(team.id, user);
     inviteUrl = `${Astro.url.origin}/join/${invite.token}`;
