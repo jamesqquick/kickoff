@@ -68,6 +68,10 @@ if (isOwnerOrAdmin && user && team.status === "approved") {
 
 <AppLayout title={team.name} activeNav="teams">
   <div class="p-4 sm:p-6 lg:p-8">
+    {justJoined && (
+      <WelcomeBanner client:load teamName={team.name} />
+    )}
+
     <!-- Breadcrumb -->
     <p class="text-sm text-(--color-muted) mb-5">
       <a href="/teams" class="hover:text-(--color-primary)">Teams</a>
@@ -115,10 +119,6 @@ if (isOwnerOrAdmin && user && team.status === "approved") {
         )}
       </div>
     </div>
-
-    {justJoined && (
-      <WelcomeBanner client:load teamName={team.name} />
-    )}
 
     {isOwnerOrAdmin && inviteUrl && (
       <InviteLinkPanel
