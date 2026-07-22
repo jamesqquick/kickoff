@@ -1,0 +1,21 @@
+seed/README.md
+  s_40e30943df94fe::t_646d568f883a36 17,19-23
+seed/seed.sql
+  s_40e30943df94fe::t_5f9684ca29f33a 31-33,44-45,55-56,72,75-77,79-82
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "e3118bfaf0ed30f9e0a57fa2bc1eabd42651ab16",
+  "prompts": {},
+  "sessions": {
+    "s_40e30943df94fe": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_0798fbc23ffeAM4WJr0pw1okmZ",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "James Quick <jquick@cloudflare.com>"
+    }
+  }
+}
