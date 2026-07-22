@@ -98,15 +98,15 @@ INSERT INTO teams (id, name, short_name, city, coach_id, color, created_at, upda
   ('team_a', 'River Hawks',     'RH',   'Austin',     'usr_coach_a', 'emerald', 1700000000000, 1700000000000),
   ('team_b', 'Storm United',    'SU',   'Dallas',     'usr_coach_a', 'blue',    1700000000000, 1700000000000),
   -- admin team
-  ('team_c', 'Ghost FC',        'GFC',  'Houston',    'usr_admin',   'red',     1700000000000, 1700000000000),
+  ('team_c', 'Ghost FC',        'GF',  'Houston',    'usr_admin',   'red',     1700000000000, 1700000000000),
   -- coach_b teams
-  ('team_d', 'Coastal FC',      'CFC',  'San Diego',  'usr_coach_b', 'sky',     1700000000000, 1700000000000),
-  ('team_e', 'Iron City United','ICU',  'Pittsburgh', 'usr_coach_b', 'orange',  1700000000000, 1700000000000),
+  ('team_d', 'Coastal FC',      'CF',  'San Diego',  'usr_coach_b', 'sky',     1700000000000, 1700000000000),
+  ('team_e', 'Iron City United','IC',  'Pittsburgh', 'usr_coach_b', 'orange',  1700000000000, 1700000000000),
   -- coach_c teams
   ('team_f', 'Desert Wolves',   'DW',   'Phoenix',    'usr_coach_c', 'amber',   1700000000000, 1700000000000),
-  ('team_i', 'Red Canyon AC',   'RCAC', 'Denver',     'usr_coach_c', 'rose',    1700000000000, 1700000000000),
+  ('team_i', 'Red Canyon AC',   'RC', 'Denver',     'usr_coach_c', 'rose',    1700000000000, 1700000000000),
   -- coach_d teams
-  ('team_g', 'Northside FC',    'NFC',  'Chicago',    'usr_coach_d', 'violet',  1700000000000, 1700000000000),
+  ('team_g', 'Northside FC',    'NF',  'Chicago',    'usr_coach_d', 'violet',  1700000000000, 1700000000000),
   ('team_h', 'Silver Arrows',   'SA',   'Seattle',    'usr_coach_d', 'slate',   1700000000000, 1700000000000);
 
 -- ------------------------------------------------------------
