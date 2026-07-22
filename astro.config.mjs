@@ -19,6 +19,7 @@ export default defineConfig({
         "better-auth",
         "kysely-d1",
         "@radix-ui/react-dropdown-menu",
+        "@radix-ui/react-accordion",
       ],
     },
   },
