@@ -51,8 +51,12 @@ const signInUrl = `/signin?redirect=${encodeURIComponent(joinRedirectPath)}`;
 
 // Auto-join: if the user just returned from sign-in (autoJoin=1), join immediately
 // server-side and redirect to the team page — the user never sees the button.
+// Already-approved members are also redirected directly (no re-join needed).
 const autoJoin = Astro.url.searchParams.get("autoJoin") === "1";
-if (autoJoin && user && team && !isCoach && myStatus !== "approved") {
+if (autoJoin && user && team && !isCoach) {
+  if (myStatus === "approved") {
+    return Astro.redirect(`/teams/${team.id}`);
+  }
   try {
     const { teamId } = await makeTeamInviteService().joinViaToken(token!, user);
     return Astro.redirect(`/teams/${teamId}?joined=1`);
