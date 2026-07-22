@@ -184,14 +184,14 @@ function formatDate(d: string | null) {
         </span>
       </div>
       <p class="text-sm text-(--color-muted)">
-        {status === "past"
+        {tournament.registrationDeadline
+          ? (status === "upcoming" && !deadlinePassed)
+            ? `Closes ${formatDate(tournament.registrationDeadline)}.`
+            : `Closed ${formatDate(tournament.registrationDeadline)}.`
+          : status === "past"
           ? "This tournament has ended."
           : status === "active"
           ? "This tournament is underway."
-          : deadlinePassed
-          ? `Closed ${formatDate(tournament.registrationDeadline)}.`
-          : tournament.registrationDeadline
-          ? `Closes ${formatDate(tournament.registrationDeadline)}.`
           : "No deadline set."}
       </p>
     </SectionCard>
