@@ -20,8 +20,6 @@ interface DivisionWithTeams extends Division {
 
 interface Props {
   divisions: DivisionWithTeams[];
-  canRegister: boolean;
-  tournamentId: string;
 }
 
 const STATUS_BADGE: Record<RegisteredTeam["status"], { label: string; class: string }> = {
@@ -31,7 +29,7 @@ const STATUS_BADGE: Record<RegisteredTeam["status"], { label: string; class: str
   rejected:   { label: "Rejected",   class: "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300" },
 };
 
-export function DivisionAccordion({ divisions, canRegister, tournamentId }: Props) {
+export function DivisionAccordion({ divisions }: Props) {
   if (divisions.length === 0) {
     return (
       <p className="text-sm text-(--color-muted) text-center py-8">
@@ -92,16 +90,7 @@ export function DivisionAccordion({ divisions, canRegister, tournamentId }: Prop
                   })}
                 </ul>
               )}
-              {canRegister && !full && (
-                <div className="mt-3 pt-3 border-t border-(--color-border-soft)">
-                  <a
-                    href={`/tournaments/${tournamentId}/register`}
-                    className="text-sm text-(--color-primary) hover:underline font-medium"
-                  >
-                    Register your team in this division →
-                  </a>
-                </div>
-              )}
+
             </AccordionContent>
           </AccordionItem>
         );
