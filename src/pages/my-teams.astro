@@ -108,7 +108,7 @@ function membershipStatusBadge(status: string): { label: string; variant: "succe
                             href={`/teams/${team.id}`}
                             class={cn(buttonVariants({ variant: "outline" }), "h-7 px-3 text-xs")}
                           >
-                            View →
+                            View
                           </a>
                         </div>
                       </td>
@@ -148,7 +148,6 @@ function membershipStatusBadge(status: string): { label: string; variant: "succe
                       <td class="px-5 py-3.5">
                         <span class="font-semibold text-sm text-(--color-foreground)">{membership.teamName}</span>
                       </td>
-                      <td class="hidden sm:table-cell px-5 py-3.5 text-sm text-(--color-muted)">{membership.teamDivision}</td>
                       <td class="hidden sm:table-cell px-5 py-3.5 text-sm text-(--color-muted)">{membership.teamCity}</td>
                       <td class="px-5 py-3.5">
                         <span class={badgeVariants({ variant: badge.variant })}>{badge.label}</span>
@@ -158,11 +157,11 @@ function membershipStatusBadge(status: string): { label: string; variant: "succe
                           href={`/teams/${membership.teamId}`}
                           class={cn(buttonVariants({ variant: "outline" }), "h-7 px-3 text-xs")}
                         >
-                          View →
-                        </a>
-                      </td>
-                    </tr>
-                  );
+                          View
+                         </a>
+                       </td>
+                     </tr>
+                   );
                 })}
               </tbody>
             </table>

@@ -8,7 +8,6 @@ import type { Team } from "@/lib/schema";
 export interface CreateTeamInput {
   name: string;
   city: string;
-  division: string;
   color: string;
   shortName?: string;
 }
@@ -51,7 +50,6 @@ export class TeamService {
       id,
       name: input.name,
       city: input.city,
-      division: input.division,
       color: input.color || "emerald",
       shortName: input.shortName?.trim().toUpperCase() || null,
       coachId: currentUser.id,
@@ -63,7 +61,7 @@ export class TeamService {
 
   async updateTeam(
     id: string,
-    input: { name: string; city: string; division: string; color: string; shortName?: string },
+    input: { name: string; city: string; color: string; shortName?: string },
     currentUser: AppUser,
   ): Promise<Team> {
     const team = await this.teams.findById(id);
@@ -79,7 +77,6 @@ export class TeamService {
     return this.teams.update(id, {
       name: input.name.trim(),
       city: input.city.trim(),
-      division: input.division.trim(),
       color: input.color || "emerald",
       shortName: input.shortName?.trim().toUpperCase() || null,
     });

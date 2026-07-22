@@ -64,6 +64,59 @@ Astro Pages → Astro Actions / API Endpoints → Service Layer → Repository L
 - Actions define input validation inline via `defineAction({ input: z.object({...}) })`. Use `z.infer<typeof schema>` for any TypeScript types derived from those shapes — never duplicate a Zod schema as a manual TypeScript type.
 - User-facing feedback uses toasts (Sonner), fired from React islands, never `<script>` blocks. See Toast Notifications below.
 
+### Filterable Tables
+
+Any table that needs status/category filtering uses the shared `FilterTabs` component (`src/components/ui/FilterTabs.tsx`). Never inline the tab bar markup — it is identical across all tables and must stay in one place.
+
+```tsx
+import { FilterTabs } from "@/components/ui/FilterTabs";
+import type { FilterTab } from "@/components/ui/FilterTabs";
+
+const TABS: FilterTab<StatusFilter>[] = [
+  { label: "Pending", value: "pending" },
+  { label: "All",     value: "all"     },
+  // ...
+];
+
+<FilterTabs tabs={TABS} activeTab={activeTab} onTabChange={setActiveTab} countFor={countFor} />
+```
+
+Reference implementations: `TeamsTable.tsx`, `TournamentsTable.tsx`, `RegistrationReviewTable.tsx`.
+
+### Destructive Confirmations
+
+Any action that permanently deletes or irreversibly mutates data **must** use a full-screen overlay confirmation — never an inline expand, browser `confirm()`, or toast-level prompt.
+
+Pattern: a `fixed inset-0 z-50` semi-transparent backdrop with a centered card. The card must include:
+- A clear title naming the specific resource being deleted
+- A plain-language explanation of what will be destroyed (cascade effects included)
+- A warning callout (amber or red) when the action affects other users (e.g. registered teams lose records)
+- **Cancel** (outline) and **Confirm delete** (destructive) buttons; both disabled while the request is in flight
+
+Reference implementation: `src/components/DeleteTournamentButton.tsx` and `src/components/DivisionManager.tsx`.
+
+```tsx
+{open && (
+  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+    <div className="w-full max-w-sm rounded-xl border border-(--color-border) bg-(--color-card) p-6 shadow-xl mx-4">
+      <h3 className="text-base font-semibold text-(--color-foreground) mb-2">
+        Delete "{name}"?
+      </h3>
+      <div className="text-sm text-(--color-muted) space-y-2 mb-5">
+        <p>Explain what will be destroyed.</p>
+        {/* amber/red callout when other users are affected */}
+      </div>
+      <div className="flex gap-2 justify-end">
+        <Button variant="outline" onClick={() => setOpen(false)} disabled={loading}>Cancel</Button>
+        <Button variant="destructive" onClick={handleDelete} disabled={loading}>
+          {loading ? "Deleting…" : "Delete"}
+        </Button>
+      </div>
+    </div>
+  </div>
+)}
+```
+
 ### Toast Notifications
 
 Toasts use [Sonner](https://sonner.emilkowal.ski/). `<Toaster>` is mounted once in `AppLayout.astro` (bottom-right); `src/components/ui/sonner.tsx` maps our tokens — don't reinstall the shadcn default (it adds `next-themes`).

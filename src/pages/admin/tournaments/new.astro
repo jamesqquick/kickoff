@@ -24,7 +24,7 @@ if (!user || user.role !== "admin") {
 
     <PageHeader
       title="Create Tournament"
-      subtitle="Name and date range. Status starts as Draft — promote it when you're ready."
+      subtitle="Fill in the details. Add divisions after saving."
     />
 
     <SectionCard class="p-5 sm:p-7">
@@ -33,13 +33,35 @@ if (!user || user.role !== "admin") {
         The slug is auto-generated from the name and must be unique.
       </p>
 
-      <div class="grid grid-cols-1 gap-4 mb-6">
+      <div class="grid grid-cols-1 gap-4 mb-4">
         <FormField label="Tournament name" name="name" required placeholder="e.g. Spring Invitational 2026" />
       </div>
 
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
         <FormField label="Start date" name="startDate" type="date" />
         <FormField label="End date" name="endDate" type="date" />
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+        <FormField
+          label="Registration deadline"
+          name="registrationDeadline"
+          type="date"
+          hint="Teams cannot register after this date."
+        />
+        <FormField
+          label="Location / venue"
+          name="location"
+          placeholder="e.g. Austin Sports Complex"
+        />
+      </div>
+
+      <div class="mb-6">
+        <FormField
+          label="Description"
+          name="description"
+          placeholder="Shown to coaches on the tournament page (optional)."
+        />
       </div>
 
       <div class="flex justify-between">

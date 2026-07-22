@@ -25,6 +25,9 @@ const baseTournament: Tournament = {
   slug: "spring-invitational-2026",
   startDate: "2099-04-01", // far future → status = "upcoming"
   endDate: "2099-04-03",
+  registrationDeadline: null,
+  location: null,
+  description: null,
   createdAt: 1000,
   updatedAt: 1000,
 };

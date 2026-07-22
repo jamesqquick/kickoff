@@ -34,8 +34,9 @@ export class TeamRepository {
   async findByIdWithCoach(id: string): Promise<TeamWithCoach | undefined> {
     const result = await this.db.$client
       .prepare(
-        `SELECT t.id, t.name, t.city, t.division, t.coach_id AS coachId,
-                t.color, t.status, t.created_at AS createdAt, t.updated_at AS updatedAt,
+        `SELECT t.id, t.name, t.city, t.coach_id AS coachId,
+                t.color, t.short_name AS shortName, t.status,
+                t.created_at AS createdAt, t.updated_at AS updatedAt,
                 u.name AS coachName
          FROM teams t
          JOIN user u ON u.id = t.coach_id
@@ -52,8 +53,9 @@ export class TeamRepository {
   async listAllWithCoach(): Promise<TeamWithCoach[]> {
     const result = await this.db.$client
       .prepare(
-        `SELECT t.id, t.name, t.city, t.division, t.coach_id AS coachId,
-                t.color, t.status, t.created_at AS createdAt, t.updated_at AS updatedAt,
+        `SELECT t.id, t.name, t.city, t.coach_id AS coachId,
+                t.color, t.short_name AS shortName, t.status,
+                t.created_at AS createdAt, t.updated_at AS updatedAt,
                 u.name AS coachName
          FROM teams t
          JOIN user u ON u.id = t.coach_id`,
@@ -94,7 +96,7 @@ export class TeamRepository {
     return results[0];
   }
 
-  async update(id: string, fields: { name: string; city: string; division: string; color: string; shortName?: string | null }): Promise<Team> {
+  async update(id: string, fields: { name: string; city: string; color: string; shortName?: string | null }): Promise<Team> {
     const results = await this.db
       .update(teams)
       .set({ ...fields, updatedAt: Date.now() })

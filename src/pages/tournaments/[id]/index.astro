@@ -1,0 +1,170 @@
+---
+import AppLayout from "@/layouts/AppLayout.astro";
+import { buttonVariants } from "@/components/ui/button";
+import { cn, getTournamentStatus } from "@/lib/utils";
+import PageHeader from "@/components/PageHeader.astro";
+import SectionCard from "@/components/SectionCard.astro";
+import { RegisterForTournamentButton } from "@/components/RegisterForTournamentButton";
+import { makeTournamentService } from "@/services/tournament-service";
+import { makeDivisionService } from "@/services/division-service";
+import { makeTeamService } from "@/services/team-service";
+import { TournamentRegistrationRepository } from "@/repositories/tournament-registration-repository";
+import { getDb } from "@/lib/db";
+import { NotFoundError } from "@/lib/errors";
+
+const { id } = Astro.params;
+const user = Astro.locals.user;
+
+let tournament;
+let divisions;
+try {
+  tournament = await makeTournamentService().getTournament(id!);
+  divisions = await makeDivisionService().getDivisionsForTournament(id!);
+} catch (err) {
+  if (err instanceof NotFoundError) {
+    return Astro.redirect("/tournaments");
+  }
+  throw err;
+}
+
+const status = getTournamentStatus(tournament);
+
+// For coaches: resolve which teams they coach + whether they're already registered.
+const coachTeams = user ? await makeTeamService().listByCoach(user.id) : [];
+
+const regRepo = new TournamentRegistrationRepository(getDb());
+const existingReg = user && coachTeams.length > 0
+  ? await Promise.all(
+      coachTeams.map((t) => regRepo.findByTeamAndTournament(t.id, tournament.id))
+    ).then((results) => results.find(Boolean) ?? null)
+  : null;
+
+// Registration counts per division for capacity display.
+const divisionCounts = await Promise.all(
+  divisions.map(async (d) => ({
+    divisionId: d.id,
+    count: await regRepo.countByDivision(d.id),
+  }))
+);
+const countMap = Object.fromEntries(divisionCounts.map(({ divisionId, count }) => [divisionId, count]));
+
+const deadlinePassed = tournament.registrationDeadline
+  ? new Date() > new Date(tournament.registrationDeadline)
+  : false;
+
+const canRegister = user && coachTeams.length > 0 && !deadlinePassed && status !== "past";
+
+const statusLabel: Record<string, string> = { upcoming: "Upcoming", active: "Live", past: "Ended" };
+const statusClass: Record<string, string> = {
+  upcoming: "bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400",
+  active:   "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300",
+  past:     "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300",
+};
+
+function formatDate(d: string | null) {
+  if (!d) return null;
+  return new Date(d).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
+}
+---
+
+<AppLayout title={tournament.name} activeNav="tournaments">
+  <div class="p-4 sm:p-6 lg:p-8 max-w-4xl">
+    <!-- Breadcrumb -->
+    <p class="text-sm text-(--color-muted) mb-5">
+      <a href="/tournaments" class="hover:text-(--color-primary)">Tournaments</a>
+      <span class="mx-2">/</span>
+      <span class="text-(--color-foreground)">{tournament.name}</span>
+    </p>
+
+    <!-- Header -->
+    <div class="flex items-start justify-between gap-4 mb-6">
+      <div>
+        <div class="flex items-center gap-3 mb-1">
+          <h1 class="font-display text-2xl sm:text-3xl font-bold text-(--color-foreground)">
+            {tournament.name}
+          </h1>
+          <span class={cn("shrink-0 inline-block rounded-full px-2.5 py-0.5 text-xs font-medium", statusClass[status])}>
+            {statusLabel[status]}
+          </span>
+        </div>
+        <div class="flex flex-wrap gap-x-4 gap-y-1 text-sm text-(--color-muted)">
+          {tournament.startDate && tournament.endDate && (
+            <span>{formatDate(tournament.startDate)} – {formatDate(tournament.endDate)}</span>
+          )}
+          {tournament.location && <span>📍 {tournament.location}</span>}
+          {tournament.registrationDeadline && (
+            <span class={deadlinePassed ? "text-red-500" : ""}>
+              Registration {deadlinePassed ? "closed" : "deadline"}: {formatDate(tournament.registrationDeadline)}
+            </span>
+          )}
+        </div>
+      </div>
+      {user?.role === "admin" && (
+        <a
+          href={`/admin/tournaments/${tournament.id}/edit`}
+          class={cn(buttonVariants({ variant: "outline" }), "shrink-0")}
+        >
+          Edit →
+        </a>
+      )}
+    </div>
+
+    {tournament.description && (
+      <SectionCard class="p-5 mb-6">
+        <p class="text-sm text-(--color-foreground)">{tournament.description}</p>
+      </SectionCard>
+    )}
+
+    <!-- Divisions -->
+    <SectionCard class="p-5 sm:p-7">
+      <h2 class="font-display text-lg font-semibold text-(--color-foreground) mb-1">Divisions</h2>
+      <p class="text-sm text-(--color-muted) mb-5">
+        {canRegister
+          ? "Select a division below to register your team."
+          : deadlinePassed
+          ? "Registration has closed for this tournament."
+          : status === "past"
+          ? "This tournament has ended."
+          : "Sign in as a coach with an approved team to register."}
+      </p>
+
+      {divisions.length === 0 ? (
+        <p class="text-sm text-(--color-muted) text-center py-8">
+          No divisions have been set up for this tournament yet.
+        </p>
+      ) : (
+        <div class="divide-y divide-(--color-border-soft) rounded-lg border border-(--color-border)">
+          {divisions.map((division) => {
+            const count = countMap[division.id] ?? 0;
+            const full = division.maxTeams !== null && count >= division.maxTeams;
+            return (
+              <div class="flex items-center justify-between gap-4 px-4 py-4">
+                <div>
+                  <p class="font-medium text-sm text-(--color-foreground)">{division.name}</p>
+                  {division.maxTeams !== null && (
+                    <p class="text-xs text-(--color-muted) mt-0.5">
+                      {count} / {division.maxTeams} teams
+                      {full && <span class="ml-1 text-red-500 font-medium">· Full</span>}
+                    </p>
+                  )}
+                </div>
+                <div class="shrink-0">
+                  {canRegister && !full ? (
+                    <RegisterForTournamentButton
+                      client:load
+                      division={division}
+                      coachTeams={coachTeams}
+                      registeredTeamId={existingReg?.teamId ?? null}
+                    />
+                  ) : full ? (
+                    <span class="text-xs text-red-500 font-medium">Full</span>
+                  ) : null}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </SectionCard>
+  </div>
+</AppLayout>

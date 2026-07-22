@@ -8,7 +8,9 @@ import SectionCard from "@/components/SectionCard.astro";
 import FormField from "@/components/FormField.astro";
 import { SaveTournamentButton } from "@/components/SaveTournamentButton";
 import { DeleteTournamentButton } from "@/components/DeleteTournamentButton";
+import { DivisionManager } from "@/components/DivisionManager";
 import { makeTournamentService } from "@/services/tournament-service";
+import { makeDivisionService } from "@/services/division-service";
 import { getTournamentStatus } from "@/lib/utils";
 import { NotFoundError } from "@/lib/errors";
 
@@ -20,8 +22,10 @@ if (!user || user.role !== "admin") {
 const { id } = Astro.params;
 
 let tournament;
+let divisions;
 try {
   tournament = await makeTournamentService().getTournament(id!);
+  divisions = await makeDivisionService().getDivisionsForTournament(id!);
 } catch (err) {
   if (err instanceof NotFoundError) {
     return Astro.redirect("/admin/tournaments");
@@ -40,32 +44,80 @@ try {
 
     <PageHeader
       title="Edit Tournament"
-      subtitle="Update name and dates."
+      subtitle="Update details and manage divisions."
     />
 
-    <SectionCard class="p-5 sm:p-7">
+    <!-- Tournament details -->
+    <SectionCard class="p-5 sm:p-7 mb-6">
       <h2 class="font-display text-lg font-semibold text-(--color-foreground) mb-1">Tournament Details</h2>
       <p class="text-sm text-(--color-muted) mb-6">Changes take effect immediately.</p>
 
-      <div class="grid grid-cols-1 gap-4 mb-6">
+      <div class="grid grid-cols-1 gap-4 mb-4">
         <FormField label="Tournament name" name="name" required value={tournament.name} />
       </div>
 
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
         <FormField label="Start date" name="startDate" type="date" value={tournament.startDate ?? undefined} />
         <FormField label="End date" name="endDate" type="date" value={tournament.endDate ?? undefined} />
       </div>
 
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+        <FormField
+          label="Registration deadline"
+          name="registrationDeadline"
+          type="date"
+          value={tournament.registrationDeadline ?? undefined}
+          hint="Teams cannot register after this date."
+        />
+        <FormField
+          label="Location / venue"
+          name="location"
+          value={tournament.location ?? undefined}
+          placeholder="e.g. Austin Sports Complex"
+        />
+      </div>
+
+      <div class="mb-6">
+        <FormField
+          label="Description"
+          name="description"
+          value={tournament.description ?? undefined}
+          placeholder="Shown to coaches on the tournament page (optional)."
+        />
+      </div>
+
       <div class="flex justify-between">
         <a href="/admin/tournaments" class={cn(buttonVariants({ variant: "outline" }))}>
-          ← Cancel
+          ← Back
         </a>
-        <SaveTournamentButton client:load mode="edit" tournamentId={tournament.id} />
+        <div class="flex gap-2">
+          <a
+            href={`/admin/tournaments/${tournament.id}/registrations`}
+            class={cn(buttonVariants({ variant: "outline" }))}
+          >
+            View Registrations
+          </a>
+          <SaveTournamentButton client:load mode="edit" tournamentId={tournament.id} />
+        </div>
       </div>
     </SectionCard>
 
+    <!-- Divisions -->
+    <SectionCard class="p-5 sm:p-7 mb-6">
+      <h2 class="font-display text-lg font-semibold text-(--color-foreground) mb-1">Divisions</h2>
+      <p class="text-sm text-(--color-muted) mb-5">
+        Coaches see these division names when registering their team. Add one per competitive bracket.
+      </p>
+      <DivisionManager
+        client:load
+        tournamentId={tournament.id}
+        initialDivisions={divisions}
+      />
+    </SectionCard>
+
+    <!-- Danger zone -->
     {getTournamentStatus(tournament) !== "active" && (
-      <div class="mt-8 rounded-xl border border-red-200 dark:border-red-900 bg-red-50 dark:bg-red-950/30 p-5">
+      <div class="rounded-xl border border-red-200 dark:border-red-900 bg-red-50 dark:bg-red-950/30 p-5">
         <h3 class="text-sm font-semibold text-red-700 dark:text-red-400 mb-1">Danger zone</h3>
         <p class="text-sm text-(--color-muted) mb-4">
           Deleting a tournament is permanent. Active tournaments cannot be deleted.
