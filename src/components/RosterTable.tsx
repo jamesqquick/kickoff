@@ -154,27 +154,17 @@ export function RosterTable({ teamId, members, isOwnerOrAdmin = false }: Props) 
                     </div>
                   )}
 
-                  {isOwnerOrAdmin && member.userId ? (
-                    <div>
-                      <a
-                        href={`/users/${member.userId}`}
-                        className="font-medium text-sm text-(--color-foreground) hover:text-(--color-primary) hover:underline"
-                      >
-                        {displayName}
-                      </a>
-                      {member.email && (
-                        <p className="text-xs text-(--color-muted)">{member.email}</p>
-                      )}
-                    </div>
+                  {isOwnerOrAdmin ? (
+                    <a
+                      href={`/teams/${teamId}/members/${member.id}`}
+                      className="font-medium text-sm text-(--color-foreground) hover:text-(--color-primary) hover:underline"
+                    >
+                      {displayName}
+                    </a>
                   ) : (
-                    <div>
-                      <span className="font-medium text-sm text-(--color-foreground)">
-                        {displayName}
-                      </span>
-                      {member.email && !member.userId && (
-                        <p className="text-xs text-(--color-muted)">{member.email}</p>
-                      )}
-                    </div>
+                    <span className="font-medium text-sm text-(--color-foreground)">
+                      {displayName}
+                    </span>
                   )}
                 </div>
               </td>

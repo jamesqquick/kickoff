@@ -268,6 +268,25 @@ export class TeamMemberRepository {
       .where(eq(teamMembers.id, memberId));
   }
 
+  // Single member row with user data LEFT JOINed — works for both account and imported members.
+  async findByIdWithUser(memberId: string): Promise<TeamMemberWithUser | null> {
+    const result = await this.db.$client
+      .prepare(
+        `SELECT tm.id, tm.user_id AS userId, tm.team_id AS teamId,
+                tm.email, tm.display_name AS displayName,
+                tm.jersey_number AS jerseyNumber, tm.status,
+                tm.date_of_birth AS dateOfBirth, tm.phone, tm.player_id AS playerId,
+                tm.created_at AS createdAt, tm.updated_at AS updatedAt,
+                u.name AS userName, u.image AS userImage
+         FROM team_members tm
+         LEFT JOIN user u ON u.id = tm.user_id
+         WHERE tm.id = ?`,
+      )
+      .bind(memberId)
+      .first<TeamMemberWithUser>();
+    return result ?? null;
+  }
+
   async findByEmailAndTeam(
     email: string,
     teamId: string,

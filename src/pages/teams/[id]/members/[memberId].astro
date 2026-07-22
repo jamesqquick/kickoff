@@ -1,0 +1,151 @@
+---
+import AppLayout from "@/layouts/AppLayout.astro";
+import { getDb } from "@/lib/db";
+import { TeamMemberRepository } from "@/repositories/team-member-repository";
+import { TeamRepository } from "@/repositories/team-repository";
+import { ForbiddenError, NotFoundError } from "@/lib/errors";
+
+const viewer = Astro.locals.user;
+if (!viewer) return Astro.redirect("/signin");
+
+const { id: teamId, memberId } = Astro.params;
+
+const db = getDb();
+const teamRepo = new TeamMemberRepository(db);
+const teams = new TeamRepository(db);
+
+const [team, member] = await Promise.all([
+  teams.findById(teamId!),
+  teamRepo.findByIdWithUser(memberId!),
+]);
+
+if (!team || !member || member.teamId !== teamId) {
+  return Astro.redirect(`/teams/${teamId}`);
+}
+
+// Only the team coach and admins can view member detail pages.
+const isOwnerOrAdmin = viewer.role === "admin" || team.coachId === viewer.id;
+if (!isOwnerOrAdmin) return Astro.redirect(`/teams/${teamId}`);
+
+const displayName = member.userName ?? member.displayName ?? member.email ?? "Unknown";
+const nameParts = displayName.trim().split(/\s+/);
+const initials =
+  ((nameParts[0]?.[0] ?? "") + (nameParts[1]?.[0] ?? "")).toUpperCase() || "?";
+
+const formatDate = (iso: string | null | undefined) => {
+  if (!iso) return null;
+  const [year, month, day] = iso.split("-").map(Number);
+  return new Date(year, month - 1, day).toLocaleDateString("en-US", {
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+  });
+};
+
+// Resolve email — account members store it in the user table, not on the row.
+// Fetch it if needed.
+let email = member.email ?? null;
+if (!email && member.userId) {
+  const userRow = await db.$client
+    .prepare("SELECT email FROM user WHERE id = ?")
+    .bind(member.userId)
+    .first<{ email: string }>();
+  email = userRow?.email ?? null;
+}
+---
+
+<AppLayout title={displayName} activeNav="teams">
+  <div class="p-4 sm:p-6 lg:p-8 max-w-2xl mx-auto">
+
+    <!-- Breadcrumb -->
+    <p class="text-sm text-(--color-muted) mb-5">
+      <a href="/teams" class="hover:text-(--color-primary)">Teams</a>
+      <span class="mx-2">/</span>
+      <a href={`/teams/${teamId}`} class="hover:text-(--color-primary)">{team.name}</a>
+      <span class="mx-2">/</span>
+      <span class="text-(--color-foreground)">{displayName}</span>
+    </p>
+
+    <!-- Identity card -->
+    <div class="rounded-xl border border-(--color-border) bg-(--color-card) p-6 mb-5">
+      <div class="flex items-start gap-5">
+        <!-- Avatar -->
+        {member.userImage ? (
+          <img
+            src={member.userImage}
+            alt={displayName}
+            class="w-16 h-16 rounded-full object-cover shrink-0"
+          />
+        ) : (
+          <div class="w-16 h-16 rounded-full bg-gradient-to-br from-emerald-500 to-emerald-700 flex items-center justify-center text-white text-xl font-bold shrink-0">
+            {initials}
+          </div>
+        )}
+
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center gap-3 flex-wrap">
+            <h1 class="font-display text-xl font-bold text-(--color-foreground)">{displayName}</h1>
+            {member.jerseyNumber != null && (
+              <span class="text-sm font-medium text-(--color-muted) bg-(--color-muted-bg) rounded-full px-2.5 py-0.5">
+                #{member.jerseyNumber}
+              </span>
+            )}
+          </div>
+          {email && (
+            <p class="text-sm text-(--color-muted) mt-0.5">{email}</p>
+          )}
+          {member.userId && (
+            <a
+              href={`/users/${member.userId}`}
+              class="text-xs text-(--color-primary) hover:underline mt-1 inline-block"
+            >
+              View full account profile →
+            </a>
+          )}
+        </div>
+      </div>
+
+      <!-- Roster details grid -->
+      {(member.phone || member.dateOfBirth || member.playerId) && (
+        <div class="mt-5 pt-5 border-t border-(--color-border) grid grid-cols-1 sm:grid-cols-2 gap-5">
+          {member.phone && (
+            <div>
+              <p class="text-xs font-semibold uppercase tracking-wider text-(--color-muted-fg) mb-1">Phone</p>
+              <p class="text-sm text-(--color-foreground)">{member.phone}</p>
+            </div>
+          )}
+          {member.dateOfBirth && (
+            <div>
+              <p class="text-xs font-semibold uppercase tracking-wider text-(--color-muted-fg) mb-1">Date of Birth</p>
+              <p class="text-sm text-(--color-foreground)">{formatDate(member.dateOfBirth)}</p>
+            </div>
+          )}
+          {member.playerId && (
+            <div>
+              <p class="text-xs font-semibold uppercase tracking-wider text-(--color-muted-fg) mb-1">Player ID</p>
+              <p class="text-sm text-(--color-foreground) font-mono">{member.playerId}</p>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+
+    <!-- Meta -->
+    <div class="rounded-xl border border-(--color-border) bg-(--color-card) px-5 py-4">
+      <p class="text-xs font-semibold uppercase tracking-wider text-(--color-muted-fg) mb-3">Roster info</p>
+      <div class="grid grid-cols-2 gap-4 text-sm">
+        <div>
+          <p class="text-(--color-muted-fg) text-xs">Added</p>
+          <p class="text-(--color-foreground)">
+            {new Date(member.createdAt).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}
+          </p>
+        </div>
+        <div>
+          <p class="text-(--color-muted-fg) text-xs">Jersey</p>
+          <p class="text-(--color-foreground)">{member.jerseyNumber ?? "—"}</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</AppLayout>
