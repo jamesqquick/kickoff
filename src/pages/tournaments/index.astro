@@ -2,13 +2,21 @@
 import AppLayout from "@/layouts/AppLayout.astro";
 import { getTournamentStatus } from "@/lib/utils";
 import PageHeader from "@/components/PageHeader.astro";
+import RegistrationStatusBadge from "@/components/RegistrationStatusBadge.astro";
 import { makeTournamentService } from "@/services/tournament-service";
 
 const tournaments = await makeTournamentService().listTournaments();
 
+const today = new Date().toISOString().slice(0, 10);
+
 const active   = tournaments.filter((t) => getTournamentStatus(t) === "active");
 const upcoming = tournaments.filter((t) => getTournamentStatus(t) === "upcoming");
 const past     = tournaments.filter((t) => getTournamentStatus(t) === "past");
+
+function isRegistrationOpen(t: (typeof tournaments)[number]): boolean {
+  return getTournamentStatus(t) === "upcoming" &&
+    (!t.registrationDeadline || t.registrationDeadline >= today);
+}
 
 function formatDate(d: string): string {
   return new Date(d).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
@@ -44,6 +52,7 @@ function formatDates(t: (typeof tournaments)[number]): string {
                     <p class="font-semibold text-sm text-(--color-foreground)">{t.name}</p>
                     <p class="text-xs text-(--color-muted) mt-0.5">{formatDates(t)}</p>
                   </div>
+                  <RegistrationStatusBadge open={false} withPrefix />
                 </a>
               ))}
             </div>
@@ -60,6 +69,7 @@ function formatDates(t: (typeof tournaments)[number]): string {
                     <p class="font-semibold text-sm text-(--color-foreground)">{t.name}</p>
                     <p class="text-xs text-(--color-muted) mt-0.5">{formatDates(t)}</p>
                   </div>
+                  <RegistrationStatusBadge open={isRegistrationOpen(t)} withPrefix />
                 </a>
               ))}
             </div>
@@ -76,6 +86,7 @@ function formatDates(t: (typeof tournaments)[number]): string {
                     <p class="font-semibold text-sm text-(--color-foreground)">{t.name}</p>
                     <p class="text-xs text-(--color-muted) mt-0.5">{formatDates(t)}</p>
                   </div>
+                  <RegistrationStatusBadge open={false} withPrefix />
                 </a>
               ))}
             </div>
