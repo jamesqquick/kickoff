@@ -44,8 +44,22 @@ if (team && user) {
   }
 }
 
-// Build the sign-in URL with this page as the post-auth redirect destination.
-const signInUrl = `/signin?redirect=${encodeURIComponent(Astro.url.pathname)}`;
+// Include ?autoJoin=1 in the redirect so the page can auto-join server-side
+// after the user returns from sign-in, without requiring a manual button click.
+const joinRedirectPath = `${Astro.url.pathname}?autoJoin=1`;
+const signInUrl = `/signin?redirect=${encodeURIComponent(joinRedirectPath)}`;
+
+// Auto-join: if the user just returned from sign-in (autoJoin=1), join immediately
+// server-side and redirect to the team page — the user never sees the button.
+const autoJoin = Astro.url.searchParams.get("autoJoin") === "1";
+if (autoJoin && user && team && !isCoach && myStatus !== "approved") {
+  try {
+    const { teamId } = await makeTeamInviteService().joinViaToken(token!, user);
+    return Astro.redirect(`/teams/${teamId}?joined=1`);
+  } catch {
+    // Fall through to normal page render if join fails for any reason.
+  }
+}
 ---
 
 <BaseLayout title={invalidToken ? "Invalid Invite Link" : `Join ${team!.name}`}>

@@ -14,6 +14,7 @@ import { teamStatusVariant, teamColorGradient } from "@/lib/utils";
 import { JoinTeamButton } from "@/components/JoinTeamButton";
 import { TeamMemberPanel } from "@/components/TeamMemberPanel";
 import { InviteLinkPanel } from "@/components/InviteLinkPanel";
+import { WelcomeBanner } from "@/components/WelcomeBanner";
 
 const { id } = Astro.params;
 const user = Astro.locals.user;
@@ -30,6 +31,8 @@ try {
 
 const isOwnerOrAdmin =
   user?.role === "admin" || user?.id === team.coachId;
+
+const justJoined = Astro.url.searchParams.get("joined") === "1";
 
 const roster = await makeTeamMemberService().listByTeam(id!);
 const pendingRequests = isOwnerOrAdmin
@@ -112,6 +115,10 @@ if (isOwnerOrAdmin && user && team.status === "approved") {
         )}
       </div>
     </div>
+
+    {justJoined && (
+      <WelcomeBanner client:load teamName={team.name} />
+    )}
 
     {isOwnerOrAdmin && inviteUrl && (
       <InviteLinkPanel
