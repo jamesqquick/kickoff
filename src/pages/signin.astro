@@ -6,10 +6,6 @@ import BrandMark from "@/components/BrandMark.astro";
 import FormField from "@/components/FormField.astro";
 import GoogleAuthButton from "@/components/GoogleAuthButton.astro";
 
-const GOOGLE_OAUTH_URL = redirectTo
-  ? `/api/auth/signin/google?redirect=${encodeURIComponent(redirectTo)}`
-  : "/api/auth/signin/google";
-
 // API routes redirect back here with ?tab=signup&error=... on failure.
 const activeTab = Astro.url.searchParams.get("tab") === "signup" ? "signup" : "signin";
 const error = Astro.url.searchParams.get("error");
@@ -19,6 +15,10 @@ const signUpError = activeTab === "signup" ? error : null;
 // Post-auth redirect: preserved through hidden form fields → API routes → Location header.
 // Only same-origin paths are accepted — the API routes validate and strip external URLs.
 const redirectTo = Astro.url.searchParams.get("redirect") ?? "";
+
+const GOOGLE_OAUTH_URL = redirectTo
+  ? `/api/auth/signin/google?redirect=${encodeURIComponent(redirectTo)}`
+  : "/api/auth/signin/google";
 ---
 
 <BaseLayout title="Sign In">
