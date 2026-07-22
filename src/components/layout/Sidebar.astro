@@ -1,11 +1,13 @@
 ---
 import BrandMark from "@/components/BrandMark.astro";
 import { UserMenu } from "@/components/layout/UserMenu";
+import { TeamMemberRepository } from "@/repositories/team-member-repository";
+import { getDb } from "@/lib/db";
 
 interface Props {
   activeNav?: string;
 }
-const { activeNav = "dashboard" } = Astro.props;
+const { activeNav = "my-teams" } = Astro.props;
 
 const user = Astro.locals.user;
 const displayName = user?.name?.trim() || user?.email || "Account";
@@ -17,6 +19,12 @@ const initials =
     .slice(0, 2)
     .map((part) => part[0]?.toUpperCase() ?? "")
     .join("") || "?";
+
+// Sidebar badge: count of confirmed teams (approved coached + approved player memberships).
+// Shown for all authenticated users. Zero means no badge.
+const myTeamsCount = user
+  ? await new TeamMemberRepository(getDb()).countConfirmedForUser(user.id)
+  : 0;
 
 function getIcon(name: string) {
   const icons: Record<string, string> = {
@@ -38,33 +46,37 @@ const navGroups = [
   {
     label: "Overview",
     items: [
-      { id: "dashboard",   label: "Dashboard",   href: "/dashboard",      icon: "grid-2x2", count: undefined },
-      { id: "tournaments", label: "Tournaments",  href: "/tournaments",    icon: "trophy",   count: "3" },
-      { id: "teams",       label: "Teams",        href: "/teams",          icon: "shield",   count: "128" },
+      {
+        id: "my-teams",
+        label: "My Teams",
+        href: "/my-teams",
+        icon: "shield",
+        count: myTeamsCount > 0 ? String(myTeamsCount) : undefined,
+      },
     ],
   },
   {
     label: "Logistics",
     items: [
-      { id: "schedule",  label: "Schedule",       href: "/teams/1/schedule", icon: "calendar",      count: undefined },
-      { id: "venues",    label: "Venues & Fields", href: "/venues",           icon: "map-pin",       count: undefined },
-      { id: "referees",  label: "Referees",        href: "/referees",         icon: "scale",         count: undefined },
-      { id: "payments",  label: "Payments",        href: "/payments",         icon: "credit-card",   count: undefined },
+      { id: "schedule",  label: "Schedule",        href: "/teams/1/schedule", icon: "calendar",      count: undefined },
+      { id: "venues",    label: "Venues & Fields",  href: "/venues",           icon: "map-pin",       count: undefined },
+      { id: "referees",  label: "Referees",         href: "/referees",         icon: "scale",         count: undefined },
+      { id: "payments",  label: "Payments",         href: "/payments",         icon: "credit-card",   count: undefined },
     ],
   },
   ...(isAdmin ? [{
     label: "Admin",
     items: [
       { id: "admin",             label: "Dashboard",   href: "/admin",             icon: "grid-2x2", count: undefined },
-      { id: "admin-tournaments", label: "Tournaments", href: "/admin/tournaments", icon: "trophy",  count: undefined },
-      { id: "admin-teams",       label: "Teams",       href: "/admin/teams",       icon: "shield",  count: undefined },
+      { id: "admin-tournaments", label: "Tournaments", href: "/admin/tournaments", icon: "trophy",   count: undefined },
+      { id: "admin-teams",       label: "Teams",       href: "/admin/teams",       icon: "shield",   count: undefined },
     ],
   }] : []),
   {
     label: "Account",
     items: [
-      { id: "profile",  label: "My Profile", href: "/profile",   icon: "user",     count: undefined },
-      { id: "settings", label: "Settings",   href: "/settings",  icon: "settings", count: undefined },
+      { id: "profile",  label: "My Profile", href: "/profile",  icon: "user",     count: undefined },
+      { id: "settings", label: "Settings",   href: "/settings", icon: "settings", count: undefined },
     ],
   },
 ];
