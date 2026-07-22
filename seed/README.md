@@ -14,12 +14,13 @@ fresh worktree. Do not run against the remote database.
 
 All accounts use the password **`Test1234!`**
 
-| Email | Role | Notes |
+| Email | Role | My Teams scenario |
 |---|---|---|
-| `admin@kickoff.test` | admin | Full admin access; owns Ghost FC (rejected team) |
-| `coach-a@kickoff.test` | player | Owns River Hawks (approved) and Storm United (pending) |
-| `player1@kickoff.test` | player | Member of River Hawks (approved), Storm United (pending), Ghost FC (approved) |
-| `player2@kickoff.test` | player | Member of River Hawks (pending), Storm United (rejected) |
+| `admin@kickoff.test` | admin | **Both sections** — Created: Ghost FC (rejected) · Joined: River Hawks (approved) |
+| `coach-a@kickoff.test` | player | **Both sections** — Created: River Hawks (approved), Storm United (pending) · Joined: Ghost FC (pending) |
+| `player1@kickoff.test` | player | **Joined only** — River Hawks (approved), Storm United (pending), Ghost FC (approved) |
+| `player2@kickoff.test` | player | **Joined only** — River Hawks (pending), Storm United (rejected) |
+| `newbie@kickoff.test` | player | **Global empty state** — no teams created or joined |
 
 ## Teams
 
