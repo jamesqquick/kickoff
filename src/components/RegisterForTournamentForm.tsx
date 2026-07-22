@@ -4,6 +4,13 @@ import { actions } from "astro:actions";
 import { Button } from "@/components/ui/button";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import type { Division } from "@/lib/schema";
 
 interface DivisionWithCount extends Division {
@@ -55,15 +62,16 @@ export function RegisterForTournamentForm({ tournamentId, divisions, coachTeams 
           <label className="block text-sm font-medium text-(--color-foreground) mb-2">
             Which team are you registering?
           </label>
-          <select
-            value={selectedTeamId}
-            onChange={(e) => setSelectedTeamId(e.target.value)}
-            className="w-full rounded-md border border-(--color-border) bg-(--color-background) px-3 py-2 text-sm text-(--color-foreground) cursor-pointer"
-          >
-            {coachTeams.map((t) => (
-              <option key={t.id} value={t.id}>{t.name}</option>
-            ))}
-          </select>
+          <Select value={selectedTeamId} onValueChange={setSelectedTeamId}>
+            <SelectTrigger className="w-full">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {coachTeams.map((t) => (
+                <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
       )}
 

@@ -4,6 +4,7 @@ import { buttonVariants } from "@/components/ui/button";
 import { cn, getTournamentStatus } from "@/lib/utils";
 import PageHeader from "@/components/PageHeader.astro";
 import SectionCard from "@/components/SectionCard.astro";
+import { DivisionAccordion } from "@/components/DivisionAccordion";
 import { makeTournamentService } from "@/services/tournament-service";
 import { makeDivisionService } from "@/services/division-service";
 import { makeTeamService } from "@/services/team-service";
@@ -37,13 +38,15 @@ const existingReg = user && coachTeams.length > 0
     ).then((results) => results.find(Boolean) ?? null)
   : null;
 
-const divisionCounts = await Promise.all(
-  divisions.map(async (d) => ({
-    divisionId: d.id,
-    count: await regRepo.countByDivision(d.id),
-  }))
-);
-const countMap = Object.fromEntries(divisionCounts.map(({ divisionId, count }) => [divisionId, count]));
+// Fetch all registrations and group by division for the accordion.
+const allRegistrations = await regRepo.listByTournament(tournament.id);
+
+const divisionsWithTeams = divisions.map((d) => {
+  const teams = allRegistrations
+    .filter((r) => r.divisionId === d.id)
+    .map((r) => ({ teamId: r.teamId, teamName: r.teamName, status: r.status }));
+  return { ...d, count: teams.filter((t) => t.status === "approved").length, teams };
+});
 
 const deadlinePassed = tournament.registrationDeadline
   ? new Date() > new Date(tournament.registrationDeadline)
@@ -178,28 +181,12 @@ function formatDate(d: string | null) {
           : "Choose your division when you register."}
       </p>
 
-      {divisions.length === 0 ? (
-        <p class="text-sm text-(--color-muted) text-center py-8">
-          No divisions have been set up for this tournament yet.
-        </p>
-      ) : (
-        <div class="divide-y divide-(--color-border-soft) rounded-lg border border-(--color-border)">
-          {divisions.map((division) => {
-            const count = countMap[division.id] ?? 0;
-            const full = division.maxTeams !== null && count >= division.maxTeams;
-            return (
-              <div class="flex items-center justify-between gap-4 px-4 py-4">
-                <p class="font-medium text-sm text-(--color-foreground)">{division.name}</p>
-                {division.maxTeams !== null && (
-                  <span class={`text-xs shrink-0 ${full ? "text-red-500 font-medium" : "text-(--color-muted)"}`}>
-                    {full ? "Full" : `${count} / ${division.maxTeams} teams`}
-                  </span>
-                )}
-              </div>
-            );
-          })}
-        </div>
-      )}
+      <DivisionAccordion
+        client:load
+        divisions={divisionsWithTeams}
+        canRegister={!!canRegister}
+        tournamentId={tournament.id}
+      />
     </SectionCard>
   </div>
 </AppLayout>
