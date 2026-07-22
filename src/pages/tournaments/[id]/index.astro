@@ -41,11 +41,6 @@ const existingReg = user && coachTeams.length > 0
 // Fetch all registrations and group by division for the accordion.
 const allRegistrations = await regRepo.listByTournament(tournament.id);
 
-// Enrich existingReg with division name for the callout card.
-const existingRegDetails = existingReg
-  ? allRegistrations.find((r) => r.id === existingReg.id) ?? null
-  : null;
-
 const divisionsWithTeams = divisions.map((d) => {
   const teams = allRegistrations
     .filter((r) => r.divisionId === d.id)
@@ -72,13 +67,6 @@ const badgeClass =
   !deadlinePassed       ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300" :
                           "bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400";
 
-// Registration callout config — shown when the user has submitted a registration.
-const regCallout = existingRegDetails ? {
-  pending:    { border: "border-amber-200 dark:border-amber-800",   bg: "bg-amber-50 dark:bg-amber-900/20",     label: "Pending",      labelColor: "text-amber-800 dark:text-amber-300"   },
-  approved:   { border: "border-emerald-200 dark:border-emerald-800", bg: "bg-emerald-50 dark:bg-emerald-900/20", label: "Approved",     labelColor: "text-emerald-800 dark:text-emerald-300" },
-  waitlisted: { border: "border-blue-200 dark:border-blue-800",     bg: "bg-blue-50 dark:bg-blue-900/20",       label: "Waitlisted",   labelColor: "text-blue-800 dark:text-blue-300"     },
-  rejected:   { border: "border-red-200 dark:border-red-800",       bg: "bg-red-50 dark:bg-red-900/20",         label: "Not Accepted", labelColor: "text-red-800 dark:text-red-300"       },
-}[existingRegDetails.status] : null;
 
 const justRegistered = Astro.url.searchParams.get("registered") === "1";
 
@@ -155,14 +143,6 @@ function formatDate(d: string | null) {
       </div>
     </div>
 
-    <!-- Your Registration callout — only visible when the user has a registration -->
-    {regCallout && (
-      <div class={cn("rounded-lg border px-5 py-4 text-center mb-6", regCallout.border, regCallout.bg)}>
-        <p class={cn("text-sm font-semibold", regCallout.labelColor)}>
-          Registration {regCallout.label}
-        </p>
-      </div>
-    )}
 
     {tournament.description && (
       <SectionCard class="p-5 mb-6">
