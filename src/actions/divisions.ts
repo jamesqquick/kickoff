@@ -3,7 +3,6 @@ import { z } from "astro:schema";
 import { makeDivisionService } from "@/services/division-service";
 import { TournamentRegistrationRepository } from "@/repositories/tournament-registration-repository";
 import { getDb } from "@/lib/db";
-import { AppError } from "@/lib/errors";
 import { toActionError } from "./utils";
 
 export const divisions = {
@@ -13,8 +12,7 @@ export const divisions = {
       try {
         return await makeDivisionService().getDivisionsForTournament(tournamentId);
       } catch (err) {
-        if (err instanceof AppError) throw toActionError(err);
-        throw err;
+        throw toActionError(err);
       }
     },
   }),
@@ -33,8 +31,7 @@ export const divisions = {
       try {
         return await makeDivisionService().createDivision(tournamentId, { name, maxTeams }, user);
       } catch (err) {
-        if (err instanceof AppError) throw toActionError(err);
-        throw err;
+        throw toActionError(err);
       }
     },
   }),
@@ -53,8 +50,7 @@ export const divisions = {
       try {
         return await makeDivisionService().updateDivision(id, { name, maxTeams }, user);
       } catch (err) {
-        if (err instanceof AppError) throw toActionError(err);
-        throw err;
+        throw toActionError(err);
       }
     },
   }),
@@ -69,8 +65,7 @@ export const divisions = {
       try {
         await makeDivisionService().deleteDivision(id, user);
       } catch (err) {
-        if (err instanceof AppError) throw toActionError(err);
-        throw err;
+        throw toActionError(err);
       }
     },
   }),

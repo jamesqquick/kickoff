@@ -142,6 +142,7 @@ if (isOwnerOrAdmin && user) {
 
     <TeamMemberPanel
       client:load
+      teamId={team.id}
       initialRoster={roster}
       pendingRequests={pendingRequests}
       isOwnerOrAdmin={isOwnerOrAdmin}

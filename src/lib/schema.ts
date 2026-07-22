@@ -21,28 +21,47 @@ export const teams = sqliteTable("teams", {
 export type Team = InferSelectModel<typeof teams>;
 export type NewTeam = InferInsertModel<typeof teams>;
 
-// teamMembers — join table linking users directly to teams.
-// Replaces the old players + player_teams two-hop design.
-// Any authenticated user can be a member of any team; the team owner
-// (teams.coach_id) determines who has management permissions.
+// teamMembers — join table linking users (or pre-registered imported players) to teams.
+// userId is nullable: imported players have no account yet (status = 'pending_signup').
+// Email is the universal matching key — when a player signs up with a matching email,
+// userId is set and status advances to 'approved' automatically.
+//
+// Status meanings:
+//   pending        — self-requested join, awaiting coach approval
+//   pending_signup — imported by coach, player has no account yet
+//   approved       — active team member with an account
+//   rejected       — join request denied
 export const teamMembers = sqliteTable(
   "team_members",
   {
     id: text("id").primaryKey(),
-    userId: text("user_id").notNull(),   // FK → user.id (enforced at app level)
-    teamId: text("team_id").notNull(),   // FK → teams.id
-    jerseyNumber: int("jersey_number"),  // nullable — assigned later
-    status: text("status", { enum: ["pending", "approved", "rejected"] })
+    userId: text("user_id"),            // nullable — null until imported player claims via sign-up
+    teamId: text("team_id").notNull(),  // FK → teams.id
+    email: text("email"),               // nullable — import matching key; set on pending_signup rows
+    displayName: text("display_name"), // nullable — imported full name shown before account is claimed
+    jerseyNumber: int("jersey_number"),
+    dateOfBirth: text("date_of_birth"), // nullable — ISO YYYY-MM-DD, pre-populates profiles on claim
+    phone: text("phone"),               // nullable — pre-populates profiles on claim
+    playerId: text("player_id"),        // nullable — state registration ID, optional
+    status: text("status", {
+      enum: ["pending", "pending_signup", "approved", "rejected"],
+    })
       .notNull()
       .default("pending"),
     createdAt: int("created_at").notNull(),
     updatedAt: int("updated_at").notNull(),
   },
-  (t) => [unique().on(t.userId, t.teamId)],
+  (t) => [
+    // Prevents duplicate account memberships (NULLs are distinct in SQLite — import rows are safe)
+    unique().on(t.userId, t.teamId),
+    // Prevents importing the same email twice for the same team (NULLs are distinct — account rows are safe)
+    unique().on(t.email, t.teamId),
+  ],
 );
 
 export type TeamMember = InferSelectModel<typeof teamMembers>;
 export type NewTeamMember = InferInsertModel<typeof teamMembers>;
+export type TeamMemberStatus = TeamMember["status"];
 
 // profiles — extended contact info, 1:1 with the Better Auth user.
 // Stored separately so auth and domain data stay in distinct tables.

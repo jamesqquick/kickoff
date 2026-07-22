@@ -1,7 +1,6 @@
 import { defineAction, ActionError } from "astro:actions";
 import { z } from "astro:schema";
 import { makeTeamInviteService } from "@/services/team-invite-service";
-import { AppError } from "@/lib/errors";
 import { toActionError } from "./utils";
 
 export const teamInvites = {
@@ -16,8 +15,7 @@ export const teamInvites = {
       try {
         return await makeTeamInviteService().getOrCreate(teamId, user);
       } catch (err) {
-        if (err instanceof AppError) throw toActionError(err);
-        throw err;
+        throw toActionError(err);
       }
     },
   }),
@@ -33,8 +31,7 @@ export const teamInvites = {
       try {
         return await makeTeamInviteService().regenerate(teamId, user);
       } catch (err) {
-        if (err instanceof AppError) throw toActionError(err);
-        throw err;
+        throw toActionError(err);
       }
     },
   }),
@@ -50,8 +47,7 @@ export const teamInvites = {
       try {
         return await makeTeamInviteService().joinViaToken(token, user);
       } catch (err) {
-        if (err instanceof AppError) throw toActionError(err);
-        throw err;
+        throw toActionError(err);
       }
     },
   }),

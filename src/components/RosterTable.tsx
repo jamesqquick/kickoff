@@ -1,6 +1,11 @@
+import { useState, useRef } from "react";
+import { toast } from "sonner";
+import { actions } from "astro:actions";
+import { Input } from "@/components/ui/input";
 import type { TeamMemberWithUser } from "@/repositories/team-member-repository";
 
 interface Props {
+  teamId: string;
   members: TeamMemberWithUser[];
   isOwnerOrAdmin?: boolean;
 }
@@ -8,7 +13,100 @@ interface Props {
 const joinedFormat = (ts: number) =>
   new Date(ts).toLocaleDateString("en-US", { month: "short", year: "numeric" });
 
-export function RosterTable({ members, isOwnerOrAdmin = false }: Props) {
+// Inline editable jersey number cell. Owners click to edit; everyone else sees plain text.
+function JerseyCell({
+  memberId,
+  teamId,
+  initial,
+}: {
+  memberId: string;
+  teamId: string;
+  initial: number | null;
+}) {
+  const [value, setValue] = useState<number | null>(initial);
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState("");
+  const [saving, setSaving] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  function startEditing() {
+    setDraft(value != null ? String(value) : "");
+    setEditing(true);
+    setTimeout(() => inputRef.current?.select(), 0);
+  }
+
+  function cancel() {
+    setEditing(false);
+  }
+
+  async function save() {
+    const trimmed = draft.trim();
+    const next = trimmed === "" ? null : parseInt(trimmed, 10);
+
+    if (trimmed !== "" && (isNaN(next!) || next! < 0)) {
+      toast.error("Jersey number must be a positive number.");
+      inputRef.current?.select();
+      return;
+    }
+
+    // No change — just close
+    if (next === value) {
+      setEditing(false);
+      return;
+    }
+
+    setSaving(true);
+    setEditing(false);
+    try {
+      const { error } = await actions.teamMembers.updateJerseyNumber({
+        memberId,
+        teamId,
+        jerseyNumber: next,
+      });
+      if (error) throw error;
+      setValue(next);
+      toast.success("Jersey number updated.");
+    } catch {
+      toast.error("Could not save. Try again.");
+      setValue(value); // revert
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  if (editing) {
+    return (
+      <Input
+        ref={inputRef}
+        type="number"
+        min={0}
+        max={999}
+        value={draft}
+        onChange={(e) => setDraft(e.target.value)}
+        onBlur={save}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") save();
+          if (e.key === "Escape") cancel();
+        }}
+        className="h-8 w-16 px-2 text-center [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+        autoFocus
+      />
+    );
+  }
+
+  return (
+    <button
+      onClick={startEditing}
+      disabled={saving}
+      title="Click to edit"
+      className="min-w-[2rem] rounded px-1.5 py-0.5 text-sm text-(--color-muted) hover:bg-(--color-border-soft) hover:text-(--color-foreground) transition-colors cursor-pointer text-left disabled:opacity-40"
+    >
+      {saving ? "…" : (value ?? "—")}
+    </button>
+  );
+}
+
+export function RosterTable({ teamId, members, isOwnerOrAdmin = false }: Props) {
   if (members.length === 0) {
     return (
       <div className="px-6 py-8 text-center text-sm text-(--color-muted)">
@@ -33,46 +131,64 @@ export function RosterTable({ members, isOwnerOrAdmin = false }: Props) {
         </tr>
       </thead>
       <tbody>
-        {members.map((member) => (
-          <tr
-            key={member.id}
-            className="border-b border-(--color-border-soft) last:border-0 hover:bg-(--color-background) transition-colors"
-          >
-            <td className="px-5 py-3.5">
-              <div className="flex items-center gap-3">
-                {member.userImage ? (
-                  <img
-                    src={member.userImage}
-                    alt={member.userName}
-                    className="w-8 h-8 rounded-full object-cover shrink-0"
+        {members.map((member) => {
+          const displayName = member.userName ?? member.displayName ?? member.email ?? "Unknown";
+          const initials = displayName.slice(0, 2).toUpperCase();
+
+          return (
+            <tr
+              key={member.id}
+              className="border-b border-(--color-border-soft) last:border-0 hover:bg-(--color-background) transition-colors"
+            >
+              <td className="px-5 py-3.5">
+                <div className="flex items-center gap-3">
+                  {member.userImage ? (
+                    <img
+                      src={member.userImage}
+                      alt={displayName}
+                      className="w-8 h-8 rounded-full object-cover shrink-0"
+                    />
+                  ) : (
+                    <div className="w-8 h-8 rounded-full bg-(--color-primary) flex items-center justify-center text-white text-xs font-bold shrink-0">
+                      {initials}
+                    </div>
+                  )}
+
+                  {isOwnerOrAdmin ? (
+                    <a
+                      href={`/teams/${teamId}/members/${member.id}`}
+                      className="font-medium text-sm text-(--color-foreground) hover:text-(--color-primary) hover:underline"
+                    >
+                      {displayName}
+                    </a>
+                  ) : (
+                    <span className="font-medium text-sm text-(--color-foreground)">
+                      {displayName}
+                    </span>
+                  )}
+                </div>
+              </td>
+
+              <td className="hidden sm:table-cell px-5 py-3.5">
+                {isOwnerOrAdmin ? (
+                  <JerseyCell
+                    memberId={member.id}
+                    teamId={teamId}
+                    initial={member.jerseyNumber}
                   />
                 ) : (
-                  <div className="w-8 h-8 rounded-full bg-(--color-primary) flex items-center justify-center text-white text-xs font-bold shrink-0">
-                    {member.userName.slice(0, 2).toUpperCase()}
-                  </div>
-                )}
-                {isOwnerOrAdmin ? (
-                  <a
-                    href={`/users/${member.userId}`}
-                    className="font-medium text-sm text-(--color-foreground) hover:text-(--color-primary) hover:underline"
-                  >
-                    {member.userName}
-                  </a>
-                ) : (
-                  <span className="font-medium text-sm text-(--color-foreground)">
-                    {member.userName}
+                  <span className="text-sm text-(--color-muted)">
+                    {member.jerseyNumber ?? "—"}
                   </span>
                 )}
-              </div>
-            </td>
-            <td className="hidden sm:table-cell px-5 py-3.5 text-sm text-(--color-muted)">
-              {member.jerseyNumber ?? "—"}
-            </td>
-            <td className="hidden sm:table-cell px-5 py-3.5 text-sm text-(--color-muted)">
-              {joinedFormat(member.createdAt)}
-            </td>
-          </tr>
-        ))}
+              </td>
+
+              <td className="hidden sm:table-cell px-5 py-3.5 text-sm text-(--color-muted)">
+                {joinedFormat(member.createdAt)}
+              </td>
+            </tr>
+          );
+        })}
       </tbody>
     </table>
   );

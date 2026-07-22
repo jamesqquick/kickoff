@@ -9,7 +9,7 @@ export function ContinueToRosterButton() {
   async function handleContinue() {
     setLoading(true);
     try {
-      // TODO: swap for `await actions.teams.register(...)` once Actions are wired up
+      // TODO: swap for `await actions.teams.create(...)` once Actions are wired up
       await delay(800);
       toast.success("Registration submitted");
     } catch {

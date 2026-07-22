@@ -1,7 +1,6 @@
 import { defineAction, ActionError } from "astro:actions";
 import { z } from "astro:schema";
 import { makeTournamentRegistrationService } from "@/services/tournament-registration-service";
-import { AppError } from "@/lib/errors";
 import { toActionError } from "./utils";
 
 export const tournamentRegistrations = {
@@ -15,8 +14,7 @@ export const tournamentRegistrations = {
       try {
         return await makeTournamentRegistrationService().getRegistrationsForTournament(tournamentId);
       } catch (err) {
-        if (err instanceof AppError) throw toActionError(err);
-        throw err;
+        throw toActionError(err);
       }
     },
   }),
@@ -31,8 +29,7 @@ export const tournamentRegistrations = {
       try {
         return await makeTournamentRegistrationService().getRegistrationsForTeam(teamId);
       } catch (err) {
-        if (err instanceof AppError) throw toActionError(err);
-        throw err;
+        throw toActionError(err);
       }
     },
   }),
@@ -50,8 +47,7 @@ export const tournamentRegistrations = {
       try {
         return await makeTournamentRegistrationService().registerTeam(teamId, divisionId, user);
       } catch (err) {
-        if (err instanceof AppError) throw toActionError(err);
-        throw err;
+        throw toActionError(err);
       }
     },
   }),
@@ -75,8 +71,7 @@ export const tournamentRegistrations = {
           user,
         );
       } catch (err) {
-        if (err instanceof AppError) throw toActionError(err);
-        throw err;
+        throw toActionError(err);
       }
     },
   }),

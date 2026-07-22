@@ -166,6 +166,17 @@ INSERT INTO team_members (id, user_id, team_id, jersey_number, status, created_a
 
   -- referee and newbie have no team_members rows by design
 
+-- Imported roster entries — pending_signup (no account yet).
+-- These demonstrate the roster import feature. The emails do NOT belong to any
+-- existing user account in the seed, so they will remain pending_signup until
+-- someone signs up with a matching email.
+INSERT INTO team_members
+  (id, user_id, team_id, email, display_name, jersey_number, date_of_birth, phone, player_id, status, created_at, updated_at)
+VALUES
+  ('tm_import_01', NULL, 'team_a', 'import-player1@example.test', 'Jamie Torres',   21, '2000-05-10', '555-2001', 'TX-10001', 'pending_signup', 1700000000000, 1700000000000),
+  ('tm_import_02', NULL, 'team_a', 'import-player2@example.test', 'Devon Reyes',    33, '1999-08-22', NULL,       NULL,       'pending_signup', 1700000000000, 1700000000000),
+  ('tm_import_03', NULL, 'team_d', 'import-player3@example.test', 'Avery Nguyen',    4, '2001-03-17', '555-2003', 'CA-20004', 'pending_signup', 1700000000000, 1700000000000);
+
 -- ------------------------------------------------------------
 -- 7. Team Invites  (Drizzle app table — snake_case columns)
 -- One active invite per approved team. Pending/rejected teams have none.
