@@ -18,15 +18,12 @@ export class TeamMemberService {
     private readonly teams: TeamRepository,
   ) {}
 
-  // Any authenticated user can request to join an approved team,
+  // Any authenticated user can request to join a team,
   // except the team owner (self-join would create a conflict of interest).
   async requestJoin(teamId: string, currentUser: AppUser): Promise<TeamMember> {
     const team = await this.teams.findById(teamId);
     if (!team) {
       throw new NotFoundError("Team", teamId);
-    }
-    if (team.status !== "approved") {
-      throw new ValidationError("teamId", "Cannot join a team that is not approved");
     }
     if (team.coachId === currentUser.id) {
       throw new ForbiddenError("Team owners cannot request to join their own team");

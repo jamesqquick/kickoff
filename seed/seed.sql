@@ -89,24 +89,25 @@ INSERT INTO profiles (id, user_id, phone, date_of_birth, address_city, address_s
 
 -- ------------------------------------------------------------
 -- 5. Teams  (Drizzle app table — snake_case columns)
--- 9 teams across all status values, divisions, and cities.
+-- 9 teams across various cities. No global status — approval
+-- happens at the tournament_registrations level.
 -- short_name set where a recognizable abbreviation fits.
 -- ------------------------------------------------------------
-INSERT INTO teams (id, name, short_name, city, coach_id, color, status, created_at, updated_at) VALUES
-  -- coach_a teams: one approved, one pending
-  ('team_a', 'River Hawks',     'RH',   'Austin',     'usr_coach_a', 'emerald', 'approved', 1700000000000, 1700000000000),
-  ('team_b', 'Storm United',    'SU',   'Dallas',     'usr_coach_a', 'blue',    'pending',  1700000000000, 1700000000000),
-  -- admin team: rejected
-  ('team_c', 'Ghost FC',        'GFC',  'Houston',    'usr_admin',   'red',     'rejected', 1700000000000, 1700000000000),
-  -- coach_b teams: both approved
-  ('team_d', 'Coastal FC',      'CFC',  'San Diego',  'usr_coach_b', 'sky',     'approved', 1700000000000, 1700000000000),
-  ('team_e', 'Iron City United','ICU',  'Pittsburgh', 'usr_coach_b', 'orange',  'approved', 1700000000000, 1700000000000),
-  -- coach_c teams: both unapproved — exercises Created-only path on My Teams
-  ('team_f', 'Desert Wolves',   'DW',   'Phoenix',    'usr_coach_c', 'amber',   'pending',  1700000000000, 1700000000000),
-  ('team_i', 'Red Canyon AC',   'RCAC', 'Denver',     'usr_coach_c', 'rose',    'rejected', 1700000000000, 1700000000000),
-  -- coach_d teams: both approved
-  ('team_g', 'Northside FC',    'NFC',  'Chicago',    'usr_coach_d', 'violet',  'approved', 1700000000000, 1700000000000),
-  ('team_h', 'Silver Arrows',   'SA',   'Seattle',    'usr_coach_d', 'slate',   'approved', 1700000000000, 1700000000000);
+INSERT INTO teams (id, name, short_name, city, coach_id, color, created_at, updated_at) VALUES
+  -- coach_a teams
+  ('team_a', 'River Hawks',     'RH',   'Austin',     'usr_coach_a', 'emerald', 1700000000000, 1700000000000),
+  ('team_b', 'Storm United',    'SU',   'Dallas',     'usr_coach_a', 'blue',    1700000000000, 1700000000000),
+  -- admin team
+  ('team_c', 'Ghost FC',        'GFC',  'Houston',    'usr_admin',   'red',     1700000000000, 1700000000000),
+  -- coach_b teams
+  ('team_d', 'Coastal FC',      'CFC',  'San Diego',  'usr_coach_b', 'sky',     1700000000000, 1700000000000),
+  ('team_e', 'Iron City United','ICU',  'Pittsburgh', 'usr_coach_b', 'orange',  1700000000000, 1700000000000),
+  -- coach_c teams
+  ('team_f', 'Desert Wolves',   'DW',   'Phoenix',    'usr_coach_c', 'amber',   1700000000000, 1700000000000),
+  ('team_i', 'Red Canyon AC',   'RCAC', 'Denver',     'usr_coach_c', 'rose',    1700000000000, 1700000000000),
+  -- coach_d teams
+  ('team_g', 'Northside FC',    'NFC',  'Chicago',    'usr_coach_d', 'violet',  1700000000000, 1700000000000),
+  ('team_h', 'Silver Arrows',   'SA',   'Seattle',    'usr_coach_d', 'slate',   1700000000000, 1700000000000);
 
 -- ------------------------------------------------------------
 -- 6. Team Members  (Drizzle app table — snake_case columns)

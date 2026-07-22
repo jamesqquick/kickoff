@@ -32,30 +32,6 @@ export function teamColorGradient(color: string | null | undefined): string {
   return COLOR_GRADIENTS[color ?? ""] ?? COLOR_GRADIENTS.emerald;
 }
 
-/**
- * Maps a team status value to the corresponding badge variant.
- * Single source of truth — import this wherever a team status badge is rendered.
- */
-export function teamStatusVariant(
-  status: import("@/lib/schema").TeamStatus,
-): "warning" | "success" | "destructive" {
-  if (status === "approved") return "success";
-  if (status === "rejected") return "destructive";
-  return "warning";
-}
-
-/**
- * Maps a team status to a Tailwind pill class string.
- * Single source of truth — import wherever a team status pill is rendered.
- */
-export function teamStatusClass(
-  status: import("@/lib/schema").TeamStatus,
-): string {
-  if (status === "approved") return "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400";
-  if (status === "rejected") return "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400";
-  return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400";
-}
-
 // Tournament status is derived from dates, never stored.
 export type TournamentStatus = "upcoming" | "active" | "past";
 

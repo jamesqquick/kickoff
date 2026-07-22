@@ -12,9 +12,8 @@ import { RegisterTeamButton } from "@/components/RegisterTeamButton";
 <AppLayout title="Register Team" activeNav="teams">
   <div class="p-4 sm:p-6 lg:p-8 max-w-3xl">
     <PageHeader
-      eyebrow="Spring Invitational Cup"
       title="Register a Team"
-      subtitle="Enter your team's info to get started. Division, roster, and payment come next."
+      subtitle="Enter your team's info to get started. You can register for a tournament and pick a division after creating your team."
     />
 
     <SectionCard class="p-5 sm:p-7">
@@ -29,14 +28,6 @@ import { RegisterTeamButton } from "@/components/RegisterTeamButton";
       </div>
 
       <CrestPicker client:load />
-
-      <!--
-        TODO: Division selection
-        Replace this hidden placeholder with a real radio picker once division data
-        is stored on the team record and seeded from the tournament config.
-        The action already accepts `division: string` — just wire the value through.
-      -->
-      <input type="hidden" name="division" value="TBD" />
 
       <div class="flex justify-end pt-2">
         <RegisterTeamButton client:load />

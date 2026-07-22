@@ -1,7 +1,6 @@
 ---
 import AppLayout from "@/layouts/AppLayout.astro";
 import { buttonVariants } from "@/components/ui/button";
-import { badgeVariants } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import TeamCrest from "@/components/TeamCrest.astro";
 import { makeTeamService } from "@/services/team-service";
@@ -10,7 +9,7 @@ import { makeTeamInviteService } from "@/services/team-invite-service";
 import { TeamMemberRepository } from "@/repositories/team-member-repository";
 import { getDb } from "@/lib/db";
 import { NotFoundError } from "@/lib/errors";
-import { teamStatusVariant, teamColorGradient } from "@/lib/utils";
+import { teamColorGradient } from "@/lib/utils";
 import { JoinTeamButton } from "@/components/JoinTeamButton";
 import { TeamMemberPanel } from "@/components/TeamMemberPanel";
 import { makeTournamentRegistrationService } from "@/services/tournament-registration-service";
@@ -69,10 +68,9 @@ const enrichedRegs = await Promise.all(
   })
 );
 
-// Resolve the invite link for approved teams only.
-// Pending/rejected teams can't be joined, so there's no point showing a link.
+// Resolve the invite link for the coach/admin.
 let inviteUrl: string | null = null;
-if (isOwnerOrAdmin && user && team.status === "approved") {
+if (isOwnerOrAdmin && user) {
   try {
     const invite = await makeTeamInviteService().getOrCreate(team.id, user);
     inviteUrl = `${Astro.url.origin}/join/${invite.token}`;
@@ -110,9 +108,6 @@ if (isOwnerOrAdmin && user && team.status === "approved") {
       <div class="flex-1 min-w-0">
         <div class="flex items-center gap-3 mb-1">
           <h1 class="font-display text-2xl sm:text-3xl font-bold text-(--color-foreground)">{team.name}</h1>
-          <span class={badgeVariants({ variant: teamStatusVariant(team.status) })}>
-            ● {team.status.charAt(0).toUpperCase() + team.status.slice(1)}
-          </span>
         </div>
         <p class="text-sm text-(--color-muted)">
           {team.city}

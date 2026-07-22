@@ -12,7 +12,7 @@ import { makeTeamMemberService } from "@/services/team-member-service";
 const user = Astro.locals.user;
 if (!user) return Astro.redirect("/signin");
 
-// Fetch coached teams (all statuses) and player memberships in parallel.
+// Fetch coached teams and player memberships in parallel.
 const [coachedTeams, memberships] = await Promise.all([
   makeTeamService().listByCoach(user.id),
   makeTeamMemberService().listByUser(user.id),
@@ -23,12 +23,6 @@ const coachedTeamIds = new Set(coachedTeams.map((t) => t.id));
 const playerMemberships = memberships.filter((m) => !coachedTeamIds.has(m.teamId));
 
 const isEmpty = coachedTeams.length === 0 && playerMemberships.length === 0;
-
-function teamStatusBadge(status: string): { label: string; variant: "success" | "warning" | "destructive" } {
-  if (status === "approved") return { label: "Active",         variant: "success" };
-  if (status === "rejected") return { label: "Rejected",       variant: "destructive" };
-  return                            { label: "Pending Review", variant: "warning" };
-}
 
 function membershipStatusBadge(status: string): { label: string; variant: "success" | "warning" | "destructive" } {
   if (status === "approved") return { label: "Active",   variant: "success" };
@@ -52,7 +46,7 @@ function membershipStatusBadge(status: string): { label: string; variant: "succe
         <div class="text-4xl mb-3">🛡️</div>
         <h2 class="font-display font-semibold text-(--color-foreground) mb-1">No teams yet</h2>
         <p class="text-sm text-(--color-muted) mb-5 max-w-sm mx-auto">
-          Register a new team or ask a coach to add you to their roster.
+          Register a new team or ask a coach to share their invite link.
         </p>
         <a href="/teams/register" class={cn(buttonVariants({ variant: "default" }), "inline-flex")}>
           Register a Team
@@ -64,57 +58,48 @@ function membershipStatusBadge(status: string): { label: string; variant: "succe
       <div class="space-y-6">
 
         {coachedTeams.length > 0 && (
-          <SectionCard title="Teams You Created">
+          <SectionCard title="Teams You Coach">
             <span slot="header-action" class={badgeVariants({ variant: "default" })}>{coachedTeams.length}</span>
             <table class="w-full">
               <thead>
                 <tr class="border-b border-(--color-border)">
                   <th class="text-left text-xs font-semibold uppercase tracking-wider text-(--color-muted-fg) px-5 py-3">Team</th>
-                  <th class="hidden sm:table-cell text-left text-xs font-semibold uppercase tracking-wider text-(--color-muted-fg) px-5 py-3">Division</th>
                   <th class="hidden sm:table-cell text-left text-xs font-semibold uppercase tracking-wider text-(--color-muted-fg) px-5 py-3">City</th>
-                  <th class="text-left text-xs font-semibold uppercase tracking-wider text-(--color-muted-fg) px-5 py-3">Status</th>
                   <th class="px-5 py-3"></th>
                 </tr>
               </thead>
               <tbody>
-                {coachedTeams.map((team) => {
-                  const badge = teamStatusBadge(team.status);
-                  return (
-                    <tr class="border-b border-(--color-border-soft) last:border-0 hover:bg-(--color-background) transition-colors">
-                      <td class="px-5 py-3.5">
-                        <div class="flex items-center gap-3">
-                          <TeamCrest
-                            initials={team.shortName ?? team.name.slice(0, 2).toUpperCase()}
-                            gradient={teamColorGradient(team.color)}
-                            size="md"
-                          />
-                          <span class="font-semibold text-sm text-(--color-foreground)">{team.name}</span>
-                        </div>
-                      </td>
-                      <td class="hidden sm:table-cell px-5 py-3.5 text-sm text-(--color-muted)">{team.division}</td>
-                      <td class="hidden sm:table-cell px-5 py-3.5 text-sm text-(--color-muted)">{team.city}</td>
-                      <td class="px-5 py-3.5">
-                        <span class={badgeVariants({ variant: badge.variant })}>{badge.label}</span>
-                      </td>
-                      <td class="px-5 py-3.5">
-                        <div class="flex items-center gap-2 justify-end">
-                          <a
-                            href={`/teams/${team.id}/edit`}
-                            class={cn(buttonVariants({ variant: "outline" }), "h-7 px-3 text-xs")}
-                          >
-                            Edit
-                          </a>
-                          <a
-                            href={`/teams/${team.id}`}
-                            class={cn(buttonVariants({ variant: "outline" }), "h-7 px-3 text-xs")}
-                          >
-                            View
-                          </a>
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })}
+                {coachedTeams.map((team) => (
+                  <tr class="border-b border-(--color-border-soft) last:border-0 hover:bg-(--color-background) transition-colors">
+                    <td class="px-5 py-3.5">
+                      <div class="flex items-center gap-3">
+                        <TeamCrest
+                          initials={team.shortName ?? team.name.slice(0, 2).toUpperCase()}
+                          gradient={teamColorGradient(team.color)}
+                          size="md"
+                        />
+                        <span class="font-semibold text-sm text-(--color-foreground)">{team.name}</span>
+                      </div>
+                    </td>
+                    <td class="hidden sm:table-cell px-5 py-3.5 text-sm text-(--color-muted)">{team.city}</td>
+                    <td class="px-5 py-3.5">
+                      <div class="flex items-center gap-2 justify-end">
+                        <a
+                          href={`/teams/${team.id}/edit`}
+                          class={cn(buttonVariants({ variant: "outline" }), "h-7 px-3 text-xs")}
+                        >
+                          Edit
+                        </a>
+                        <a
+                          href={`/teams/${team.id}`}
+                          class={cn(buttonVariants({ variant: "outline" }), "h-7 px-3 text-xs")}
+                        >
+                          View
+                        </a>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
               </tbody>
             </table>
           </SectionCard>
@@ -127,14 +112,13 @@ function membershipStatusBadge(status: string): { label: string; variant: "succe
           {playerMemberships.length === 0 ? (
             <div class="px-6 py-10 text-center">
               <p class="text-sm text-(--color-muted) mb-3">You haven't joined any teams yet.</p>
-              <p class="text-xs text-(--color-muted-fg)">Ask a coach to add you to their roster.</p>
+              <p class="text-xs text-(--color-muted-fg)">Ask a coach to share their team invite link.</p>
             </div>
           ) : (
             <table class="w-full">
               <thead>
                 <tr class="border-b border-(--color-border)">
                   <th class="text-left text-xs font-semibold uppercase tracking-wider text-(--color-muted-fg) px-5 py-3">Team</th>
-                  <th class="hidden sm:table-cell text-left text-xs font-semibold uppercase tracking-wider text-(--color-muted-fg) px-5 py-3">Division</th>
                   <th class="hidden sm:table-cell text-left text-xs font-semibold uppercase tracking-wider text-(--color-muted-fg) px-5 py-3">City</th>
                   <th class="text-left text-xs font-semibold uppercase tracking-wider text-(--color-muted-fg) px-5 py-3">Membership</th>
                   <th class="px-5 py-3"></th>
