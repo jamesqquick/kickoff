@@ -20,6 +20,7 @@ export default defineConfig({
         "kysely-d1",
         "@radix-ui/react-dropdown-menu",
         "@radix-ui/react-accordion",
+        "@radix-ui/react-tooltip",
       ],
     },
   },
