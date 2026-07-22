@@ -81,7 +81,7 @@ const regCallout = existingRegDetails ? {
     iconColor: "text-amber-500",
     label: "Pending Review",
     labelColor: "text-amber-800 dark:text-amber-300",
-    message: "Your registration is awaiting admin review. You'll be notified when a decision is made.",
+    message: "Awaiting admin review. You'll be notified when a decision is made.",
     messageColor: "text-amber-700 dark:text-amber-400",
   },
   approved: {
@@ -111,9 +111,7 @@ const regCallout = existingRegDetails ? {
     iconColor: "text-red-500",
     label: "Not Accepted",
     labelColor: "text-red-800 dark:text-red-300",
-    message: existingRegDetails.notes
-      ? `Your registration was not accepted: ${existingRegDetails.notes}`
-      : "Your registration was not accepted for this tournament.",
+    message: existingRegDetails.notes ?? "Your registration was not accepted for this tournament.",
     messageColor: "text-red-700 dark:text-red-400",
   },
 }[existingRegDetails.status] : null;
@@ -203,8 +201,9 @@ function formatDate(d: string | null) {
       <div class={cn("rounded-lg border px-5 py-4 flex items-start gap-4 mb-6", regCallout.border, regCallout.bg)}>
         <span class={cn("text-xl mt-0.5 shrink-0", regCallout.iconColor)}>{regCallout.icon}</span>
         <div>
-          <p class="text-xs font-semibold uppercase tracking-wider text-(--color-muted) mb-0.5">Your Registration</p>
-          <p class={cn("text-sm font-semibold", regCallout.labelColor)}>{regCallout.label}</p>
+          <p class={cn("text-sm font-semibold", regCallout.labelColor)}>
+            Registration {regCallout.label}
+          </p>
           <p class={cn("text-xs mt-0.5", regCallout.messageColor)}>{regCallout.message}</p>
         </div>
       </div>
