@@ -1,0 +1,23 @@
+src/lib/utils.ts
+  s_d725eb86c42569::t_7bce59d58fb150 76
+src/pages/tournaments/[id]/index.astro
+  s_d725eb86c42569::t_42238a24b1a91e 61
+src/pages/tournaments/index.astro
+  s_d725eb86c42569::t_d9954d5be100b6 25-26,31-34,36-37,57-58,62-65,67-70,106,114
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "a813053a14d2c674a25e0ced871798b9f48ade2d",
+  "prompts": {},
+  "sessions": {
+    "s_d725eb86c42569": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_075905a44ffe1hfvEup2zKMYlo",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "James Quick <jquick@cloudflare.com>"
+    }
+  }
+}
