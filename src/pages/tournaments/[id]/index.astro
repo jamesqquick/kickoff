@@ -98,12 +98,7 @@ function formatDate(d: string | null) {
         <h1 class="font-display text-2xl sm:text-3xl font-bold text-(--color-foreground) mb-1">
           {tournament.name}
         </h1>
-        <div class="flex flex-wrap gap-x-4 gap-y-1 text-sm text-(--color-muted)">
-          {tournament.startDate && tournament.endDate && (
-            <span>{formatDate(tournament.startDate)} – {formatDate(tournament.endDate)}</span>
-          )}
-          {tournament.location && <span>📍 {tournament.location}</span>}
-        </div>
+
       </div>
 
       <div class="flex items-center gap-2 shrink-0 flex-wrap justify-end">
@@ -140,23 +135,46 @@ function formatDate(d: string | null) {
       </SectionCard>
     )}
 
-    <!-- Registration info -->
+    <!-- Details card -->
     <SectionCard class="p-5 sm:p-6 mb-6">
-      <div class="flex items-center gap-3 mb-0.5">
-        <h2 class="font-display text-base font-semibold text-(--color-foreground)">Registration</h2>
-        <RegistrationStatusBadge open={status === "upcoming" && !deadlinePassed} />
-      </div>
-      <p class="text-sm text-(--color-muted)">
-        {tournament.registrationDeadline
-          ? (status === "upcoming" && !deadlinePassed)
-            ? `Closes ${formatDate(tournament.registrationDeadline)}.`
-            : `Closed ${formatDate(tournament.registrationDeadline)}.`
-          : status === "past"
-          ? "This tournament has ended."
-          : status === "active"
-          ? "This tournament is underway."
-          : "No deadline set."}
-      </p>
+      <h2 class="font-display text-base font-semibold text-(--color-foreground) mb-3">Details</h2>
+      <dl class="space-y-2 text-sm">
+        {(tournament.startDate || tournament.endDate) && (
+          <div class="flex gap-2">
+            <dt class="font-semibold text-(--color-foreground) shrink-0">Dates</dt>
+            <dd class="text-(--color-muted)">
+              {tournament.startDate && tournament.endDate
+                ? `${formatDate(tournament.startDate)} – ${formatDate(tournament.endDate)}`
+                : tournament.startDate
+                ? `From ${formatDate(tournament.startDate)}`
+                : formatDate(tournament.endDate)}
+            </dd>
+          </div>
+        )}
+        {tournament.location && (
+          <div class="flex gap-2">
+            <dt class="font-semibold text-(--color-foreground) shrink-0">Location</dt>
+            <dd class="text-(--color-muted)">{tournament.location}</dd>
+          </div>
+        )}
+        <div class="flex items-center gap-2">
+          <dt class="font-semibold text-(--color-foreground) shrink-0">Registration</dt>
+          <dd class="flex items-center gap-2">
+            <span class="text-(--color-muted)">
+              {tournament.registrationDeadline
+                ? (status === "upcoming" && !deadlinePassed)
+                  ? `Closes ${formatDate(tournament.registrationDeadline)}`
+                  : `Closed ${formatDate(tournament.registrationDeadline)}`
+                : status === "past"
+                ? "Closed"
+                : status === "active"
+                ? "Closed"
+                : "No deadline set"}
+            </span>
+            <RegistrationStatusBadge open={status === "upcoming" && !deadlinePassed} />
+          </dd>
+        </div>
+      </dl>
     </SectionCard>
 
     <!-- Divisions -->
