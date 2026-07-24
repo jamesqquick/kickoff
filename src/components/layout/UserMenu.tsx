@@ -1,5 +1,5 @@
 import { useRef } from "react";
-import { ChevronsUpDown, LogOut, Settings, User } from "lucide-react";
+import { ChevronsUpDown, LayoutDashboard, LogOut, Settings, User } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,9 +14,11 @@ interface Props {
   email: string;
   role: string;
   initials: string;
+  /** Show an "Admin Panel" link — for admins currently in the user-facing area. */
+  showAdminLink?: boolean;
 }
 
-export function UserMenu({ name, email, role, initials }: Props) {
+export function UserMenu({ name, email, role, initials, showAdminLink = false }: Props) {
   const signOutForm = useRef<HTMLFormElement>(null);
 
   return (
@@ -48,6 +50,18 @@ export function UserMenu({ name, email, role, initials }: Props) {
           </DropdownMenuLabel>
 
           <DropdownMenuSeparator />
+
+          {showAdminLink && (
+            <>
+              <DropdownMenuItem asChild>
+                <a href="/admin" className="cursor-pointer">
+                  <LayoutDashboard className="mr-2 h-4 w-4" />
+                  Admin Panel
+                </a>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+            </>
+          )}
 
           <DropdownMenuItem asChild>
             <a href="/profile" className="cursor-pointer">

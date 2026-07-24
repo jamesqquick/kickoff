@@ -1,0 +1,93 @@
+---
+import AppLayout from "@/layouts/AppLayout.astro";
+import { buttonVariants } from "@/components/ui/button";
+import { cn, teamColorGradient } from "@/lib/utils";
+import PageHeader from "@/components/PageHeader.astro";
+import SectionCard from "@/components/SectionCard.astro";
+import TeamCrest from "@/components/TeamCrest.astro";
+import { makeTournamentService } from "@/services/tournament-service";
+import { makeTournamentRegistrationService } from "@/services/tournament-registration-service";
+import { NotFoundError } from "@/lib/errors";
+
+const user = Astro.locals.user;
+if (!user || user.role !== "admin") {
+  return Astro.redirect("/");
+}
+
+const { id } = Astro.params;
+
+let tournament;
+let registrations;
+try {
+  [tournament, registrations] = await Promise.all([
+    makeTournamentService().getTournament(id!),
+    makeTournamentRegistrationService().getRegistrationsForTournament(id!),
+  ]);
+} catch (err) {
+  if (err instanceof NotFoundError) {
+    return Astro.redirect("/admin/tournaments");
+  }
+  throw err;
+}
+
+const approvedRegs = registrations.filter((r) => r.status === "approved");
+---
+
+<AppLayout title={`Teams — ${tournament.name}`} activeNav="admin-teams">
+  <div class="p-4 sm:p-6 lg:p-8">
+    <PageHeader
+      eyebrow={tournament.name}
+      title="Teams"
+      subtitle={`${approvedRegs.length} approved team${approvedRegs.length !== 1 ? "s" : ""}`}
+    >
+      <div slot="actions">
+        <a
+          href={`/admin/tournaments/${id}/registrations`}
+          class={cn(buttonVariants({ variant: "outline" }), "h-9 px-4")}
+        >
+          Review Registrations
+        </a>
+      </div>
+    </PageHeader>
+
+    <SectionCard>
+      {approvedRegs.length === 0 ? (
+        <div class="px-6 py-12 text-center">
+          <p class="text-sm text-(--color-muted) mb-3">No approved teams yet.</p>
+          <a
+            href={`/admin/tournaments/${id}/registrations`}
+            class="text-sm text-(--color-primary) hover:underline"
+          >
+            Review registrations →
+          </a>
+        </div>
+      ) : (
+        <ul>
+          {approvedRegs.map((reg) => (
+            <li class="border-b border-(--color-border-soft) last:border-0">
+              <a
+                href={`/admin/teams/${reg.teamId}`}
+                class="flex items-center gap-3 px-5 py-3 hover:bg-(--color-background) transition-colors"
+              >
+                <TeamCrest
+                  initials={reg.teamShortName ?? reg.teamName.slice(0, 2).toUpperCase()}
+                  gradient={teamColorGradient(reg.teamColor)}
+                  size="sm"
+                />
+                <div class="flex-1 min-w-0">
+                  <p class="text-sm font-medium text-(--color-foreground) truncate">
+                    {reg.teamName}
+                  </p>
+                  <p class="text-xs text-(--color-muted)">{reg.divisionName}</p>
+                </div>
+                <span class="shrink-0 text-xs text-(--color-muted) font-medium">
+                  {reg.divisionName}
+                </span>
+              </a>
+            </li>
+          ))}
+        </ul>
+      )}
+    </SectionCard>
+  </div>
+</AppLayout>

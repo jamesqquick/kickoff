@@ -69,3 +69,21 @@ export function getTournamentStatus(t: {
   if (t.endDate && t.endDate < today) return "past";
   return "active";
 }
+
+/**
+ * Picks the most relevant tournament from a list for the admin default view.
+ * Priority: active → soonest upcoming → most recently created.
+ * Returns null when the list is empty.
+ */
+export function autoSelectTournament<
+  T extends { id: string; startDate: string | null; endDate: string | null; createdAt: number },
+>(tournaments: T[]): T | null {
+  if (tournaments.length === 0) return null;
+  const active = tournaments.find((t) => getTournamentStatus(t) === "active");
+  if (active) return active;
+  const upcoming = tournaments
+    .filter((t) => getTournamentStatus(t) === "upcoming")
+    .sort((a, b) => (a.startDate ?? "").localeCompare(b.startDate ?? ""))[0];
+  if (upcoming) return upcoming;
+  return [...tournaments].sort((a, b) => b.createdAt - a.createdAt)[0] ?? null;
+}

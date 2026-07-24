@@ -1,0 +1,147 @@
+---
+import AppLayout from "@/layouts/AppLayout.astro";
+import { buttonVariants } from "@/components/ui/button";
+import {
+  cn,
+  getTournamentStatus,
+  tournamentStatusClass,
+  tournamentStatusLabel,
+} from "@/lib/utils";
+import StatCard from "@/components/StatCard.astro";
+import { makeTournamentService } from "@/services/tournament-service";
+import { makeTournamentRegistrationService } from "@/services/tournament-registration-service";
+import { DivisionRepository } from "@/repositories/division-repository";
+import { getDb } from "@/lib/db";
+import { NotFoundError } from "@/lib/errors";
+
+const user = Astro.locals.user;
+if (!user || user.role !== "admin") {
+  return Astro.redirect("/");
+}
+
+const { id } = Astro.params;
+
+let tournament;
+let registrations;
+let divisions;
+try {
+  [tournament, registrations, divisions] = await Promise.all([
+    makeTournamentService().getTournament(id!),
+    makeTournamentRegistrationService().getRegistrationsForTournament(id!),
+    new DivisionRepository(getDb()).listByTournament(id!),
+  ]);
+} catch (err) {
+  if (err instanceof NotFoundError) {
+    return Astro.redirect("/admin/tournaments");
+  }
+  throw err;
+}
+
+const status = getTournamentStatus(tournament);
+const pendingCount  = registrations.filter((r) => r.status === "pending").length;
+const approvedCount = registrations.filter((r) => r.status === "approved").length;
+const waitlistCount = registrations.filter((r) => r.status === "waitlisted").length;
+---
+
+<AppLayout title={tournament.name} activeNav="admin-overview">
+  <div class="p-4 sm:p-6 lg:p-8">
+
+    <!-- Header -->
+    <div class="flex items-start gap-4 mb-8">
+      <div class="flex-1 min-w-0">
+        <span class={cn(
+          "inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium mb-2",
+          tournamentStatusClass(status),
+        )}>
+          {tournamentStatusLabel(status)}
+        </span>
+        <h1 class="font-display text-2xl font-bold text-(--color-foreground) truncate">
+          {tournament.name}
+        </h1>
+        {(tournament.startDate || tournament.location) && (
+          <p class="text-sm text-(--color-muted) mt-1">
+            {tournament.startDate && tournament.endDate
+              ? `${tournament.startDate} – ${tournament.endDate}`
+              : tournament.startDate ?? ""}
+            {tournament.location && tournament.startDate ? " · " : ""}
+            {tournament.location}
+          </p>
+        )}
+      </div>
+      <a
+        href={`/admin/tournaments/${id}/edit`}
+        class={cn(buttonVariants({ variant: "outline" }), "shrink-0")}
+      >
+        Settings
+      </a>
+    </div>
+
+    <!-- Stats -->
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
+      <StatCard
+        icon="👥"
+        value={String(registrations.length)}
+        label="Registrations"
+      />
+      <StatCard
+        icon="✅"
+        value={String(approvedCount)}
+        label="Approved"
+        color="text-emerald-600"
+      />
+      <StatCard
+        icon="⏳"
+        value={String(pendingCount)}
+        label="Pending"
+        color={pendingCount > 0 ? "text-amber-600" : undefined}
+      />
+      <StatCard
+        icon="🏷️"
+        value={String(divisions.length)}
+        label="Divisions"
+      />
+    </div>
+
+    <!-- Quick-action cards -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <a
+        href={`/admin/tournaments/${id}/registrations`}
+        class="flex items-center gap-4 p-5 rounded-xl border border-(--color-border) bg-(--color-card) hover:bg-(--color-border-soft) transition-colors group"
+      >
+        <div class="w-10 h-10 rounded-[10px] bg-(--color-primary-subtle) flex items-center justify-center text-lg shrink-0">
+          📋
+        </div>
+        <div class="min-w-0">
+          <p class="text-sm font-semibold text-(--color-foreground) group-hover:text-(--color-primary) transition-colors">
+            Review Registrations
+          </p>
+          <p class="text-xs text-(--color-muted)">
+            {pendingCount > 0
+              ? `${pendingCount} pending review`
+              : waitlistCount > 0
+                ? `${waitlistCount} waitlisted`
+                : "No pending registrations"}
+          </p>
+        </div>
+      </a>
+
+      <a
+        href={`/admin/tournaments/${id}/teams`}
+        class="flex items-center gap-4 p-5 rounded-xl border border-(--color-border) bg-(--color-card) hover:bg-(--color-border-soft) transition-colors group"
+      >
+        <div class="w-10 h-10 rounded-[10px] bg-(--color-primary-subtle) flex items-center justify-center text-lg shrink-0">
+          🛡️
+        </div>
+        <div class="min-w-0">
+          <p class="text-sm font-semibold text-(--color-foreground) group-hover:text-(--color-primary) transition-colors">
+            Teams
+          </p>
+          <p class="text-xs text-(--color-muted)">
+            {approvedCount} approved team{approvedCount !== 1 ? "s" : ""}
+          </p>
+        </div>
+      </a>
+    </div>
+
+  </div>
+</AppLayout>

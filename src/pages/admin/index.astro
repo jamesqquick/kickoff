@@ -1,12 +1,7 @@
 ---
 import AppLayout from "@/layouts/AppLayout.astro";
 import { buttonVariants } from "@/components/ui/button";
-import { cn, teamColorGradient, getTournamentStatus, tournamentStatusClass, tournamentStatusLabel } from "@/lib/utils";
-import PageHeader from "@/components/PageHeader.astro";
-import StatCard from "@/components/StatCard.astro";
-import SectionCard from "@/components/SectionCard.astro";
-import TeamCrest from "@/components/TeamCrest.astro";
-import { makeTeamService } from "@/services/team-service";
+import { cn, autoSelectTournament } from "@/lib/utils";
 import { makeTournamentService } from "@/services/tournament-service";
 
 const user = Astro.locals.user;
@@ -14,129 +9,29 @@ if (!user || user.role !== "admin") {
   return Astro.redirect("/");
 }
 
-const [allTeams, allTournaments] = await Promise.all([
-  makeTeamService().listTeams(),
-  makeTournamentService().listTournaments(),
-]);
+const tournaments = await makeTournamentService().listTournaments();
+const selected = autoSelectTournament(tournaments);
 
-const recentTeams = [...allTeams]
-  .sort((a, b) => b.createdAt - a.createdAt)
-  .slice(0, 5);
-
-const recentTournaments = [...allTournaments]
-  .sort((a, b) => (b.startDate ?? "").localeCompare(a.startDate ?? ""))
-  .slice(0, 5);
-
-
+if (selected) {
+  return Astro.redirect(`/admin/tournaments/${selected.id}`);
+}
 ---
 
-<AppLayout title="Admin" activeNav="admin">
-  <div class="p-4 sm:p-6 lg:p-8">
-    <PageHeader
-      eyebrow="Admin"
-      title="Dashboard"
-      subtitle="Overview of teams and tournaments."
-    />
-
-    <!-- Stat cards -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
-      <StatCard
-        icon="🛡️"
-        value={String(allTeams.length)}
-        label="Total Teams"
-      />
-      <StatCard
-        icon="🏆"
-        value={String(allTournaments.length)}
-        label="Tournaments"
-      />
-    </div>
-
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-
-      <!-- Recent teams -->
-      <SectionCard title="Recent Teams">
-        <a
-          slot="header-action"
-          href="/admin/teams"
-          class="text-xs text-(--color-primary) hover:underline"
-        >
-          View all →
-        </a>
-
-        {recentTeams.length === 0 ? (
-          <p class="px-6 py-8 text-sm text-(--color-muted) text-center">No teams yet.</p>
-        ) : (
-          <ul>
-            {recentTeams.map((team) => (
-              <li class="border-b border-(--color-border-soft) last:border-0">
-                <a
-                  href={`/admin/teams/${team.id}`}
-                  class="flex items-center gap-3 px-5 py-3 hover:bg-(--color-background) transition-colors"
-                >
-                   <TeamCrest
-                    initials={team.shortName ?? team.name.slice(0, 2).toUpperCase()}
-                    gradient={teamColorGradient(team.color)}
-                    size="sm"
-                  />
-                  <div class="flex-1 min-w-0">
-                    <p class="text-sm font-medium text-(--color-foreground) truncate">{team.name}</p>
-                    <p class="text-xs text-(--color-muted)">{team.city}</p>
-                  </div>
-                </a>
-              </li>
-            ))}
-          </ul>
-        )}
-      </SectionCard>
-
-      <!-- Recent tournaments -->
-      <SectionCard title="Recent Tournaments">
-        <a
-          slot="header-action"
-          href="/admin/tournaments"
-          class="text-xs text-(--color-primary) hover:underline"
-        >
-          View all →
-        </a>
-
-        {recentTournaments.length === 0 ? (
-          <p class="px-6 py-8 text-sm text-(--color-muted) text-center">No tournaments yet.</p>
-        ) : (
-          <ul>
-            {recentTournaments.map((t) => {
-              const status = getTournamentStatus(t);
-              return (
-                <li class="border-b border-(--color-border-soft) last:border-0">
-                  <a
-                    href={`/admin/tournaments/${t.id}/edit`}
-                    class="flex items-center gap-3 px-5 py-3 hover:bg-(--color-background) transition-colors"
-                  >
-                    <div class="w-9 h-9 rounded-[9px] bg-(--color-primary-subtle) flex items-center justify-center text-base shrink-0">
-                      🏆
-                    </div>
-                    <div class="flex-1 min-w-0">
-                      <p class="text-sm font-medium text-(--color-foreground) truncate">{t.name}</p>
-                      <p class="text-xs text-(--color-muted)">
-                        {t.startDate && t.endDate
-                          ? `${t.startDate} – ${t.endDate}`
-                          : t.startDate ?? "No dates set"}
-                      </p>
-                    </div>
-                  <span class={cn(
-                    "shrink-0 inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium",
-                    tournamentStatusClass(status),
-                  )}>
-                      {tournamentStatusLabel(status)}
-                    </span>
-                  </a>
-                </li>
-              );
-            })}
-          </ul>
-        )}
-      </SectionCard>
-
+<AppLayout title="Admin">
+  <div class="p-4 sm:p-6 lg:p-8 flex items-center justify-center min-h-[60vh]">
+    <div class="text-center max-w-sm">
+      <div class="w-16 h-16 rounded-2xl bg-(--color-primary-subtle) flex items-center justify-center text-3xl mx-auto mb-5">
+        🏆
+      </div>
+      <h1 class="font-display text-xl font-bold text-(--color-foreground) mb-2">
+        No tournaments yet
+      </h1>
+      <p class="text-sm text-(--color-muted) mb-6">
+        Create your first tournament to start managing registrations, teams, and schedules.
+      </p>
+      <a href="/admin/tournaments/new" class={cn(buttonVariants({ variant: "default" }))}>
+        Create tournament
+      </a>
     </div>
   </div>
 </AppLayout>
