@@ -206,32 +206,50 @@ const adminTournamentLinks = activeTournamentId
       </div>
     ) : (
       /* ── User nav ──────────────────────────────────────── */
-      userNavGroups.map((group, gi) => (
-        <div class:list={["mb-1", gi > 0 && "mt-3"]}>
-          <p class="px-3 py-2 text-[11px] font-semibold uppercase tracking-wider text-(--color-muted-fg)">
-            {group.label}
-          </p>
-          {group.items.map((item) => (
+      <div>
+        {userNavGroups.map((group, gi) => (
+          <div class:list={["mb-1", gi > 0 && "mt-3"]}>
+            <p class="px-3 py-2 text-[11px] font-semibold uppercase tracking-wider text-(--color-muted-fg)">
+              {group.label}
+            </p>
+            {group.items.map((item) => (
+              <a
+                href={item.href}
+                class:list={[
+                  "flex items-center gap-3 px-3 py-2 rounded-[8px] text-sm font-medium mb-0.5 transition-colors",
+                  activeNav === item.id
+                    ? "bg-(--color-primary-subtle) text-(--color-primary)"
+                    : "text-(--color-muted) hover:bg-(--color-border-soft) hover:text-(--color-foreground)",
+                ]}
+              >
+                <span class="text-base leading-none">{getIcon(item.icon)}</span>
+                <span class="flex-1">{item.label}</span>
+                {item.count && (
+                  <span class="text-[11px] bg-(--color-border-soft) text-(--color-muted) px-1.5 py-0.5 rounded-full">
+                    {item.count}
+                  </span>
+                )}
+              </a>
+            ))}
+          </div>
+        ))}
+
+        {/* Admin shortcut — visible in user nav for admin users */}
+        {isAdmin && (
+          <div class="mt-3">
+            <p class="px-3 py-2 text-[11px] font-semibold uppercase tracking-wider text-(--color-muted-fg)">
+              Admin
+            </p>
             <a
-              href={item.href}
-              class:list={[
-                "flex items-center gap-3 px-3 py-2 rounded-[8px] text-sm font-medium mb-0.5 transition-colors",
-                activeNav === item.id
-                  ? "bg-(--color-primary-subtle) text-(--color-primary)"
-                  : "text-(--color-muted) hover:bg-(--color-border-soft) hover:text-(--color-foreground)",
-              ]}
+              href="/admin"
+              class="flex items-center gap-3 px-3 py-2 rounded-[8px] text-sm font-medium mb-0.5 transition-colors text-(--color-muted) hover:bg-(--color-border-soft) hover:text-(--color-foreground)"
             >
-              <span class="text-base leading-none">{getIcon(item.icon)}</span>
-              <span class="flex-1">{item.label}</span>
-              {item.count && (
-                <span class="text-[11px] bg-(--color-border-soft) text-(--color-muted) px-1.5 py-0.5 rounded-full">
-                  {item.count}
-                </span>
-              )}
+              <span class="text-base leading-none">{getIcon("grid-2x2")}</span>
+              <span class="flex-1">Admin Panel</span>
             </a>
-          ))}
-        </div>
-      ))
+          </div>
+        )}
+      </div>
     )}
   </nav>
 
@@ -243,7 +261,7 @@ const adminTournamentLinks = activeTournamentId
       email={user?.email ?? ""}
       role={role}
       initials={initials}
-      showAdminLink={isAdmin && !isAdminRoute}
+
     />
   </div>
 </aside>
