@@ -1,0 +1,56 @@
+---
+import AppLayout from "@/layouts/AppLayout.astro";
+import { buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+import PageHeader from "@/components/PageHeader.astro";
+import AdminBreadcrumb from "@/components/AdminBreadcrumb.astro";
+import SectionCard from "@/components/SectionCard.astro";
+import FormField from "@/components/FormField.astro";
+import { SaveTournamentButton } from "@/components/SaveTournamentButton";
+
+const user = Astro.locals.user;
+if (!user || (!user.isDirector && user.role !== "admin")) {
+  return Astro.redirect("/dashboard");
+}
+---
+
+<AppLayout title="New Tournament" activeNav="director-tournaments">
+  <div class="p-4 sm:p-6 lg:p-8 max-w-3xl">
+    <AdminBreadcrumb crumbs={[
+      { label: "My Tournaments", href: "/director/tournaments" },
+      { label: "New" },
+    ]} />
+
+    <PageHeader title="Create Tournament" subtitle="Fill in the details. Add divisions after saving." />
+
+    <SectionCard class="p-5 sm:p-7">
+      <h2 class="font-display text-lg font-semibold text-(--color-foreground) mb-1">Tournament Details</h2>
+      <p class="text-sm text-(--color-muted) mb-6">
+        The slug is auto-generated from the name and must be unique.
+      </p>
+
+      <div class="grid grid-cols-1 gap-4 mb-4">
+        <FormField label="Tournament name" name="name" required placeholder="e.g. Spring Invitational 2026" />
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+        <FormField label="Start date" name="startDate" type="date" />
+        <FormField label="End date" name="endDate" type="date" />
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+        <FormField label="Registration deadline" name="registrationDeadline" type="date" hint="Teams cannot register after this date." />
+        <FormField label="Location / venue" name="location" placeholder="e.g. Austin Sports Complex" />
+      </div>
+
+      <div class="mb-6">
+        <FormField label="Description" name="description" placeholder="Shown to coaches on the tournament page (optional)." />
+      </div>
+
+      <div class="flex justify-between">
+        <a href="/director/tournaments" class={cn(buttonVariants({ variant: "outline" }))}>← Cancel</a>
+        <SaveTournamentButton client:load mode="create" redirectBase="/director/tournaments" />
+      </div>
+    </SectionCard>
+  </div>
+</AppLayout>

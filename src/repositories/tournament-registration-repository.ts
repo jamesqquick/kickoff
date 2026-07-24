@@ -38,6 +38,39 @@ export class TournamentRegistrationRepository {
     return rows;
   }
 
+  async listByTournamentAndStatus(
+    tournamentId: string,
+    status: RegistrationStatus,
+  ): Promise<RegistrationWithDetails[]> {
+    const rows = await this.db
+      .select({
+        id: tournamentRegistrations.id,
+        teamId: tournamentRegistrations.teamId,
+        divisionId: tournamentRegistrations.divisionId,
+        tournamentId: tournamentRegistrations.tournamentId,
+        status: tournamentRegistrations.status,
+        registeredAt: tournamentRegistrations.registeredAt,
+        notes: tournamentRegistrations.notes,
+        createdAt: tournamentRegistrations.createdAt,
+        updatedAt: tournamentRegistrations.updatedAt,
+        teamName: teams.name,
+        teamColor: teams.color,
+        teamShortName: teams.shortName,
+        divisionName: divisions.name,
+      })
+      .from(tournamentRegistrations)
+      .innerJoin(teams, eq(tournamentRegistrations.teamId, teams.id))
+      .innerJoin(divisions, eq(tournamentRegistrations.divisionId, divisions.id))
+      .where(
+        and(
+          eq(tournamentRegistrations.tournamentId, tournamentId),
+          eq(tournamentRegistrations.status, status),
+        ),
+      )
+      .all();
+    return rows;
+  }
+
   async listByTeam(teamId: string): Promise<TournamentRegistration[]> {
     return this.db
       .select()

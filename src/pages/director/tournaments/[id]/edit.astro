@@ -1,0 +1,129 @@
+---
+import AppLayout from "@/layouts/AppLayout.astro";
+import { buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+import PageHeader from "@/components/PageHeader.astro";
+import TournamentPageHeader from "@/components/TournamentPageHeader.astro";
+import SectionCard from "@/components/SectionCard.astro";
+import FormField from "@/components/FormField.astro";
+import { SaveTournamentButton } from "@/components/SaveTournamentButton";
+import { DeleteTournamentButton } from "@/components/DeleteTournamentButton";
+import { DivisionManager } from "@/components/DivisionManager";
+import { makeTournamentService } from "@/services/tournament-service";
+import { makeDivisionService } from "@/services/division-service";
+import { getTournamentStatus } from "@/lib/utils";
+import { NotFoundError } from "@/lib/errors";
+
+const user = Astro.locals.user;
+if (!user || (!user.isDirector && user.role !== "admin")) {
+  return Astro.redirect("/dashboard");
+}
+
+const { id } = Astro.params;
+
+let tournament, divisions, allTournaments;
+try {
+  [tournament, divisions, allTournaments] = await Promise.all([
+    makeTournamentService().getTournament(id!),
+    makeDivisionService().getDivisionsForTournament(id!),
+    makeTournamentService().listForDirector(user.id),
+  ]);
+} catch (err) {
+  if (err instanceof NotFoundError) return Astro.redirect("/director/tournaments");
+  throw err;
+}
+
+const allForSwitcher = allTournaments.map((t) => ({
+  id: t.id,
+  name: t.name,
+  status: getTournamentStatus(t),
+}));
+---
+
+<AppLayout title={`Edit ${tournament.name}`} activeNav="director-tournaments">
+  <TournamentPageHeader
+    tournament={tournament}
+    allTournaments={allForSwitcher}
+    section="Settings"
+    sectionSlug="edit"
+  />
+
+  <div class="p-4 sm:p-6 lg:p-8 max-w-3xl">
+    <PageHeader title="Edit Tournament" subtitle="Update details and manage divisions." />
+
+    <!-- Tournament details -->
+    <SectionCard class="p-5 sm:p-7 mb-6">
+      <h2 class="font-display text-lg font-semibold text-(--color-foreground) mb-1">Tournament Details</h2>
+      <p class="text-sm text-(--color-muted) mb-6">Changes take effect immediately.</p>
+
+      <div class="grid grid-cols-1 gap-4 mb-4">
+        <FormField label="Tournament name" name="name" required value={tournament.name} />
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+        <FormField label="Start date" name="startDate" type="date" value={tournament.startDate ?? undefined} />
+        <FormField label="End date" name="endDate" type="date" value={tournament.endDate ?? undefined} />
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+        <FormField
+          label="Registration deadline"
+          name="registrationDeadline"
+          type="date"
+          value={tournament.registrationDeadline ?? undefined}
+          hint="Teams cannot register after this date."
+        />
+        <FormField
+          label="Location / venue"
+          name="location"
+          value={tournament.location ?? undefined}
+          placeholder="e.g. Austin Sports Complex"
+        />
+      </div>
+
+      <div class="mb-6">
+        <FormField
+          label="Description"
+          name="description"
+          value={tournament.description ?? undefined}
+          placeholder="Shown to coaches on the tournament page (optional)."
+        />
+      </div>
+
+      <div class="flex justify-between">
+        <a href="/director/tournaments" class={cn(buttonVariants({ variant: "outline" }))}>← Back</a>
+        <div class="flex gap-2">
+          <a href={`/director/tournaments/${tournament.id}/registrations`} class={cn(buttonVariants({ variant: "outline" }))}>
+            View Registrations
+          </a>
+          <SaveTournamentButton client:load mode="edit" tournamentId={tournament.id} redirectBase="/director/tournaments" />
+        </div>
+      </div>
+    </SectionCard>
+
+    <!-- Divisions -->
+    <SectionCard class="p-5 sm:p-7 mb-6">
+      <h2 class="font-display text-lg font-semibold text-(--color-foreground) mb-1">Divisions</h2>
+      <p class="text-sm text-(--color-muted) mb-5">
+        Coaches see these division names when registering their team.
+      </p>
+      <DivisionManager client:load tournamentId={tournament.id} initialDivisions={divisions} />
+    </SectionCard>
+
+    <!-- Danger zone (owner or admin only) -->
+    {(tournament.createdBy === user.id || user.role === "admin") && getTournamentStatus(tournament) !== "active" && (
+      <div class="rounded-xl border border-red-200 dark:border-red-900 bg-red-50 dark:bg-red-950/30 p-5">
+        <h3 class="text-sm font-semibold text-red-700 dark:text-red-400 mb-1">Danger zone</h3>
+        <p class="text-sm text-(--color-muted) mb-4">
+          Deleting a tournament is permanent. Active tournaments cannot be deleted.
+        </p>
+        <DeleteTournamentButton
+          client:load
+          tournamentId={tournament.id}
+          tournamentName={tournament.name}
+          redirectTo="/director/tournaments"
+        />
+      </div>
+    )}
+  </div>
+</AppLayout>

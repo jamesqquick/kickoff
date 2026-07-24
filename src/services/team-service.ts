@@ -1,4 +1,5 @@
 import type { AppUser } from "@/lib/auth";
+import { isAdmin } from "@/lib/permissions";
 import { ForbiddenError, NotFoundError, ValidationError } from "@/lib/errors";
 import { getDb } from "@/lib/db";
 import { TeamRepository } from "@/repositories/team-repository";
@@ -59,7 +60,7 @@ export class TeamService {
     if (!team) {
       throw new NotFoundError("Team", id);
     }
-    if (currentUser.role !== "admin" && team.coachId !== currentUser.id) {
+    if (!isAdmin(currentUser) && team.coachId !== currentUser.id) {
       throw new ForbiddenError("edit this team");
     }
     if (!input.name.trim()) {

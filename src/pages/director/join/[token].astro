@@ -1,0 +1,76 @@
+---
+// Public manager invite landing page.
+// Accessible without authentication — the redirect mechanism handles unauthenticated viewers.
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import { buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+import { makeTournamentManagerService } from "@/services/tournament-manager-service";
+import { AcceptInviteButton } from "@/components/AcceptInviteButton";
+
+const { token } = Astro.params;
+const user = Astro.locals.user;
+
+// Look up the invite (non-authed users can still see the preview)
+const preview = await makeTournamentManagerService().getInvitePreview(token!).catch(() => null);
+
+// If the invite is invalid / expired / already used — show a clear error
+const isInvalid = !preview;
+
+const redirectParam = encodeURIComponent(`/director/join/${token}`);
+---
+
+<BaseLayout title={isInvalid ? "Invalid invite" : `Join ${preview?.tournamentName}`}>
+  <div class="min-h-screen flex items-center justify-center bg-(--color-background) p-4">
+    <div class="w-full max-w-md rounded-2xl border border-(--color-border) bg-(--color-card) p-8 shadow-lg text-center">
+
+      {isInvalid ? (
+        <>
+          <div class="w-14 h-14 rounded-2xl bg-red-100 flex items-center justify-center text-2xl mx-auto mb-5">⛔</div>
+          <h1 class="font-display text-xl font-bold text-(--color-foreground) mb-2">
+            Invite not found
+          </h1>
+          <p class="text-sm text-(--color-muted) mb-6">
+            This invite link is invalid, has expired, or has already been used.
+            Ask the tournament director to generate a new one.
+          </p>
+          <a href="/" class={cn(buttonVariants({ variant: "outline" }))}>← Go home</a>
+        </>
+      ) : (
+        <>
+          <div class="w-14 h-14 rounded-2xl bg-(--color-primary-subtle) flex items-center justify-center text-2xl mx-auto mb-5">🏆</div>
+          <h1 class="font-display text-xl font-bold text-(--color-foreground) mb-2">
+            You're invited to manage
+          </h1>
+          <p class="text-lg font-semibold text-(--color-primary) mb-4">{preview.tournamentName}</p>
+
+          {!user?.isDirector && (
+            <p class="text-sm text-(--color-muted) mb-6 rounded-lg bg-(--color-primary-subtle) px-4 py-3">
+              Accepting will give you <strong>Tournament Director</strong> capabilities.
+              You'll see new options in your navigation for creating and managing tournaments.
+            </p>
+          )}
+
+          {!user ? (
+            <div class="space-y-3">
+              <p class="text-sm text-(--color-muted)">Sign in to accept this invitation.</p>
+              <a
+                href={`/signin?redirect=${redirectParam}`}
+                class={cn(buttonVariants({ variant: "default" }), "w-full")}
+              >
+                Sign in to accept →
+              </a>
+              <a
+                href={`/signin?tab=signup&redirect=${redirectParam}`}
+                class={cn(buttonVariants({ variant: "outline" }), "w-full")}
+              >
+                Create an account →
+              </a>
+            </div>
+          ) : (
+            <AcceptInviteButton client:load token={token!} tournamentName={preview.tournamentName} />
+          )}
+        </>
+      )}
+    </div>
+  </div>
+</BaseLayout>

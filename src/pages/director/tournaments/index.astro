@@ -1,0 +1,42 @@
+---
+import AppLayout from "@/layouts/AppLayout.astro";
+import { buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+import PageHeader from "@/components/PageHeader.astro";
+import SectionCard from "@/components/SectionCard.astro";
+import { TournamentsTable } from "@/components/TournamentsTable";
+import { makeTournamentService } from "@/services/tournament-service";
+
+const user = Astro.locals.user;
+if (!user || (!user.isDirector && user.role !== "admin")) {
+  return Astro.redirect("/dashboard");
+}
+
+const tournaments = await makeTournamentService().listForDirector(user.id);
+---
+
+<AppLayout title="My Tournaments" activeNav="director-tournaments">
+  <div class="p-4 sm:p-6 lg:p-8">
+    <PageHeader
+      title="My Tournaments"
+      subtitle="Tournaments you created or manage."
+    >
+      <div slot="actions">
+        <a href="/director/tournaments/new" class={cn(buttonVariants({ variant: "default" }), "h-9 px-4")}>
+          + New Tournament
+        </a>
+      </div>
+    </PageHeader>
+
+    {tournaments.length === 0 ? (
+      <SectionCard class="p-12 text-center">
+        <p class="text-(--color-muted) text-sm">No tournaments yet.</p>
+        <a href="/director/tournaments/new" class={cn(buttonVariants({ variant: "default" }), "mt-4 inline-flex")}>
+          Create the first tournament
+        </a>
+      </SectionCard>
+    ) : (
+      <TournamentsTable client:load tournaments={tournaments} basePath="/director/tournaments" />
+    )}
+  </div>
+</AppLayout>

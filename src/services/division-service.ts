@@ -1,4 +1,5 @@
 import type { AppUser } from "@/lib/auth";
+import { canManageTournament } from "@/lib/permissions";
 import { ForbiddenError, NotFoundError, ValidationError } from "@/lib/errors";
 import { getDb } from "@/lib/db";
 import { DivisionRepository } from "@/repositories/division-repository";
@@ -36,11 +37,14 @@ export class DivisionService {
     input: CreateDivisionInput,
     currentUser: AppUser,
   ): Promise<Division> {
-    if (currentUser.role !== "admin") {
-      throw new ForbiddenError("create divisions");
-    }
     const tournament = await this.tournamentsRepo.findById(tournamentId);
     if (!tournament) throw new NotFoundError("Tournament", tournamentId);
+
+    const ownerOrManager = await this.tournamentsRepo.isOwnerOrManager(tournamentId, currentUser.id);
+    if (!canManageTournament(currentUser, ownerOrManager)) {
+      throw new ForbiddenError("create divisions for this tournament");
+    }
+
     if (!input.name.trim()) {
       throw new ValidationError("name", "Division name is required");
     }
@@ -61,11 +65,16 @@ export class DivisionService {
     input: UpdateDivisionInput,
     currentUser: AppUser,
   ): Promise<Division> {
-    if (currentUser.role !== "admin") {
-      throw new ForbiddenError("update divisions");
-    }
     const division = await this.divisionsRepo.findById(id);
     if (!division) throw new NotFoundError("Division", id);
+
+    const ownerOrManager = await this.tournamentsRepo.isOwnerOrManager(
+      division.tournamentId,
+      currentUser.id,
+    );
+    if (!canManageTournament(currentUser, ownerOrManager)) {
+      throw new ForbiddenError("update divisions for this tournament");
+    }
 
     if (input.name !== undefined && !input.name.trim()) {
       throw new ValidationError("name", "Division name is required");
@@ -77,13 +86,19 @@ export class DivisionService {
     });
   }
 
-  // Deletion is always allowed for admins. Cascades remove all registrations.
+  // Deletion cascades to all registrations in the division.
   async deleteDivision(id: string, currentUser: AppUser): Promise<void> {
-    if (currentUser.role !== "admin") {
-      throw new ForbiddenError("delete divisions");
-    }
     const division = await this.divisionsRepo.findById(id);
     if (!division) throw new NotFoundError("Division", id);
+
+    const ownerOrManager = await this.tournamentsRepo.isOwnerOrManager(
+      division.tournamentId,
+      currentUser.id,
+    );
+    if (!canManageTournament(currentUser, ownerOrManager)) {
+      throw new ForbiddenError("delete divisions for this tournament");
+    }
+
     await this.divisionsRepo.delete(id);
   }
 }

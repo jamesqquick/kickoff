@@ -1,4 +1,5 @@
 import type { AppUser } from "@/lib/auth";
+import { isAdmin, canManageTournament } from "@/lib/permissions";
 import { ForbiddenError, NotFoundError, ValidationError } from "@/lib/errors";
 import { getDb } from "@/lib/db";
 import { TournamentRegistrationRepository } from "@/repositories/tournament-registration-repository";
@@ -24,6 +25,19 @@ export class TournamentRegistrationService {
     return this.registrationsRepo.listByTeam(teamId);
   }
 
+  /** Returns all pending registrations across all tournaments the director owns or manages. */
+  async getPendingRegistrationsForDirector(userId: string): Promise<RegistrationWithDetails[]> {
+    const tournaments = await this.tournamentsRepo.listForDirector(userId);
+    if (tournaments.length === 0) return [];
+
+    const allPending: RegistrationWithDetails[] = [];
+    for (const t of tournaments) {
+      const regs = await this.registrationsRepo.listByTournamentAndStatus(t.id, "pending");
+      allPending.push(...regs);
+    }
+    return allPending;
+  }
+
   async registerTeam(
     teamId: string,
     divisionId: string,
@@ -32,8 +46,12 @@ export class TournamentRegistrationService {
     // Verify the team exists and the caller is the coach.
     const team = await this.teamsRepo.findById(teamId);
     if (!team) throw new NotFoundError("Team", teamId);
-    if (team.coachId !== currentUser.id && currentUser.role !== "admin") {
+    if (team.coachId !== currentUser.id && !isAdmin(currentUser)) {
       throw new ForbiddenError("register this team");
+    }
+    // Coaches must have the isCoach flag; admins bypass
+    if (!currentUser.isCoach && !isAdmin(currentUser)) {
+      throw new ForbiddenError("register teams for tournaments");
     }
 
     // Verify the division exists and load its tournament.
@@ -94,11 +112,17 @@ export class TournamentRegistrationService {
     notes: string | undefined,
     currentUser: AppUser,
   ): Promise<TournamentRegistration> {
-    if (currentUser.role !== "admin") {
-      throw new ForbiddenError("update registration status");
-    }
     const registration = await this.registrationsRepo.findById(registrationId);
     if (!registration) throw new NotFoundError("Registration", registrationId);
+
+    const ownerOrManager = await this.tournamentsRepo.isOwnerOrManager(
+      registration.tournamentId,
+      currentUser.id,
+    );
+    if (!canManageTournament(currentUser, ownerOrManager)) {
+      throw new ForbiddenError("update registration status for this tournament");
+    }
+
     return this.registrationsRepo.updateStatus(registrationId, status, notes);
   }
 }

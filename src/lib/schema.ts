@@ -108,6 +108,9 @@ export const tournaments = sqliteTable("tournaments", {
   registrationDeadline: text("registration_deadline"), // nullable; after this date teams cannot register
   location: text("location"), // venue / city where games are played
   description: text("description"), // shown to coaches on the tournament page
+  // createdBy is nullable in the DB (SQLite cannot add NOT NULL to a populated table).
+  // The app layer treats it as always-present; the migration backfills existing rows.
+  createdBy: text("created_by"),
   createdAt: int("created_at").notNull(),
   updatedAt: int("updated_at").notNull(),
 });
@@ -156,3 +159,39 @@ export const tournamentRegistrations = sqliteTable(
 export type TournamentRegistration = InferSelectModel<typeof tournamentRegistrations>;
 export type NewTournamentRegistration = InferInsertModel<typeof tournamentRegistrations>;
 export type RegistrationStatus = TournamentRegistration["status"];
+
+// tournamentManagers — grants a user director-level access to a specific tournament.
+// A row here does NOT define the user's isDirector flag — that lives on the auth user.
+// Adding a manager sets isDirector=true on the user (enforced in the service layer).
+// Removing a manager does NOT clear isDirector — the flag is never auto-revoked.
+export const tournamentManagers = sqliteTable(
+  "tournament_managers",
+  {
+    id: text("id").primaryKey(),
+    tournamentId: text("tournament_id").notNull(), // FK → tournaments.id (CASCADE in DB)
+    userId: text("user_id").notNull(),             // FK → user.id (app-level)
+    addedBy: text("added_by").notNull(),           // FK → user.id (the TD or admin who added them)
+    createdAt: int("created_at").notNull(),
+  },
+  (t) => [unique().on(t.tournamentId, t.userId)],
+);
+
+export type TournamentManager = InferSelectModel<typeof tournamentManagers>;
+export type NewTournamentManager = InferInsertModel<typeof tournamentManagers>;
+
+// tournamentManagerInvites — share-a-link, single-use, 48h-expiring manager invite.
+// email is nullable now; populated later when email delivery is added.
+// The token is the private secret. Email match is soft — the token is what grants access.
+export const tournamentManagerInvites = sqliteTable("tournament_manager_invites", {
+  id: text("id").primaryKey(),
+  tournamentId: text("tournament_id").notNull(), // FK → tournaments.id (CASCADE in DB)
+  email: text("email"),                          // nullable; for future email delivery
+  token: text("token").notNull().unique(),        // 32-char URL-safe secret
+  createdBy: text("created_by").notNull(),        // FK → user.id (TD or admin who generated it)
+  expiresAt: int("expires_at").notNull(),         // epoch ms; created_at + 48h
+  acceptedAt: int("accepted_at"),                 // null until used; single-use after stamp
+  createdAt: int("created_at").notNull(),
+});
+
+export type TournamentManagerInvite = InferSelectModel<typeof tournamentManagerInvites>;
+export type NewTournamentManagerInvite = InferInsertModel<typeof tournamentManagerInvites>;

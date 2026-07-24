@@ -4,6 +4,7 @@ import PageHeader from "@/components/PageHeader.astro";
 import SectionCard from "@/components/SectionCard.astro";
 import FormField from "@/components/FormField.astro";
 import { UpdatePasswordButton } from "@/components/UpdatePasswordButton";
+import { CapabilityToggles } from "@/components/CapabilityToggles";
 import { getAuth } from "@/lib/auth";
 
 const user = Astro.locals.user;
@@ -24,6 +25,21 @@ const hasPassword = accounts.some(
     <PageHeader title="Settings" subtitle="Manage your account security and notification preferences." />
 
     <div class="max-w-xl space-y-6">
+      <!-- Capability flags -->
+      <SectionCard class="p-5">
+        <h3 class="font-display font-semibold text-(--color-foreground) mb-1">Capabilities</h3>
+        <p class="text-sm text-(--color-muted) mb-4">
+          Control what sections of Kickoff you have access to.
+          At least one capability must remain enabled.
+        </p>
+        <CapabilityToggles
+          client:load
+          initialIsCoach={user.isCoach}
+          initialIsDirector={user.isDirector}
+          isAdmin={user.role === "admin"}
+        />
+      </SectionCard>
+
       <!-- Account & Security -->
       <SectionCard class="p-5">
         <h3 class="font-display font-semibold text-(--color-foreground) mb-4">Account &amp; Security</h3>

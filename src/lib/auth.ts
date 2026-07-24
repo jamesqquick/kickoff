@@ -16,9 +16,14 @@ import { TeamMemberRepository } from "@/repositories/team-member-repository";
 // admin — platform-level superuser (assigned manually, never self-selected).
 // referee — match official (assigned manually, never self-selected).
 // user — default for all sign-ups; team ownership determines coach permissions.
-export type UserRole = "admin" | "referee" | "user";
+// Platform-level role. "admin" = unscoped superuser. "user" = everyone else.
+// The referee value is retained in the DB for legacy rows but unused in new logic.
+export type UserRole = "admin" | "user";
+
 export interface AppUser extends User {
   role: UserRole;
+  isCoach: boolean;
+  isDirector: boolean;
 }
 
 // Extracted so TypeScript can infer the full return type, including
@@ -43,7 +48,17 @@ function createAuth() {
           type: "string",
           required: true,
           defaultValue: "user",
-          input: false, // role is never accepted from user input
+          input: false, // never set from raw user input; set by sign-up route or admin
+        },
+        isCoach: {
+          type: "boolean",
+          defaultValue: false,
+          input: false, // set via two-step sign-up: signUpEmail() then updateUser()
+        },
+        isDirector: {
+          type: "boolean",
+          defaultValue: false,
+          input: false, // set via two-step sign-up or when accepting a manager invite
         },
       },
     },
