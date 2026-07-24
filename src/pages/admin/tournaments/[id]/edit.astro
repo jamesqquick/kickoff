@@ -37,9 +37,9 @@ try {
 <AppLayout title={`Edit ${tournament.name}`} activeNav="admin-tournaments">
   <div class="p-4 sm:p-6 lg:p-8 max-w-3xl">
     <AdminBreadcrumb crumbs={[
-      { label: "Admin",           href: "/admin" },
-      { label: "Tournaments",     href: "/admin/tournaments" },
-      { label: tournament.name },
+      { label: "Tournaments",   href: "/admin/tournaments" },
+      { label: tournament.name, href: `/admin/tournaments/${tournament.id}` },
+      { label: "Settings" },
     ]} />
 
     <PageHeader
