@@ -16,6 +16,10 @@ const signUpError = activeTab === "signup" ? error : null;
 // Only same-origin paths are accepted — the API routes validate and strip external URLs.
 const redirectTo = Astro.url.searchParams.get("redirect") ?? "";
 
+// Detect invite context so we can tailor copy and pre-check the right capability.
+const isTeamInvite     = redirectTo.startsWith("/join/");
+const isManagerInvite  = redirectTo.startsWith("/director/join/");
+
 const GOOGLE_OAUTH_URL = redirectTo
   ? `/api/auth/signin/google?redirect=${encodeURIComponent(redirectTo)}`
   : "/api/auth/signin/google";
@@ -144,8 +148,10 @@ const GOOGLE_OAUTH_URL = redirectTo
         <div id="panel-signup" class={activeTab === "signin" ? "hidden" : ""}>
           <h2 class="font-display text-2xl font-semibold text-(--color-foreground) mb-1">Create an account</h2>
           <p class="text-sm text-(--color-muted) mb-6">
-            {redirectTo.startsWith("/join/")
-              ? "Create a free account to join the team. You'll be added automatically."
+            {isTeamInvite
+              ? "Create a free account to join the team. You'll be taken back automatically."
+              : isManagerInvite
+              ? "Create an account to accept the tournament manager invite. You'll be taken back automatically."
               : "Join Kickoff to manage teams and tournaments."}
           </p>
 
@@ -196,12 +202,53 @@ const GOOGLE_OAUTH_URL = redirectTo
                 minlength={8}
                 required
               />
+              <!-- Capability selection — at least one must be checked -->
+              <div class="space-y-2 rounded-lg border border-(--color-border) p-4 bg-(--color-surface)">
+                <p class="text-sm font-medium text-(--color-foreground) mb-3">
+                  How will you use Kickoff? <span class="text-red-500">*</span>
+                </p>
+                <label class="flex items-start gap-3 cursor-pointer group">
+                  <input
+                    type="checkbox"
+                    name="isCoach"
+                    value="1"
+                    id="signup-isCoach"
+                    checked={isTeamInvite}
+                    class="w-4 h-4 accent-(--color-primary) mt-0.5 shrink-0 cursor-pointer"
+                  />
+                  <span class="text-sm text-(--color-foreground) leading-snug">
+                    <strong>Coach / Team Manager</strong> — create and manage teams, register for tournaments
+                  </span>
+                </label>
+                <label class="flex items-start gap-3 cursor-pointer group">
+                  <input
+                    type="checkbox"
+                    name="isDirector"
+                    value="1"
+                    id="signup-isDirector"
+                    checked={isManagerInvite}
+                    class="w-4 h-4 accent-(--color-primary) mt-0.5 shrink-0 cursor-pointer"
+                  />
+                  <span class="text-sm text-(--color-foreground) leading-snug">
+                    <strong>Tournament Director</strong> — create and run tournaments, manage registrations
+                    {isManagerInvite && (
+                      <span class="block text-xs text-(--color-primary) mt-0.5 font-medium">
+                        Pre-selected — you'll need this to manage the tournament you were invited to.
+                      </span>
+                    )}
+                  </span>
+                </label>
+                <p id="capability-error" class="hidden text-xs text-red-600 mt-1">
+                  Please select at least one option.
+                </p>
+              </div>
               <label class="flex items-start gap-2 text-sm text-(--color-muted) cursor-pointer">
                 <input type="checkbox" class="w-4 h-4 accent-(--color-primary) mt-0.5 shrink-0" />
                 I agree to the Terms of Service and Privacy Policy
               </label>
               <button
                 type="submit"
+                id="signup-submit"
                 class={cn(buttonVariants({ variant: "default", size: "xl" }), "w-full")}
               >
                 Create Account →
@@ -238,4 +285,24 @@ const GOOGLE_OAUTH_URL = redirectTo
     }
   }
   (window as any).switchTab = switchTab;
+
+  // Capability checkbox validation — at least one must be checked before submit
+  const signupForm = document.querySelector<HTMLFormElement>('form[action="/api/auth/signup"]');
+  if (signupForm) {
+    signupForm.addEventListener("submit", (e) => {
+      const coachBox = signupForm.querySelector<HTMLInputElement>("#signup-isCoach");
+      const directorBox = signupForm.querySelector<HTMLInputElement>("#signup-isDirector");
+      const errorEl = signupForm.querySelector<HTMLElement>("#capability-error");
+      if (!coachBox?.checked && !directorBox?.checked) {
+        e.preventDefault();
+        if (errorEl) {
+          errorEl.classList.remove("hidden");
+        }
+      } else {
+        if (errorEl) {
+          errorEl.classList.add("hidden");
+        }
+      }
+    });
+  }
 </script>

@@ -1,0 +1,39 @@
+---
+// Page header used by all /director/tournaments/[id]/* pages.
+// Shows: My Tournaments breadcrumb > tournament name switcher > current section.
+import type { Tournament } from "@/lib/schema";
+import { getTournamentStatus } from "@/lib/utils";
+import { DirectorTournamentSwitcher } from "@/components/DirectorTournamentSwitcher";
+
+interface Props {
+  tournament: Tournament;
+  allTournaments: { id: string; name: string; status: string }[];
+  section: string; // display label for the current section, e.g. "Registrations"
+  sectionSlug?: string; // URL segment, e.g. "registrations" — omit for overview
+}
+
+const { tournament, allTournaments, section, sectionSlug } = Astro.props;
+---
+
+<div class="border-b border-(--color-border) bg-(--color-surface) px-4 sm:px-6 lg:px-8 py-3">
+  <div class="flex items-center gap-2 text-sm text-(--color-muted) flex-wrap">
+    <!-- My Tournaments always links to the list -->
+    <a href="/director/tournaments" class="hover:text-(--color-primary) transition-colors cursor-pointer shrink-0">
+      My Tournaments
+    </a>
+    <span class="text-(--color-border)">/</span>
+    <!-- Inline tournament switcher -->
+    <DirectorTournamentSwitcher
+      client:load
+      tournaments={allTournaments}
+      activeTournamentId={tournament.id}
+      currentSection={sectionSlug ?? ""}
+    />
+    {sectionSlug && (
+      <>
+        <span class="text-(--color-border)">/</span>
+        <span class="text-(--color-foreground) font-medium">{section}</span>
+      </>
+    )}
+  </div>
+</div>

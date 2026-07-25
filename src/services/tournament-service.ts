@@ -1,4 +1,5 @@
 import type { AppUser } from "@/lib/auth";
+import { isAdmin, canManageTournament } from "@/lib/permissions";
 import { ForbiddenError, NotFoundError, ValidationError } from "@/lib/errors";
 import { getDb } from "@/lib/db";
 import { TournamentRepository } from "@/repositories/tournament-repository";
@@ -42,6 +43,11 @@ export class TournamentService {
     return this.tournaments.list();
   }
 
+  /** Returns all tournaments the director owns or manages. */
+  async listForDirector(userId: string): Promise<Tournament[]> {
+    return this.tournaments.listForDirector(userId);
+  }
+
   async getTournament(id: string): Promise<Tournament> {
     const tournament = await this.tournaments.findById(id);
     if (!tournament) {
@@ -51,7 +57,7 @@ export class TournamentService {
   }
 
   async createTournament(input: CreateTournamentInput, currentUser: AppUser): Promise<Tournament> {
-    if (currentUser.role !== "admin") {
+    if (!currentUser.isDirector && !isAdmin(currentUser)) {
       throw new ForbiddenError("create tournaments");
     }
     if (!input.name.trim()) {
@@ -70,6 +76,7 @@ export class TournamentService {
       registrationDeadline: input.registrationDeadline ?? null,
       location: input.location ?? null,
       description: input.description ?? null,
+      createdBy: currentUser.id,
       createdAt: now,
       updatedAt: now,
     });
@@ -80,12 +87,14 @@ export class TournamentService {
     input: UpdateTournamentInput,
     currentUser: AppUser,
   ): Promise<Tournament> {
-    if (currentUser.role !== "admin") {
-      throw new ForbiddenError("update tournaments");
-    }
     const tournament = await this.tournaments.findById(id);
     if (!tournament) {
       throw new NotFoundError("Tournament", id);
+    }
+
+    const ownerOrManager = await this.tournaments.isOwnerOrManager(id, currentUser.id);
+    if (!canManageTournament(currentUser, ownerOrManager)) {
+      throw new ForbiddenError("update this tournament");
     }
 
     const fields: Parameters<TournamentRepository["update"]>[1] = {};
@@ -99,7 +108,8 @@ export class TournamentService {
     }
     if ("startDate" in input) fields.startDate = input.startDate ?? null;
     if ("endDate" in input) fields.endDate = input.endDate ?? null;
-    if ("registrationDeadline" in input) fields.registrationDeadline = input.registrationDeadline ?? null;
+    if ("registrationDeadline" in input)
+      fields.registrationDeadline = input.registrationDeadline ?? null;
     if ("location" in input) fields.location = input.location ?? null;
     if ("description" in input) fields.description = input.description ?? null;
 
@@ -107,13 +117,16 @@ export class TournamentService {
   }
 
   async deleteTournament(id: string, currentUser: AppUser): Promise<void> {
-    if (currentUser.role !== "admin") {
-      throw new ForbiddenError("delete tournaments");
-    }
     const tournament = await this.tournaments.findById(id);
     if (!tournament) {
       throw new NotFoundError("Tournament", id);
     }
+
+    const ownerOrManager = await this.tournaments.isOwnerOrManager(id, currentUser.id);
+    if (!canManageTournament(currentUser, ownerOrManager)) {
+      throw new ForbiddenError("delete this tournament");
+    }
+
     if (getTournamentStatus(tournament) === "active") {
       throw new ValidationError("status", "Cannot delete an active tournament");
     }

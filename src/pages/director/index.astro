@@ -1,0 +1,39 @@
+---
+// Director landing — redirect to tournament list (or create if none exist)
+import { makeTournamentService } from "@/services/tournament-service";
+import { autoSelectTournament } from "@/lib/utils";
+import AppLayout from "@/layouts/AppLayout.astro";
+import { buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+
+const user = Astro.locals.user;
+if (!user || (!user.isDirector && user.role !== "admin")) {
+  return Astro.redirect("/dashboard");
+}
+
+const tournaments = await makeTournamentService().listForDirector(user.id);
+const selected = autoSelectTournament(tournaments);
+
+if (selected) {
+  return Astro.redirect(`/director/tournaments/${selected.id}`);
+}
+---
+
+<AppLayout title="My Tournaments" activeNav="director-tournaments">
+  <div class="p-4 sm:p-6 lg:p-8 flex items-center justify-center min-h-[60vh]">
+    <div class="text-center max-w-sm">
+      <div class="w-16 h-16 rounded-2xl bg-(--color-primary-subtle) flex items-center justify-center text-3xl mx-auto mb-5">
+        🏆
+      </div>
+      <h1 class="font-display text-xl font-bold text-(--color-foreground) mb-2">
+        No tournaments yet
+      </h1>
+      <p class="text-sm text-(--color-muted) mb-6">
+        Create your first tournament to start managing registrations, teams, and schedules.
+      </p>
+      <a href="/director/tournaments/new" class={cn(buttonVariants({ variant: "default" }))}>
+        Create tournament
+      </a>
+    </div>
+  </div>
+</AppLayout>

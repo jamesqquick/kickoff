@@ -7,9 +7,11 @@ import { Button } from "@/components/ui/button";
 interface Props {
   tournamentId: string;
   tournamentName: string;
+  /** Where to navigate after successful deletion. Defaults to /admin/tournaments. */
+  redirectTo?: string;
 }
 
-export function DeleteTournamentButton({ tournamentId, tournamentName }: Props) {
+export function DeleteTournamentButton({ tournamentId, tournamentName, redirectTo = "/admin/tournaments" }: Props) {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
 
@@ -23,7 +25,7 @@ export function DeleteTournamentButton({ tournamentId, tournamentName }: Props) 
         return;
       }
       toast.success("Tournament deleted.");
-      window.location.href = "/admin/tournaments";
+      window.location.href = redirectTo;
     } catch {
       toast.error("Something went wrong. Try again.");
     } finally {

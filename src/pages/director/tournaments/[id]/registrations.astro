@@ -1,0 +1,66 @@
+---
+import AppLayout from "@/layouts/AppLayout.astro";
+import { buttonVariants } from "@/components/ui/button";
+import { cn, getTournamentStatus } from "@/lib/utils";
+import PageHeader from "@/components/PageHeader.astro";
+import TournamentPageHeader from "@/components/TournamentPageHeader.astro";
+import SectionCard from "@/components/SectionCard.astro";
+import { RegistrationReviewTable } from "@/components/RegistrationReviewTable";
+import { makeTournamentService } from "@/services/tournament-service";
+import { makeTournamentRegistrationService } from "@/services/tournament-registration-service";
+import { NotFoundError } from "@/lib/errors";
+
+const user = Astro.locals.user;
+if (!user || (!user.isDirector && user.role !== "admin")) {
+  return Astro.redirect("/dashboard");
+}
+
+const { id } = Astro.params;
+
+let tournament, registrations, allTournaments;
+try {
+  [tournament, registrations, allTournaments] = await Promise.all([
+    makeTournamentService().getTournament(id!),
+    makeTournamentRegistrationService().getRegistrationsForTournament(id!),
+    makeTournamentService().listForDirector(user.id),
+  ]);
+} catch (err) {
+  if (err instanceof NotFoundError) return Astro.redirect("/director/tournaments");
+  throw err;
+}
+
+const allForSwitcher = allTournaments.map((t) => ({
+  id: t.id,
+  name: t.name,
+  status: getTournamentStatus(t),
+}));
+---
+
+<AppLayout title={`Registrations — ${tournament.name}`} activeNav="director-tournaments">
+  <TournamentPageHeader
+    tournament={tournament}
+    allTournaments={allForSwitcher}
+    section="Registrations"
+    sectionSlug="registrations"
+  />
+
+  <div class="p-4 sm:p-6 lg:p-8">
+    <div class="flex items-start justify-between gap-4 mb-6">
+      <PageHeader
+        title="Team Registrations"
+        subtitle={`${registrations.length} registration${registrations.length !== 1 ? "s" : ""} for ${tournament.name}`}
+      />
+      <a href={`/director/tournaments/${tournament.id}/edit`} class={cn(buttonVariants({ variant: "outline" }), "shrink-0 mt-1")}>
+        ← Edit Tournament
+      </a>
+    </div>
+
+    <SectionCard class="p-5 sm:p-7">
+      {registrations.length === 0 ? (
+        <p class="text-sm text-(--color-muted) text-center py-8">No teams have registered yet.</p>
+      ) : (
+        <RegistrationReviewTable client:load initialRegistrations={registrations} />
+      )}
+    </SectionCard>
+  </div>
+</AppLayout>

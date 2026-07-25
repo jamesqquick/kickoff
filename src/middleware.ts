@@ -2,14 +2,11 @@ import { defineMiddleware } from "astro:middleware";
 import { getAuth } from "@/lib/auth";
 import type { AppUser } from "@/lib/auth";
 
-// Routes that don't require authentication — exact matches.
 const PUBLIC_ROUTES = new Set(["/signin", "/"]);
-
-// Route prefixes that are public — no authentication required.
-// /join/* is public so unauthenticated players can see the team card before signing in.
-const PUBLIC_PREFIXES = ["/join/"];
-
-// Better Auth's own API routes — always pass through
+const PUBLIC_PREFIXES = [
+  "/join/",
+  "/director/join/", // manager invite landing — public so invitee can authenticate first
+];
 const AUTH_API_PATTERN = /^\/api\/auth\//;
 
 function isPublicRoute(pathname: string): boolean {
@@ -20,27 +17,50 @@ function isPublicRoute(pathname: string): boolean {
 export const onRequest = defineMiddleware(async (context, next) => {
   const { request, locals, redirect, url } = context;
 
-  if (AUTH_API_PATTERN.test(url.pathname)) {
-    return next();
-  }
+  if (AUTH_API_PATTERN.test(url.pathname)) return next();
 
-  const session = await getAuth().api.getSession({
-    headers: request.headers,
-  });
-
-  // Cast to AppUser: Better Auth returns the base User type but our schema
-  // always includes `role` via additionalFields — the cast is safe at runtime.
+  const session = await getAuth().api.getSession({ headers: request.headers });
   locals.user = (session?.user ?? null) as AppUser | null;
   locals.session = session?.session ?? null;
 
-  // Redirect unauthenticated users away from protected routes.
-  // Include the original path as ?redirect= so they return after signing in.
-  if (!locals.user && !isPublicRoute(url.pathname)) {
-    return redirect(`/signin?redirect=${encodeURIComponent(url.pathname)}`);
+  const { pathname } = url;
+
+  // ── Unauthenticated users ──────────────────────────────────────────────────
+  if (!locals.user) {
+    if (!isPublicRoute(pathname)) {
+      return redirect(`/signin?redirect=${encodeURIComponent(pathname)}`);
+    }
+    return next();
   }
 
-  // Redirect authenticated users away from sign-in
-  if (locals.user && url.pathname === "/signin") {
+  // ── Authenticated: bounce off sign-in page ─────────────────────────────────
+  if (pathname === "/signin") {
+    return redirect("/dashboard");
+  }
+
+  const user = locals.user;
+
+  // ── Admin-only routes (/admin/*) ───────────────────────────────────────────
+  if (pathname.startsWith("/admin/")) {
+    if (user.role !== "admin") return redirect("/dashboard");
+    return next();
+  }
+
+  // ── Director routes (/director/*) — except the public join landing ─────────
+  if (pathname.startsWith("/director/") && !pathname.startsWith("/director/join/")) {
+    if (!user.isDirector && user.role !== "admin") return redirect("/dashboard");
+    return next();
+  }
+
+  // ── Coach-only pages ────────────────────────────────────────────────────────
+  const coachOnlyPaths = ["/my-teams", "/teams/register"];
+  const isCoachOnlyExact = coachOnlyPaths.includes(pathname);
+  // /teams/[id]/edit  and  /tournaments/[id]/register
+  const isCoachOnlyDynamic =
+    /^\/teams\/[^/]+\/edit$/.test(pathname) ||
+    /^\/tournaments\/[^/]+\/register$/.test(pathname);
+
+  if ((isCoachOnlyExact || isCoachOnlyDynamic) && !user.isCoach && user.role !== "admin") {
     return redirect("/dashboard");
   }
 

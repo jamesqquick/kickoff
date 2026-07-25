@@ -6,11 +6,14 @@ import { Button } from "@/components/ui/button";
 interface CreateProps {
   mode: "create";
   tournamentId?: never;
+  /** Base path for the post-create redirect. Defaults to "/admin/tournaments". */
+  redirectBase?: string;
 }
 
 interface EditProps {
   mode: "edit";
   tournamentId: string;
+  redirectBase?: string;
 }
 
 type Props = CreateProps | EditProps;
@@ -19,7 +22,7 @@ function get(name: string): string {
   return ((document.querySelector(`[name="${name}"]`) as HTMLInputElement | null)?.value ?? "").trim();
 }
 
-export function SaveTournamentButton({ mode, tournamentId }: Props) {
+export function SaveTournamentButton({ mode, tournamentId, redirectBase = "/admin/tournaments" }: Props) {
   const [loading, setLoading] = useState(false);
 
   async function handleSave() {
@@ -51,7 +54,7 @@ export function SaveTournamentButton({ mode, tournamentId }: Props) {
           return;
         }
         toast.success("Tournament created. Add divisions below.");
-        window.location.href = `/admin/tournaments/${data.id}/edit`;
+        window.location.href = `${redirectBase}/${data.id}/edit`;
       } else {
         const { error } = await actions.tournaments.update({
           id: tournamentId,

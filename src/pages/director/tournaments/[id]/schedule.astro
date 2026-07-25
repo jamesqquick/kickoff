@@ -1,0 +1,50 @@
+---
+import AppLayout from "@/layouts/AppLayout.astro";
+import PageHeader from "@/components/PageHeader.astro";
+import TournamentPageHeader from "@/components/TournamentPageHeader.astro";
+import { makeTournamentService } from "@/services/tournament-service";
+import { getTournamentStatus } from "@/lib/utils";
+import { NotFoundError } from "@/lib/errors";
+
+const user = Astro.locals.user;
+if (!user || (!user.isDirector && user.role !== "admin")) {
+  return Astro.redirect("/dashboard");
+}
+
+const { id } = Astro.params;
+
+let tournament, allTournaments;
+try {
+  [tournament, allTournaments] = await Promise.all([
+    makeTournamentService().getTournament(id!),
+    makeTournamentService().listForDirector(user.id),
+  ]);
+} catch (err) {
+  if (err instanceof NotFoundError) return Astro.redirect("/director/tournaments");
+  throw err;
+}
+
+const allForSwitcher = allTournaments.map((t) => ({
+  id: t.id,
+  name: t.name,
+  status: getTournamentStatus(t),
+}));
+---
+
+<AppLayout title={`Schedule — ${tournament.name}`} activeNav="director-schedule">
+  <TournamentPageHeader
+    tournament={tournament}
+    allTournaments={allForSwitcher}
+    section="Schedule"
+    sectionSlug="schedule"
+  />
+
+  <div class="p-4 sm:p-6 lg:p-8">
+    <PageHeader
+      eyebrow={tournament.name}
+      title="Schedule"
+      subtitle="Match schedule for this tournament."
+    />
+    <p class="text-sm text-(--color-muted) mt-2">Schedule coming soon.</p>
+  </div>
+</AppLayout>
