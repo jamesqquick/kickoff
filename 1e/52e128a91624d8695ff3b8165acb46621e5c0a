@@ -1,0 +1,29 @@
+migrations/0020_notifications_init.sql
+  s_b3dc8e4ea50acd::t_50a6400a0e3628 1-20
+src/lib/schema.ts
+  s_9d738d921050ea::t_88a3d608eeed2b 198-215
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "1e52e128a91624d8695ff3b8165acb46621e5c0a",
+  "prompts": {},
+  "sessions": {
+    "s_9d738d921050ea": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_06585cd20ffe5d946yP6HnBoeJ",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "James Quick <jquick@cloudflare.com>"
+    },
+    "s_b3dc8e4ea50acd": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_074a8e652ffewIHHNT2L7engEI",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "James Quick <jquick@cloudflare.com>"
+    }
+  }
+}
