@@ -10,7 +10,7 @@ import {
 } from "astro:env/server";
 import { getDb } from "@/lib/db";
 import { TeamMemberRepository } from "@/repositories/team-member-repository";
-import { sendPasswordReset } from "@/lib/email";
+import { makeEmailService } from "@/services/email-service";
 
 // Extends Better Auth's base User with our custom additionalFields.
 // Use this everywhere instead of `User` from "better-auth" + a cast.
@@ -37,7 +37,15 @@ function createAuth() {
     emailAndPassword: {
       enabled: true,
       sendResetPassword: async ({ user, url }) => {
-        await sendPasswordReset({ to: user.email, resetUrl: url });
+        // better-auth defaults resetPasswordTokenExpiresIn to 1 hour (3600s)
+        // and doesn't pass the expiry to this callback, so we compute it here.
+        // Keep this in sync if resetPasswordTokenExpiresIn is ever configured.
+        const expiresAt = Date.now() + 60 * 60 * 1000;
+        await makeEmailService()
+          .sendPasswordReset(user.email, { resetUrl: url, expiresAt })
+          .catch((err) => {
+            console.error("[auth] Failed to send password reset email", err);
+          });
       },
     },
     socialProviders: {
@@ -67,6 +75,19 @@ function createAuth() {
       },
     },
     databaseHooks: {
+      user: {
+        create: {
+          // After a new user signs up, send a welcome email (best-effort).
+          after: async (user) => {
+            const firstName = (user.name ?? "").split(" ")[0] || "there";
+            makeEmailService()
+              .sendWelcome(user.email, { firstName })
+              .catch((err) => {
+                console.error("[auth] Failed to send welcome email", err);
+              });
+          },
+        },
+      },
       session: {
         create: {
           // After every sign-in or sign-up, claim any pending_signup roster entries

@@ -4,6 +4,8 @@ import { ForbiddenError, NotFoundError, ValidationError } from "@/lib/errors";
 import { getDb } from "@/lib/db";
 import { TournamentRepository } from "@/repositories/tournament-repository";
 import type { TournamentManager, TournamentManagerInvite } from "@/lib/schema";
+import { makeEmailService } from "@/services/email-service";
+import { BETTER_AUTH_URL } from "astro:env/server";
 
 // 48 hours in milliseconds
 const INVITE_TTL_MS = 48 * 60 * 60 * 1000;
@@ -124,6 +126,8 @@ export class TournamentManagerService {
   async generateInvite(
     tournamentId: string,
     currentUser: AppUser,
+    /** Optional email to send the invite to. When provided, an invite email is sent. */
+    email?: string,
   ): Promise<TournamentManagerInvite> {
     const isOwner = await this.tournamentsRepo.isOwner(tournamentId, currentUser.id);
     if (!canManageManagersFor(currentUser, isOwner)) {
@@ -134,16 +138,35 @@ export class TournamentManagerService {
     if (!tournament) throw new NotFoundError("Tournament", tournamentId);
 
     const now = Date.now();
-    return this.tournamentsRepo.createInvite({
+    const expiresAt = now + INVITE_TTL_MS;
+    const token = generateToken();
+
+    const invite = await this.tournamentsRepo.createInvite({
       id: crypto.randomUUID(),
       tournamentId,
-      email: null,
-      token: generateToken(),
+      email: email ?? null,
+      token,
       createdBy: currentUser.id,
-      expiresAt: now + INVITE_TTL_MS,
+      expiresAt,
       acceptedAt: null,
       createdAt: now,
     });
+
+    // Send the invite email when an email address was provided (best-effort).
+    if (email) {
+      const inviteUrl = `${BETTER_AUTH_URL}/director/join/${token}`;
+      makeEmailService()
+        .sendManagerInvite(email, {
+          tournamentName: tournament.name,
+          inviteUrl,
+          expiresAt,
+        })
+        .catch((err) => {
+          console.error("[manager] Failed to send manager invite email", err);
+        });
+    }
+
+    return invite;
   }
 
   async revokeInvite(inviteId: string, currentUser: AppUser): Promise<void> {
