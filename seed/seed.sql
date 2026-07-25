@@ -10,6 +10,7 @@
 -- ------------------------------------------------------------
 -- 1. Clear existing data (reverse dependency order)
 -- ------------------------------------------------------------
+DELETE FROM notifications;
 DELETE FROM tournament_manager_invites;
 DELETE FROM tournament_managers;
 DELETE FROM tournament_registrations;
@@ -242,7 +243,80 @@ INSERT INTO tournament_managers (id, tournament_id, user_id, added_by, created_a
   ('mgr_01', 'tour_4', 'usr_director_b', 'usr_director_a', 1700000000000);
 
 -- ------------------------------------------------------------
--- 12. Tournament Manager Invites
+-- 12. Notifications
+-- Representative fixtures covering all three notification types.
+-- Times are relative to 1700000000000 (Nov 2023) so badges fire immediately.
+--
+-- usr_coach_a  → sees: registration status changes + player join
+-- usr_director_a → sees: new registration submitted (for their tournaments)
+-- usr_director_b → sees: new registration submitted (for tour_8 they own)
+-- ------------------------------------------------------------
+INSERT INTO notifications (id, user_id, type, title, body, reference_url, read_at, created_at, updated_at) VALUES
+  -- coach_a: tour_1 reg approved (read)
+  ('notif_01', 'usr_coach_a',
+   'registration_status_changed',
+   'Registration approved',
+   'Your registration for Winter Cup 2024 was approved.',
+   '/my-teams/team_a',
+   1700000100000,
+   1700000090000, 1700000100000),
+
+  -- coach_a: tour_4 reg pending → rejected (unread)
+  ('notif_02', 'usr_coach_a',
+   'registration_status_changed',
+   'Registration rejected',
+   'Your registration for Regional Qualifiers 2026 was rejected. Director note: Age verification failed.',
+   '/my-teams/team_a',
+   NULL,
+   1700000200000, 1700000200000),
+
+  -- coach_a: player joined team_a via invite (unread)
+  ('notif_03', 'usr_coach_a',
+   'player_joined_team',
+   'New player joined',
+   'Jordan Lee joined River Hawks via the invite link.',
+   '/my-teams/team_a',
+   NULL,
+   1700000300000, 1700000300000),
+
+  -- director_a: new registration submitted for tour_4 (read)
+  ('notif_04', 'usr_director_a',
+   'new_registration_submitted',
+   'New registration submitted',
+   'Storm United has registered for Regional Qualifiers 2026.',
+   '/director/tournaments/tour_4/registrations',
+   1700000150000,
+   1700000120000, 1700000150000),
+
+  -- director_a: another new registration for tour_5 (unread)
+  ('notif_05', 'usr_director_a',
+   'new_registration_submitted',
+   'New registration submitted',
+   'River Hawks has registered for Summer Classic 2026.',
+   '/director/tournaments/tour_5/registrations',
+   NULL,
+   1700000400000, 1700000400000),
+
+  -- director_b: new registration for tour_8 they own (unread)
+  ('notif_06', 'usr_director_b',
+   'new_registration_submitted',
+   'New registration submitted',
+   'Silver Arrows has registered for Youth Invitational 2027.',
+   '/director/tournaments/tour_8/registrations',
+   NULL,
+   1700000500000, 1700000500000),
+
+  -- coach_b: player joined team_c (read)
+  ('notif_07', 'usr_coach_b',
+   'player_joined_team',
+   'New player joined',
+   'Morgan Kim joined Coastal FC via the invite link.',
+   '/my-teams/team_c',
+   1700000250000,
+   1700000220000, 1700000250000);
+
+-- ------------------------------------------------------------
+-- 13. Tournament Manager Invites
 -- One pending invite for tour_4 (48h expiry from "now" = far future so it
 -- never expires in dev; token is known for manual /director/join/[token] test)
 -- ------------------------------------------------------------

@@ -4,7 +4,9 @@
 // Each section is shown based on the user's isCoach / isDirector / role flags.
 import BrandMark from "@/components/BrandMark.astro";
 import { UserMenu } from "@/components/layout/UserMenu";
+import { NotificationBell } from "@/components/NotificationBell";
 import { TeamMemberRepository } from "@/repositories/team-member-repository";
+import { makeNotificationService } from "@/services/notification-service";
 import { getDb } from "@/lib/db";
 
 interface Props {
@@ -30,6 +32,11 @@ const myTeamsCount =
   user && isCoach
     ? await new TeamMemberRepository(getDb()).countConfirmedForUser(user.id)
     : 0;
+
+// Notification unread count — fetched server-side so the badge is correct on first paint.
+const unreadNotificationCount = user
+  ? await makeNotificationService().unreadCount(user.id)
+  : 0;
 
 function navItem(id: string, label: string, href: string, icon: string, count?: string) {
   return { id, label, href, icon, count };
@@ -60,6 +67,12 @@ function getIcon(name: string) {
   <div class="flex items-center gap-2.5 px-5 py-5 border-b border-(--color-border)">
     <BrandMark size="sm" />
     <span class="font-display font-bold text-[17px] text-(--color-foreground) flex-1">Kickoff</span>
+    {user && (
+      <NotificationBell
+        client:load
+        initialUnreadCount={unreadNotificationCount}
+      />
+    )}
     <button
       id="sidebar-close"
       class="lg:hidden flex items-center justify-center w-8 h-8 rounded-md text-(--color-muted) hover:bg-(--color-border-soft) hover:text-(--color-foreground) transition-colors cursor-pointer"

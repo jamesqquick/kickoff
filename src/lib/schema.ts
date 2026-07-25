@@ -195,3 +195,21 @@ export const tournamentManagerInvites = sqliteTable("tournament_manager_invites"
 
 export type TournamentManagerInvite = InferSelectModel<typeof tournamentManagerInvites>;
 export type NewTournamentManagerInvite = InferInsertModel<typeof tournamentManagerInvites>;
+
+// notifications — persisted in-app notifications for any user.
+// readAt is null for unread; set to epoch ms when the user reads or clicks the notification.
+// referenceUrl is the page to navigate to when the notification is clicked (optional).
+export const notifications = sqliteTable("notifications", {
+  id: text("id").primaryKey(),
+  userId: text("user_id").notNull(),          // FK → user.id (app-level)
+  type: text("type").notNull(),               // e.g. 'registration_status_changed'
+  title: text("title").notNull(),
+  body: text("body").notNull(),
+  referenceUrl: text("reference_url"),        // where to navigate on click; null = no navigation
+  readAt: int("read_at"),                     // null = unread; epoch ms when read
+  createdAt: int("created_at").notNull(),
+  updatedAt: int("updated_at").notNull(),
+});
+
+export type Notification = InferSelectModel<typeof notifications>;
+export type NewNotification = InferInsertModel<typeof notifications>;
