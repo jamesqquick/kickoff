@@ -34,9 +34,15 @@ function formatDates(t: Tournament): string {
 
 interface Props {
   tournaments: Tournament[];
+  /**
+   * Base path used to build View and Edit links.
+   * Defaults to "/admin/tournaments" for the admin table.
+   * Pass "/director/tournaments" for the director context.
+   */
+  basePath?: string;
 }
 
-export function TournamentsTable({ tournaments: initialTournaments }: Props) {
+export function TournamentsTable({ tournaments: initialTournaments, basePath = "/admin/tournaments" }: Props) {
   const [tournaments] = useState<Tournament[]>(initialTournaments);
   const [activeTab, setActiveTab] = useState<StatusFilter>(readTabFromUrl);
 
@@ -101,7 +107,12 @@ export function TournamentsTable({ tournaments: initialTournaments }: Props) {
                     className="border-b border-(--color-border-soft) last:border-0 hover:bg-(--color-background) transition-colors"
                   >
                     <td className="px-5 py-3.5">
-                      <span className="font-semibold text-sm text-(--color-foreground)">{t.name}</span>
+                      <a
+                        href={`${basePath}/${t.id}`}
+                        className="font-semibold text-sm text-(--color-foreground) hover:text-(--color-primary) transition-colors"
+                      >
+                        {t.name}
+                      </a>
                       <p className="text-xs text-(--color-muted) sm:hidden mt-0.5">
                         <span className={cn("inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium", tournamentStatusClass(status))}>
                           {tournamentStatusLabel(status)}
@@ -119,7 +130,7 @@ export function TournamentsTable({ tournaments: initialTournaments }: Props) {
                     <td className="px-5 py-3.5 text-right">
                       <div className="flex items-center justify-end gap-2">
                         <a
-                          href={`/tournaments/${t.id}`}
+                          href={`${basePath}/${t.id}`}
                           className={cn(buttonVariants({ variant: "outline" }), "h-7 px-2 xl:px-3 text-xs shrink-0 gap-1")}
                           title="View tournament"
                         >
@@ -127,7 +138,7 @@ export function TournamentsTable({ tournaments: initialTournaments }: Props) {
                           <span className="hidden xl:inline">View</span>
                         </a>
                         <a
-                          href={`/admin/tournaments/${t.id}/edit`}
+                          href={`${basePath}/${t.id}/edit`}
                           className={cn(buttonVariants({ variant: "outline" }), "h-7 px-2 xl:px-3 text-xs shrink-0 gap-1")}
                           title="Edit tournament"
                         >
@@ -138,6 +149,7 @@ export function TournamentsTable({ tournaments: initialTournaments }: Props) {
                           <DeleteTournamentButton
                             tournamentId={t.id}
                             tournamentName={t.name}
+                            redirectTo={basePath}
                           />
                         )}
                       </div>

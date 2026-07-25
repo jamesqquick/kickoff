@@ -21,7 +21,7 @@ export class TournamentRegistrationService {
     return this.registrationsRepo.listByTournament(tournamentId);
   }
 
-  async getRegistrationsForTeam(teamId: string): Promise<TournamentRegistration[]> {
+  async getRegistrationsForTeam(teamId: string): Promise<RegistrationWithDetails[]> {
     return this.registrationsRepo.listByTeam(teamId);
   }
 

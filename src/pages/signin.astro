@@ -16,6 +16,10 @@ const signUpError = activeTab === "signup" ? error : null;
 // Only same-origin paths are accepted — the API routes validate and strip external URLs.
 const redirectTo = Astro.url.searchParams.get("redirect") ?? "";
 
+// Detect invite context so we can tailor copy and pre-check the right capability.
+const isTeamInvite     = redirectTo.startsWith("/join/");
+const isManagerInvite  = redirectTo.startsWith("/director/join/");
+
 const GOOGLE_OAUTH_URL = redirectTo
   ? `/api/auth/signin/google?redirect=${encodeURIComponent(redirectTo)}`
   : "/api/auth/signin/google";
@@ -144,8 +148,10 @@ const GOOGLE_OAUTH_URL = redirectTo
         <div id="panel-signup" class={activeTab === "signin" ? "hidden" : ""}>
           <h2 class="font-display text-2xl font-semibold text-(--color-foreground) mb-1">Create an account</h2>
           <p class="text-sm text-(--color-muted) mb-6">
-            {redirectTo.startsWith("/join/")
-              ? "Create a free account to join the team. You'll be added automatically."
+            {isTeamInvite
+              ? "Create a free account to join the team. You'll be taken back automatically."
+              : isManagerInvite
+              ? "Create an account to accept the tournament manager invite. You'll be taken back automatically."
               : "Join Kickoff to manage teams and tournaments."}
           </p>
 
@@ -207,6 +213,7 @@ const GOOGLE_OAUTH_URL = redirectTo
                     name="isCoach"
                     value="1"
                     id="signup-isCoach"
+                    checked={isTeamInvite}
                     class="w-4 h-4 accent-(--color-primary) mt-0.5 shrink-0 cursor-pointer"
                   />
                   <span class="text-sm text-(--color-foreground) leading-snug">
@@ -219,10 +226,16 @@ const GOOGLE_OAUTH_URL = redirectTo
                     name="isDirector"
                     value="1"
                     id="signup-isDirector"
+                    checked={isManagerInvite}
                     class="w-4 h-4 accent-(--color-primary) mt-0.5 shrink-0 cursor-pointer"
                   />
                   <span class="text-sm text-(--color-foreground) leading-snug">
                     <strong>Tournament Director</strong> — create and run tournaments, manage registrations
+                    {isManagerInvite && (
+                      <span class="block text-xs text-(--color-primary) mt-0.5 font-medium">
+                        Pre-selected — you'll need this to manage the tournament you were invited to.
+                      </span>
+                    )}
                   </span>
                 </label>
                 <p id="capability-error" class="hidden text-xs text-red-600 mt-1">

@@ -21,7 +21,7 @@ const isDirector = !!user.isDirector || isAdmin;
 
 let myTeams: Awaited<ReturnType<typeof makeTeamService>["listByCoach"]> = [];
 let myTournaments: Awaited<ReturnType<typeof makeTournamentService>["listForDirector"]> = [];
-let myRegistrations: Awaited<ReturnType<typeof makeTournamentRegistrationService>["getRegistrationsForTeam"]> = [];
+let myRegistrations: import("@/repositories/tournament-registration-repository").RegistrationWithDetails[] = [];
 let pendingRegistrations: Awaited<ReturnType<typeof makeTournamentRegistrationService>["getPendingRegistrationsForDirector"]> = [];
 
 if (isCoach && !isAdmin) {
@@ -134,10 +134,10 @@ if (isAdmin) {
             <ul>
               {myRegistrations.slice(0, 8).map((reg) => (
                 <li class="flex items-center justify-between px-5 py-3 border-b border-(--color-border-soft) last:border-0">
-                  <div class="min-w-0">
-                    <p class="text-sm font-medium text-(--color-foreground) truncate">{reg.tournamentId}</p>
-                    <p class="text-xs text-(--color-muted)">{reg.registeredAt.slice(0, 10)}</p>
-                  </div>
+                   <div class="min-w-0">
+                     <p class="text-sm font-medium text-(--color-foreground) truncate">{reg.tournamentName ?? reg.tournamentId}</p>
+                     <p class="text-xs text-(--color-muted)">{reg.divisionName} · {reg.registeredAt.slice(0, 10)}</p>
+                   </div>
                   <span class={cn(
                     "text-xs font-medium px-2 py-0.5 rounded-full shrink-0 ml-3",
                     reg.status === "approved"   && "bg-emerald-100 text-emerald-700",

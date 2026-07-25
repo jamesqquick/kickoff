@@ -1,6 +1,6 @@
 import { eq, and } from "drizzle-orm";
 import type { AppDatabase } from "@/lib/db";
-import { tournamentRegistrations, teams, divisions } from "@/lib/schema";
+import { tournamentRegistrations, teams, divisions, tournaments } from "@/lib/schema";
 import type { TournamentRegistration, NewTournamentRegistration, RegistrationStatus } from "@/lib/schema";
 
 export interface RegistrationWithDetails extends TournamentRegistration {
@@ -8,6 +8,8 @@ export interface RegistrationWithDetails extends TournamentRegistration {
   teamColor: string;
   teamShortName: string | null;
   divisionName: string;
+  /** Present on all listByTeam results; null on listByTournament (tournament is already known). */
+  tournamentName: string | null;
 }
 
 export class TournamentRegistrationRepository {
@@ -29,10 +31,12 @@ export class TournamentRegistrationRepository {
         teamColor: teams.color,
         teamShortName: teams.shortName,
         divisionName: divisions.name,
+        tournamentName: tournaments.name,
       })
       .from(tournamentRegistrations)
       .innerJoin(teams, eq(tournamentRegistrations.teamId, teams.id))
       .innerJoin(divisions, eq(tournamentRegistrations.divisionId, divisions.id))
+      .innerJoin(tournaments, eq(tournamentRegistrations.tournamentId, tournaments.id))
       .where(eq(tournamentRegistrations.tournamentId, tournamentId))
       .all();
     return rows;
@@ -57,10 +61,12 @@ export class TournamentRegistrationRepository {
         teamColor: teams.color,
         teamShortName: teams.shortName,
         divisionName: divisions.name,
+        tournamentName: tournaments.name,
       })
       .from(tournamentRegistrations)
       .innerJoin(teams, eq(tournamentRegistrations.teamId, teams.id))
       .innerJoin(divisions, eq(tournamentRegistrations.divisionId, divisions.id))
+      .innerJoin(tournaments, eq(tournamentRegistrations.tournamentId, tournaments.id))
       .where(
         and(
           eq(tournamentRegistrations.tournamentId, tournamentId),
@@ -71,12 +77,32 @@ export class TournamentRegistrationRepository {
     return rows;
   }
 
-  async listByTeam(teamId: string): Promise<TournamentRegistration[]> {
-    return this.db
-      .select()
+  /** Returns all registrations for a team, joined with tournament and division names. */
+  async listByTeam(teamId: string): Promise<RegistrationWithDetails[]> {
+    const rows = await this.db
+      .select({
+        id: tournamentRegistrations.id,
+        teamId: tournamentRegistrations.teamId,
+        divisionId: tournamentRegistrations.divisionId,
+        tournamentId: tournamentRegistrations.tournamentId,
+        status: tournamentRegistrations.status,
+        registeredAt: tournamentRegistrations.registeredAt,
+        notes: tournamentRegistrations.notes,
+        createdAt: tournamentRegistrations.createdAt,
+        updatedAt: tournamentRegistrations.updatedAt,
+        teamName: teams.name,
+        teamColor: teams.color,
+        teamShortName: teams.shortName,
+        divisionName: divisions.name,
+        tournamentName: tournaments.name,
+      })
       .from(tournamentRegistrations)
+      .innerJoin(teams, eq(tournamentRegistrations.teamId, teams.id))
+      .innerJoin(divisions, eq(tournamentRegistrations.divisionId, divisions.id))
+      .innerJoin(tournaments, eq(tournamentRegistrations.tournamentId, tournaments.id))
       .where(eq(tournamentRegistrations.teamId, teamId))
       .all();
+    return rows;
   }
 
   async findByTeamAndTournament(
