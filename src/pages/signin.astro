@@ -12,6 +12,9 @@ const error = Astro.url.searchParams.get("error");
 const signInError = activeTab === "signin" ? error : null;
 const signUpError = activeTab === "signup" ? error : null;
 
+// Password-reset success flash: reset-password.astro redirects here with ?success=...
+const successMessage = Astro.url.searchParams.get("success");
+
 // Post-auth redirect: preserved through hidden form fields → API routes → Location header.
 // Only same-origin paths are accepted — the API routes validate and strip external URLs.
 const redirectTo = Astro.url.searchParams.get("redirect") ?? "";
@@ -111,6 +114,11 @@ const GOOGLE_OAUTH_URL = redirectTo
 
           <form method="POST" action="/api/auth/signin">
             <input type="hidden" name="redirect" value={redirectTo} />
+            {successMessage && (
+              <p class="text-sm text-green-700 mb-4 p-3 rounded-md bg-green-50 border border-green-200">
+                {successMessage}
+              </p>
+            )}
             {signInError && (
               <p class="text-sm text-red-600 mb-4 p-3 rounded-md bg-red-50 border border-red-200">
                 {signInError}
@@ -126,7 +134,7 @@ const GOOGLE_OAUTH_URL = redirectTo
               <div>
                 <div class="flex justify-between items-center mb-1.5">
                   <label class="text-sm font-medium text-(--color-foreground)">Password</label>
-                  <a href="#" class="text-xs text-(--color-muted) hover:text-(--color-primary)">Forgot?</a>
+                  <a href="/forgot-password" class="text-xs text-(--color-muted) hover:text-(--color-primary)">Forgot?</a>
                 </div>
                 <FormField
                   type="password"
