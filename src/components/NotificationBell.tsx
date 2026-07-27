@@ -99,44 +99,54 @@ export function NotificationBell({ initialUnreadCount }: Props) {
           </div>
         )}
 
-        {!loading &&
-          items.map((n) => (
-            <DropdownMenuItem
-              key={n.id}
-              onSelect={(e) => {
-                // Prevent Radix from closing before our async handler runs.
-                e.preventDefault();
-                handleClickNotification(n);
-              }}
-              className="flex flex-col items-start gap-1 px-3 py-2.5 cursor-pointer focus:bg-(--color-border-soft)"
-            >
-              <div className="flex w-full items-start gap-2">
-                {/* Unread indicator dot */}
-                <span
-                  className={`mt-1 h-2 w-2 shrink-0 rounded-full transition-colors ${
-                    n.readAt ? "bg-transparent" : "bg-(--color-primary)"
-                  }`}
-                />
-                <div className="min-w-0 flex-1">
-                  <p
-                    className={`text-sm leading-snug truncate ${
-                      n.readAt
-                        ? "font-normal text-(--color-muted)"
-                        : "font-semibold text-(--color-foreground)"
+        {!loading && loaded && items.length > 0 && (
+          <>
+            {items.map((n) => (
+              <DropdownMenuItem
+                key={n.id}
+                onSelect={(e) => {
+                  // Prevent Radix from closing before our async handler runs.
+                  e.preventDefault();
+                  handleClickNotification(n);
+                }}
+                className="flex flex-col items-start gap-1 px-3 py-2.5 cursor-pointer focus:bg-(--color-border-soft)"
+              >
+                <div className="flex w-full items-start gap-2">
+                  {/* Unread indicator dot */}
+                  <span
+                    className={`mt-1 h-2 w-2 shrink-0 rounded-full transition-colors ${
+                      n.readAt ? "bg-transparent" : "bg-(--color-primary)"
                     }`}
-                  >
-                    {n.title}
-                  </p>
-                  <p className="mt-0.5 text-xs text-(--color-muted) leading-snug line-clamp-2">
-                    {n.body}
-                  </p>
-                  <p className="mt-1 text-[11px] text-(--color-muted-fg)">
-                    {formatRelativeTime(n.createdAt)}
-                  </p>
+                  />
+                  <div className="min-w-0 flex-1">
+                    <p
+                      className={`text-sm leading-snug truncate ${
+                        n.readAt
+                          ? "font-normal text-(--color-muted)"
+                          : "font-semibold text-(--color-foreground)"
+                      }`}
+                    >
+                      {n.title}
+                    </p>
+                    <p className="mt-0.5 text-xs text-(--color-muted) leading-snug line-clamp-2">
+                      {n.body}
+                    </p>
+                    <p className="mt-1 text-[11px] text-(--color-muted-fg)">
+                      {formatRelativeTime(n.createdAt)}
+                    </p>
+                  </div>
                 </div>
-              </div>
+              </DropdownMenuItem>
+            ))}
+
+            <DropdownMenuSeparator />
+            <DropdownMenuItem asChild>
+              <a href="/notifications" className="justify-center text-xs text-(--color-primary) cursor-pointer">
+                View all notifications
+              </a>
             </DropdownMenuItem>
-          ))}
+          </>
+        )}
       </DropdownMenuContent>
     </DropdownMenu>
   );

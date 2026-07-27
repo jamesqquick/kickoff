@@ -1,0 +1,87 @@
+---
+import AppLayout from "@/layouts/AppLayout.astro";
+import PageHeader from "@/components/PageHeader.astro";
+import { makeNotificationService } from "@/services/notification-service";
+
+const user = Astro.locals.user;
+if (!user) return Astro.redirect("/signin");
+
+const notifications = await makeNotificationService().listForUser(user.id, 50);
+
+function formatDate(epochMs: number): string {
+  return new Date(epochMs).toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  });
+}
+
+const typeLabel: Record<string, string> = {
+  registration_status_changed: "Registration",
+  new_registration_submitted:  "Registration",
+  player_joined_team:          "Team",
+};
+---
+
+<AppLayout activeNav="notifications">
+  <div class="max-w-2xl mx-auto px-4 py-8">
+    <PageHeader
+      title="Notifications"
+      description="Your recent activity across teams and tournaments."
+    />
+
+    {notifications.length === 0 && (
+      <div class="mt-8 rounded-xl border border-(--color-border) bg-(--color-surface) px-6 py-12 text-center">
+        <p class="text-sm text-(--color-muted)">No notifications yet.</p>
+      </div>
+    )}
+
+    {notifications.length > 0 && (
+      <ul class="mt-6 space-y-2">
+        {notifications.map((n) => (
+          <li>
+            <a
+              href={n.referenceUrl ?? "#"}
+              class:list={[
+                "flex items-start gap-3 rounded-xl border px-4 py-3.5 transition-colors hover:bg-(--color-card-hover)",
+                n.readAt
+                  ? "border-(--color-border) bg-(--color-surface)"
+                  : "border-(--color-primary)/20 bg-(--color-primary-subtle)",
+              ]}
+            >
+              <!-- Unread dot -->
+              <span
+                class:list={[
+                  "mt-1.5 h-2 w-2 shrink-0 rounded-full",
+                  n.readAt ? "bg-transparent" : "bg-(--color-primary)",
+                ]}
+              />
+
+              <div class="min-w-0 flex-1">
+                <div class="flex items-center gap-2 flex-wrap">
+                  <p
+                    class:list={[
+                      "text-sm leading-snug",
+                      n.readAt
+                        ? "font-normal text-(--color-foreground)"
+                        : "font-semibold text-(--color-foreground)",
+                    ]}
+                  >
+                    {n.title}
+                  </p>
+                  <span class="text-[11px] px-1.5 py-0.5 rounded-full bg-(--color-border-soft) text-(--color-muted)">
+                    {typeLabel[n.type] ?? n.type}
+                  </span>
+                </div>
+                <p class="mt-0.5 text-sm text-(--color-muted) leading-snug">{n.body}</p>
+                <p class="mt-1 text-xs text-(--color-muted-fg)">{formatDate(n.createdAt)}</p>
+              </div>
+            </a>
+          </li>
+        ))}
+      </ul>
+    )}
+  </div>
+</AppLayout>

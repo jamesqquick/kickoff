@@ -120,7 +120,7 @@ export class TeamInviteService {
         type: NOTIFICATION_TYPES.PLAYER_JOINED_TEAM,
         title: "New player joined",
         body: `${playerName} joined ${team.name} via the invite link.`,
-        referenceUrl: `/my-teams/${team.id}`,
+        referenceUrl: `/teams/${team.id}`,
       });
     } catch (err) {
       console.error("[notifications] Failed to notify coach of player join:", err);

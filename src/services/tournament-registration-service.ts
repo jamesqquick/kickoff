@@ -206,7 +206,7 @@ export class TournamentRegistrationService {
         type: NOTIFICATION_TYPES.REGISTRATION_STATUS_CHANGED,
         title: `Registration ${statusLabel}`,
         body,
-        referenceUrl: `/my-teams/${team.id}`,
+        referenceUrl: `/teams/${team.id}`,
       });
     } catch (err) {
       console.error("[notifications] Failed to notify coach of registration status change:", err);

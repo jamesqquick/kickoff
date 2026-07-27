@@ -257,7 +257,7 @@ INSERT INTO notifications (id, user_id, type, title, body, reference_url, read_a
    'registration_status_changed',
    'Registration approved',
    'Your registration for Winter Cup 2024 was approved.',
-   '/my-teams/team_a',
+   '/teams/team_a',
    1700000100000,
    1700000090000, 1700000100000),
 
@@ -266,7 +266,7 @@ INSERT INTO notifications (id, user_id, type, title, body, reference_url, read_a
    'registration_status_changed',
    'Registration rejected',
    'Your registration for Regional Qualifiers 2026 was rejected. Director note: Age verification failed.',
-   '/my-teams/team_a',
+   '/teams/team_a',
    NULL,
    1700000200000, 1700000200000),
 
@@ -275,7 +275,7 @@ INSERT INTO notifications (id, user_id, type, title, body, reference_url, read_a
    'player_joined_team',
    'New player joined',
    'Jordan Lee joined River Hawks via the invite link.',
-   '/my-teams/team_a',
+   '/teams/team_a',
    NULL,
    1700000300000, 1700000300000),
 
@@ -311,7 +311,7 @@ INSERT INTO notifications (id, user_id, type, title, body, reference_url, read_a
    'player_joined_team',
    'New player joined',
    'Morgan Kim joined Coastal FC via the invite link.',
-   '/my-teams/team_c',
+   '/teams/team_c',
    1700000250000,
    1700000220000, 1700000250000);
 
