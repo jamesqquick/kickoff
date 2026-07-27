@@ -257,7 +257,7 @@ INSERT INTO notifications (id, user_id, type, title, body, reference_url, read_a
    'registration_status_changed',
    'Registration approved',
    'Your registration for Winter Cup 2024 was approved.',
-   '/teams/team_a',
+   '/teams/team_a#registrations',
    1700000100000,
    1700000090000, 1700000100000),
 
@@ -266,7 +266,7 @@ INSERT INTO notifications (id, user_id, type, title, body, reference_url, read_a
    'registration_status_changed',
    'Registration rejected',
    'Your registration for Regional Qualifiers 2026 was rejected. Director note: Age verification failed.',
-   '/teams/team_a',
+   '/teams/team_a#registrations',
    NULL,
    1700000200000, 1700000200000),
 

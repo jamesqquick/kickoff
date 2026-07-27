@@ -33,14 +33,15 @@ export function NotificationBell({ initialUnreadCount }: Props) {
     }
   }
 
-  async function handleClickNotification(notification: Notification) {
-    // Optimistic update: mark as read locally before the network round-trip.
+  function handleClickNotification(notification: Notification) {
     if (!notification.readAt) {
+      // Optimistic update immediately — don't block navigation on the await.
       setUnreadCount((c) => Math.max(0, c - 1));
       setItems((prev) =>
         prev.map((n) => (n.id === notification.id ? { ...n, readAt: Date.now() } : n)),
       );
-      await actions.notifications.markRead({ id: notification.id });
+      // Fire-and-forget: DB write completes even after this component unmounts.
+      actions.notifications.markRead({ id: notification.id }).catch(console.error);
     }
     if (notification.referenceUrl) {
       window.location.href = notification.referenceUrl;
@@ -104,15 +105,10 @@ export function NotificationBell({ initialUnreadCount }: Props) {
             {items.map((n) => (
               <DropdownMenuItem
                 key={n.id}
-                onSelect={(e) => {
-                  // Prevent Radix from closing before our async handler runs.
-                  e.preventDefault();
-                  handleClickNotification(n);
-                }}
+                onSelect={() => handleClickNotification(n)}
                 className="flex flex-col items-start gap-1 px-3 py-2.5 cursor-pointer focus:bg-(--color-border-soft)"
               >
                 <div className="flex w-full items-start gap-2">
-                  {/* Unread indicator dot */}
                   <span
                     className={`mt-1 h-2 w-2 shrink-0 rounded-full transition-colors ${
                       n.readAt ? "bg-transparent" : "bg-(--color-primary)"
@@ -140,11 +136,17 @@ export function NotificationBell({ initialUnreadCount }: Props) {
             ))}
 
             <DropdownMenuSeparator />
-            <DropdownMenuItem asChild>
-              <a href="/notifications" className="justify-center text-xs text-(--color-primary) cursor-pointer">
+            {/* Plain anchor — avoids DropdownMenuItem's focus:bg-accent which maps
+                to --color-accent (orange) in Tailwind v4 rather than the neutral
+                --accent shadcn variable. */}
+            <div className="px-2 py-1.5">
+              <a
+                href="/notifications"
+                className="flex w-full items-center justify-center rounded-md px-3 py-1.5 text-xs font-medium text-(--color-muted) hover:bg-(--color-border-soft) hover:text-(--color-foreground) transition-colors cursor-pointer"
+              >
                 View all notifications
               </a>
-            </DropdownMenuItem>
+            </div>
           </>
         )}
       </DropdownMenuContent>
