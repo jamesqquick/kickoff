@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Bell } from "lucide-react";
 import { actions } from "astro:actions";
+import { formatNotificationRelativeTime } from "@/lib/notifications";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -128,7 +129,7 @@ export function NotificationBell({ initialUnreadCount }: Props) {
                       {n.body}
                     </p>
                     <p className="mt-1 text-[11px] text-(--color-muted-fg)">
-                      {formatRelativeTime(n.createdAt)}
+                      {formatNotificationRelativeTime(n.createdAt)}
                     </p>
                   </div>
                 </div>
@@ -154,15 +155,4 @@ export function NotificationBell({ initialUnreadCount }: Props) {
   );
 }
 
-/** Human-readable relative timestamp, e.g. "3h ago", "2d ago". */
-function formatRelativeTime(epochMs: number): string {
-  const diff = Date.now() - epochMs;
-  const minutes = Math.floor(diff / 60_000);
-  if (minutes < 1) return "just now";
-  if (minutes < 60) return `${minutes}m ago`;
-  const hours = Math.floor(minutes / 60);
-  if (hours < 24) return `${hours}h ago`;
-  const days = Math.floor(hours / 24);
-  if (days < 7) return `${days}d ago`;
-  return new Date(epochMs).toLocaleDateString();
-}
+

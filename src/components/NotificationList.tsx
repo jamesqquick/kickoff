@@ -1,12 +1,10 @@
 import { useState } from "react";
 import { actions } from "astro:actions";
 import type { Notification } from "@/lib/schema";
-
-const TYPE_LABEL: Record<string, string> = {
-  registration_status_changed: "Registration",
-  new_registration_submitted: "Registration",
-  player_joined_team: "Team",
-};
+import {
+  NOTIFICATION_TYPE_LABELS,
+  formatNotificationDate,
+} from "@/lib/notifications";
 
 interface Props {
   initialNotifications: Notification[];
@@ -72,12 +70,12 @@ export function NotificationList({ initialNotifications }: Props) {
                   {n.title}
                 </p>
                 <span className="text-[11px] px-1.5 py-0.5 rounded-full bg-(--color-border-soft) text-(--color-muted)">
-                  {TYPE_LABEL[n.type] ?? n.type}
+                  {NOTIFICATION_TYPE_LABELS[n.type] ?? n.type}
                 </span>
               </div>
               <p className="mt-0.5 text-sm text-(--color-muted) leading-snug">{n.body}</p>
               <p className="mt-1 text-xs text-(--color-muted-fg)">
-                {formatDate(n.createdAt)}
+                {formatNotificationDate(n.createdAt)}
               </p>
             </div>
           </button>
@@ -87,12 +85,4 @@ export function NotificationList({ initialNotifications }: Props) {
   );
 }
 
-function formatDate(epochMs: number): string {
-  return new Date(epochMs).toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-    hour: "numeric",
-    minute: "2-digit",
-  });
-}
+
