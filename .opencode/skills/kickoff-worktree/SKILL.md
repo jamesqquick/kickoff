@@ -100,6 +100,46 @@ cd .worktrees/$SLUG && pnpm tsc --noEmit
 
 Zero errors means the worktree is ready for `astro dev`.
 
+## After Implementation
+
+Once the feature is committed, complete these steps before handing off.
+
+### 1. Update seed data if necessary
+
+If the PR adds a new table or a column that affects feature behavior, `seed/seed.sql`
+must already include representative rows (this is required per AGENTS.md). After
+updating the seed file, re-apply it so the local database reflects the new data:
+
+```bash
+cd .worktrees/<slug> && pnpm db:migrate:local && pnpm db:seed:local
+```
+
+### 2. Tell the user where the worktree is
+
+State the exact path and the command to start the dev server:
+
+```
+Worktree: /Users/jamesqquick/code/kickoff/.worktrees/<slug>
+
+cd .worktrees/<slug> && pnpm astro dev --background
+```
+
+The app runs at http://localhost:4321. All seed accounts use password `Test1234!`.
+
+### 3. Write a manual testing checklist
+
+For every acceptance criterion in the issue, provide one concrete UI test case. Each
+item must name:
+- **Which account to use** — pick the most relevant seed user (e.g. `coach-a@kickoff.test`
+  for coach flows, `director-a@kickoff.test` for director flows, `admin@kickoff.test` for
+  admin flows)
+- **Where to navigate** — exact URL or click path from the sidebar
+- **What to do** — the action to take (fill a form, click a button, etc.)
+- **What to expect** — the visible result (toast, badge count, redirect, UI state change)
+
+For flows that require multiple accounts (e.g. coach submits → director sees notification),
+spell out each account switch as a separate step.
+
 ## Notes
 
 - `.worktrees/` is listed in `.gitignore` — worktree directories are never committed.
