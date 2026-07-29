@@ -111,6 +111,7 @@ export const tournaments = sqliteTable("tournaments", {
   // createdBy is nullable in the DB (SQLite cannot add NOT NULL to a populated table).
   // The app layer treats it as always-present; the migration backfills existing rows.
   createdBy: text("created_by"),
+  registrationFee: int("registration_fee"), // cents, nullable = no fee set
   createdAt: int("created_at").notNull(),
   updatedAt: int("updated_at").notNull(),
 });
@@ -150,6 +151,8 @@ export const tournamentRegistrations = sqliteTable(
       .default("pending"),
     registeredAt: text("registered_at").notNull(), // ISO datetime string
     notes: text("notes"),                          // admin notes
+    paidAt: int("paid_at"),                        // epoch ms; null = unpaid
+    paidNote: text("paid_note"),                   // director's payment reference, e.g. "Venmo 7/15 #1234"
     createdAt: int("created_at").notNull(),
     updatedAt: int("updated_at").notNull(),
   },
