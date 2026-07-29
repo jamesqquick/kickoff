@@ -111,7 +111,8 @@ export const tournaments = sqliteTable("tournaments", {
   // createdBy is nullable in the DB (SQLite cannot add NOT NULL to a populated table).
   // The app layer treats it as always-present; the migration backfills existing rows.
   createdBy: text("created_by"),
-  registrationFee: int("registration_fee"), // cents, nullable = no fee set
+  registrationFee: int("registration_fee"),         // cents, nullable = no fee set
+  paymentInstructions: text("payment_instructions"), // free text shown to coaches, nullable
   createdAt: int("created_at").notNull(),
   updatedAt: int("updated_at").notNull(),
 });
