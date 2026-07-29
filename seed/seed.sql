@@ -161,29 +161,32 @@ INSERT INTO team_invites (id, team_id, token, created_by, is_active, created_at,
 -- tour_p1–tour_p10 are extra past fixtures so the "Load more" pagination
 -- path on /tournaments fires (page size = 12; 15 past total exercises it).
 -- ------------------------------------------------------------
-INSERT INTO tournaments (id, name, slug, start_date, end_date, registration_deadline, location, description, created_by, created_at, updated_at) VALUES
-  ('tour_1',  'Winter Cup 2024',             'winter-cup-2024',             '2024-01-15', '2024-01-28', NULL,         NULL,                     NULL,                                              'usr_director_a', 1700000000000, 1700000000000),
-  ('tour_2',  'Spring Invitational 2025',    'spring-invitational-2025',    '2025-03-01', '2025-03-15', NULL,         NULL,                     NULL,                                              'usr_director_a', 1700000000000, 1700000000000),
-  ('tour_3',  'Pacific Coast Cup 2025',      'pacific-coast-cup-2025',      '2025-08-10', '2025-08-24', NULL,         'San Diego Sports Park',  NULL,                                              'usr_director_a', 1700000000000, 1700000000000),
-  ('tour_4',  'Regional Qualifiers 2026',    'regional-qualifiers-2026',    '2026-04-05', '2026-04-12', '2026-03-20', 'Austin FC Stadium',      'Regional qualifier for the state championship.', 'usr_director_a', 1700000000000, 1700000000000),
-  ('tour_5',  'Summer Classic 2026',         'summer-classic-2026',         '2026-06-01', '2026-08-31', '2026-05-15', 'Zilker Park Fields',     'Open summer league across all age groups.',      'usr_director_a', 1700000000000, 1700000000000),
-  ('tour_6',  'Open State Championship 2026','open-state-championship-2026','2026-07-01', '2026-07-20', '2026-06-15', 'Round Rock Multiplex',   NULL,                                              'usr_director_a', 1700000000000, 1700000000000),
-  ('tour_7',  'Fall Championship 2026',      'fall-championship-2026',      '2026-12-01', '2026-12-20', '2026-11-01', NULL,                     NULL,                                              'usr_director_a', 1700000000000, 1700000000000),
-  -- tour_8 owned by director_b
-  ('tour_8',  'Youth Invitational 2027',     'youth-invitational-2027',     '2027-02-14', '2027-02-21', '2027-01-31', 'Cedar Park Center',      'Annual youth invitational for U12-U18 divisions.','usr_director_b', 1700000000000, 1700000000000),
-  -- tour_9 owned by usr_both (coach+director)
-  ('tour_9',  'Masters League Spring 2027',  'masters-league-spring-2027',  '2027-04-01', '2027-04-30', '2027-03-15', NULL,                     NULL,                                              'usr_both',       1700000000000, 1700000000000),
+-- registration_fee is in cents; NULL = free tournament.
+-- tour_7 ($100), tour_8 ($75), tour_9 ($150) have fees to exercise payment tracking.
+INSERT INTO tournaments (id, name, slug, start_date, end_date, registration_deadline, location, description, created_by, registration_fee, created_at, updated_at) VALUES
+  ('tour_1',  'Winter Cup 2024',             'winter-cup-2024',             '2024-01-15', '2024-01-28', NULL,         NULL,                     NULL,                                              'usr_director_a', NULL,  1700000000000, 1700000000000),
+  ('tour_2',  'Spring Invitational 2025',    'spring-invitational-2025',    '2025-03-01', '2025-03-15', NULL,         NULL,                     NULL,                                              'usr_director_a', NULL,  1700000000000, 1700000000000),
+  ('tour_3',  'Pacific Coast Cup 2025',      'pacific-coast-cup-2025',      '2025-08-10', '2025-08-24', NULL,         'San Diego Sports Park',  NULL,                                              'usr_director_a', NULL,  1700000000000, 1700000000000),
+  ('tour_4',  'Regional Qualifiers 2026',    'regional-qualifiers-2026',    '2026-04-05', '2026-04-12', '2026-03-20', 'Austin FC Stadium',      'Regional qualifier for the state championship.', 'usr_director_a', NULL,  1700000000000, 1700000000000),
+  ('tour_5',  'Summer Classic 2026',         'summer-classic-2026',         '2026-06-01', '2026-08-31', '2026-05-15', 'Zilker Park Fields',     'Open summer league across all age groups.',      'usr_director_a', NULL,  1700000000000, 1700000000000),
+  ('tour_6',  'Open State Championship 2026','open-state-championship-2026','2026-07-01', '2026-07-20', '2026-06-15', 'Round Rock Multiplex',   NULL,                                              'usr_director_a', NULL,  1700000000000, 1700000000000),
+  -- tour_7: $100 registration fee — exercises fee notice + payment column
+  ('tour_7',  'Fall Championship 2026',      'fall-championship-2026',      '2026-12-01', '2026-12-20', '2026-11-01', NULL,                     NULL,                                              'usr_director_a', 10000, 1700000000000, 1700000000000),
+  -- tour_8: $75 fee, owned by director_b
+  ('tour_8',  'Youth Invitational 2027',     'youth-invitational-2027',     '2027-02-14', '2027-02-21', '2027-01-31', 'Cedar Park Center',      'Annual youth invitational for U12-U18 divisions.','usr_director_b', 7500,  1700000000000, 1700000000000),
+  -- tour_9: $150 fee, owned by usr_both (coach+director)
+  ('tour_9',  'Masters League Spring 2027',  'masters-league-spring-2027',  '2027-04-01', '2027-04-30', '2027-03-15', NULL,                     NULL,                                              'usr_both',       15000, 1700000000000, 1700000000000),
   -- Extra past tournaments to exercise pagination (Load more at 12/page)
-  ('tour_p1', 'Kickoff Classic 2022',        'kickoff-classic-2022',        '2022-05-01', '2022-05-08', NULL,         'Houston Sports Complex',  NULL,                                             'usr_director_a', 1700000000000, 1700000000000),
-  ('tour_p2', 'Fall Invitational 2022',      'fall-invitational-2022',      '2022-10-10', '2022-10-16', NULL,         NULL,                      NULL,                                             'usr_director_a', 1700000000000, 1700000000000),
-  ('tour_p3', 'Spring Classic 2023',         'spring-classic-2023',         '2023-03-15', '2023-03-22', NULL,         'Dallas Soccer Fields',    NULL,                                             'usr_director_a', 1700000000000, 1700000000000),
-  ('tour_p4', 'Youth Cup 2023',              'youth-cup-2023',              '2023-06-10', '2023-06-17', NULL,         'Cedar Park Center',       NULL,                                             'usr_director_b', 1700000000000, 1700000000000),
-  ('tour_p5', 'Summer League 2023',          'summer-league-2023',          '2023-07-01', '2023-08-31', NULL,         'Zilker Park Fields',      NULL,                                             'usr_director_a', 1700000000000, 1700000000000),
-  ('tour_p6', 'State Cup 2023',              'state-cup-2023',              '2023-09-20', '2023-09-27', NULL,         'Round Rock Multiplex',    NULL,                                             'usr_director_a', 1700000000000, 1700000000000),
-  ('tour_p7', 'Fall Championship 2023',      'fall-championship-2023',      '2023-11-04', '2023-11-12', NULL,         NULL,                      NULL,                                             'usr_director_a', 1700000000000, 1700000000000),
-  ('tour_p8', 'Winter Classic 2023',         'winter-classic-2023',         '2023-12-09', '2023-12-16', NULL,         'Austin FC Stadium',       NULL,                                             'usr_director_a', 1700000000000, 1700000000000),
-  ('tour_p9', 'Coastal Open 2024',           'coastal-open-2024',           '2024-04-06', '2024-04-13', NULL,         'San Diego Sports Park',   NULL,                                             'usr_director_a', 1700000000000, 1700000000000),
-  ('tour_p10','Masters Cup 2024',            'masters-cup-2024',            '2024-09-14', '2024-09-21', NULL,         'Chicago United Center',   NULL,                                             'usr_director_b', 1700000000000, 1700000000000);
+  ('tour_p1', 'Kickoff Classic 2022',        'kickoff-classic-2022',        '2022-05-01', '2022-05-08', NULL,         'Houston Sports Complex',  NULL,                                             'usr_director_a', NULL,  1700000000000, 1700000000000),
+  ('tour_p2', 'Fall Invitational 2022',      'fall-invitational-2022',      '2022-10-10', '2022-10-16', NULL,         NULL,                      NULL,                                             'usr_director_a', NULL,  1700000000000, 1700000000000),
+  ('tour_p3', 'Spring Classic 2023',         'spring-classic-2023',         '2023-03-15', '2023-03-22', NULL,         'Dallas Soccer Fields',    NULL,                                             'usr_director_a', NULL,  1700000000000, 1700000000000),
+  ('tour_p4', 'Youth Cup 2023',              'youth-cup-2023',              '2023-06-10', '2023-06-17', NULL,         'Cedar Park Center',       NULL,                                             'usr_director_b', NULL,  1700000000000, 1700000000000),
+  ('tour_p5', 'Summer League 2023',          'summer-league-2023',          '2023-07-01', '2023-08-31', NULL,         'Zilker Park Fields',      NULL,                                             'usr_director_a', NULL,  1700000000000, 1700000000000),
+  ('tour_p6', 'State Cup 2023',              'state-cup-2023',              '2023-09-20', '2023-09-27', NULL,         'Round Rock Multiplex',    NULL,                                             'usr_director_a', NULL,  1700000000000, 1700000000000),
+  ('tour_p7', 'Fall Championship 2023',      'fall-championship-2023',      '2023-11-04', '2023-11-12', NULL,         NULL,                      NULL,                                             'usr_director_a', NULL,  1700000000000, 1700000000000),
+  ('tour_p8', 'Winter Classic 2023',         'winter-classic-2023',         '2023-12-09', '2023-12-16', NULL,         'Austin FC Stadium',       NULL,                                             'usr_director_a', NULL,  1700000000000, 1700000000000),
+  ('tour_p9', 'Coastal Open 2024',           'coastal-open-2024',           '2024-04-06', '2024-04-13', NULL,         'San Diego Sports Park',   NULL,                                             'usr_director_a', NULL,  1700000000000, 1700000000000),
+  ('tour_p10','Masters Cup 2024',            'masters-cup-2024',            '2024-09-14', '2024-09-21', NULL,         'Chicago United Center',   NULL,                                             'usr_director_b', NULL,  1700000000000, 1700000000000);
 
 -- ------------------------------------------------------------
 -- 9. Divisions
@@ -215,43 +218,45 @@ INSERT INTO divisions (id, tournament_id, name, max_teams, created_at, updated_a
 -- ------------------------------------------------------------
 -- 10. Tournament Registrations
 -- ------------------------------------------------------------
-INSERT INTO tournament_registrations (id, team_id, division_id, tournament_id, status, registered_at, notes, created_at, updated_at) VALUES
-  -- tour_1 (past)
-  ('reg_1',  'team_a', 'div_1a', 'tour_1', 'approved',   '2023-12-01T10:00:00Z', NULL,                                  1700000000000, 1700000000000),
-  ('reg_2',  'team_c', 'div_1b', 'tour_1', 'approved',   '2023-12-03T09:00:00Z', NULL,                                  1700000000000, 1700000000000),
-  ('reg_3',  'team_e', 'div_1a', 'tour_1', 'approved',   '2023-12-05T11:00:00Z', NULL,                                  1700000000000, 1700000000000),
-  -- tour_2 (past)
-  ('reg_4',  'team_a', 'div_2a', 'tour_2', 'approved',   '2025-01-15T10:00:00Z', NULL,                                  1700000000000, 1700000000000),
-  ('reg_5',  'team_b', 'div_2c', 'tour_2', 'approved',   '2025-01-25T08:00:00Z', NULL,                                  1700000000000, 1700000000000),
-  ('reg_6',  'team_c', 'div_2b', 'tour_2', 'approved',   '2025-01-20T11:00:00Z', NULL,                                  1700000000000, 1700000000000),
-  -- tour_3 (past)
-  ('reg_7',  'team_a', 'div_3a', 'tour_3', 'approved',   '2025-06-01T10:00:00Z', NULL,                                  1700000000000, 1700000000000),
-  ('reg_8',  'team_d', 'div_3a', 'tour_3', 'approved',   '2025-06-03T09:00:00Z', NULL,                                  1700000000000, 1700000000000),
-  ('reg_9',  'team_e', 'div_3c', 'tour_3', 'rejected',   '2025-06-10T16:00:00Z', 'Missing player eligibility docs.',    1700000000000, 1700000000000),
-  -- tour_4 (upcoming — has pending registrations to exercise director dashboard)
-  ('reg_10', 'team_a', 'div_4a', 'tour_4', 'approved',   '2026-03-01T10:00:00Z', NULL,                                  1700000000000, 1700000000000),
-  ('reg_11', 'team_b', 'div_4c', 'tour_4', 'pending',    '2026-03-15T09:00:00Z', NULL,                                  1700000000000, 1700000000000),
-  ('reg_12', 'team_c', 'div_4b', 'tour_4', 'approved',   '2026-03-05T09:00:00Z', NULL,                                  1700000000000, 1700000000000),
-  ('reg_13', 'team_d', 'div_4a', 'tour_4', 'pending',    '2026-03-18T14:30:00Z', NULL,                                  1700000000000, 1700000000000),
-  ('reg_14', 'team_e', 'div_4c', 'tour_4', 'waitlisted', '2026-03-20T16:00:00Z', 'Waiting on roster confirmation.',     1700000000000, 1700000000000),
-  ('reg_15', 'team_g', 'div_4a', 'tour_4', 'rejected',   '2026-03-22T18:00:00Z', 'Age verification failed.',            1700000000000, 1700000000000),
-  -- tour_5 (upcoming)
-  ('reg_16', 'team_a', 'div_5a', 'tour_5', 'pending',    '2026-04-25T16:00:00Z', NULL,                                  1700000000000, 1700000000000),
-  ('reg_17', 'team_c', 'div_5b', 'tour_5', 'approved',   '2026-04-15T09:00:00Z', NULL,                                  1700000000000, 1700000000000),
-  ('reg_18', 'team_d', 'div_5c', 'tour_5', 'waitlisted', '2026-04-28T10:00:00Z', 'Division filling fast.',              1700000000000, 1700000000000),
-  -- tour_6 (active)
-  ('reg_19', 'team_a', 'div_6a', 'tour_6', 'approved',   '2026-05-10T10:00:00Z', NULL,                                  1700000000000, 1700000000000),
-  ('reg_20', 'team_b', 'div_6a', 'tour_6', 'pending',    '2026-05-28T13:00:00Z', NULL,                                  1700000000000, 1700000000000),
-  ('reg_21', 'team_c', 'div_6b', 'tour_6', 'approved',   '2026-05-08T14:00:00Z', NULL,                                  1700000000000, 1700000000000),
-  -- tour_7 (upcoming)
-  ('reg_22', 'team_a', 'div_7a', 'tour_7', 'pending',    '2026-09-01T10:00:00Z', NULL,                                  1700000000000, 1700000000000),
-  ('reg_23', 'team_e', 'div_7a', 'tour_7', 'approved',   '2026-09-08T09:00:00Z', NULL,                                  1700000000000, 1700000000000),
-  -- tour_8 (owned by director_b)
-  ('reg_24', 'team_f', 'div_8a', 'tour_8', 'pending',    '2026-11-05T09:00:00Z', NULL,                                  1700000000000, 1700000000000),
-  ('reg_25', 'team_g', 'div_8b', 'tour_8', 'approved',   '2026-11-03T14:00:00Z', NULL,                                  1700000000000, 1700000000000),
-  -- tour_9 (owned by both)
-  ('reg_26', 'team_e', 'div_9a', 'tour_9', 'approved',   '2026-12-01T10:00:00Z', NULL,                                  1700000000000, 1700000000000),
-  ('reg_27', 'team_a', 'div_9a', 'tour_9', 'pending',    '2026-12-10T11:00:00Z', NULL,                                  1700000000000, 1700000000000);
+-- paid_at is epoch ms (NULL = unpaid). paid_note is a director's payment reference.
+-- tour_7/8/9 have fees; their registrations show various paid states for testing.
+INSERT INTO tournament_registrations (id, team_id, division_id, tournament_id, status, registered_at, notes, paid_at, paid_note, created_at, updated_at) VALUES
+  -- tour_1 (past, free)
+  ('reg_1',  'team_a', 'div_1a', 'tour_1', 'approved',   '2023-12-01T10:00:00Z', NULL,                                NULL,          NULL,                    1700000000000, 1700000000000),
+  ('reg_2',  'team_c', 'div_1b', 'tour_1', 'approved',   '2023-12-03T09:00:00Z', NULL,                                NULL,          NULL,                    1700000000000, 1700000000000),
+  ('reg_3',  'team_e', 'div_1a', 'tour_1', 'approved',   '2023-12-05T11:00:00Z', NULL,                                NULL,          NULL,                    1700000000000, 1700000000000),
+  -- tour_2 (past, free)
+  ('reg_4',  'team_a', 'div_2a', 'tour_2', 'approved',   '2025-01-15T10:00:00Z', NULL,                                NULL,          NULL,                    1700000000000, 1700000000000),
+  ('reg_5',  'team_b', 'div_2c', 'tour_2', 'approved',   '2025-01-25T08:00:00Z', NULL,                                NULL,          NULL,                    1700000000000, 1700000000000),
+  ('reg_6',  'team_c', 'div_2b', 'tour_2', 'approved',   '2025-01-20T11:00:00Z', NULL,                                NULL,          NULL,                    1700000000000, 1700000000000),
+  -- tour_3 (past, free)
+  ('reg_7',  'team_a', 'div_3a', 'tour_3', 'approved',   '2025-06-01T10:00:00Z', NULL,                                NULL,          NULL,                    1700000000000, 1700000000000),
+  ('reg_8',  'team_d', 'div_3a', 'tour_3', 'approved',   '2025-06-03T09:00:00Z', NULL,                                NULL,          NULL,                    1700000000000, 1700000000000),
+  ('reg_9',  'team_e', 'div_3c', 'tour_3', 'rejected',   '2025-06-10T16:00:00Z', 'Missing player eligibility docs.',  NULL,          NULL,                    1700000000000, 1700000000000),
+  -- tour_4 (upcoming, free — exercises director dashboard with pending regs)
+  ('reg_10', 'team_a', 'div_4a', 'tour_4', 'approved',   '2026-03-01T10:00:00Z', NULL,                                NULL,          NULL,                    1700000000000, 1700000000000),
+  ('reg_11', 'team_b', 'div_4c', 'tour_4', 'pending',    '2026-03-15T09:00:00Z', NULL,                                NULL,          NULL,                    1700000000000, 1700000000000),
+  ('reg_12', 'team_c', 'div_4b', 'tour_4', 'approved',   '2026-03-05T09:00:00Z', NULL,                                NULL,          NULL,                    1700000000000, 1700000000000),
+  ('reg_13', 'team_d', 'div_4a', 'tour_4', 'pending',    '2026-03-18T14:30:00Z', NULL,                                NULL,          NULL,                    1700000000000, 1700000000000),
+  ('reg_14', 'team_e', 'div_4c', 'tour_4', 'waitlisted', '2026-03-20T16:00:00Z', 'Waiting on roster confirmation.',  NULL,          NULL,                    1700000000000, 1700000000000),
+  ('reg_15', 'team_g', 'div_4a', 'tour_4', 'rejected',   '2026-03-22T18:00:00Z', 'Age verification failed.',         NULL,          NULL,                    1700000000000, 1700000000000),
+  -- tour_5 (upcoming, free)
+  ('reg_16', 'team_a', 'div_5a', 'tour_5', 'pending',    '2026-04-25T16:00:00Z', NULL,                                NULL,          NULL,                    1700000000000, 1700000000000),
+  ('reg_17', 'team_c', 'div_5b', 'tour_5', 'approved',   '2026-04-15T09:00:00Z', NULL,                                NULL,          NULL,                    1700000000000, 1700000000000),
+  ('reg_18', 'team_d', 'div_5c', 'tour_5', 'waitlisted', '2026-04-28T10:00:00Z', 'Division filling fast.',           NULL,          NULL,                    1700000000000, 1700000000000),
+  -- tour_6 (active, free)
+  ('reg_19', 'team_a', 'div_6a', 'tour_6', 'approved',   '2026-05-10T10:00:00Z', NULL,                                NULL,          NULL,                    1700000000000, 1700000000000),
+  ('reg_20', 'team_b', 'div_6a', 'tour_6', 'pending',    '2026-05-28T13:00:00Z', NULL,                                NULL,          NULL,                    1700000000000, 1700000000000),
+  ('reg_21', 'team_c', 'div_6b', 'tour_6', 'approved',   '2026-05-08T14:00:00Z', NULL,                                NULL,          NULL,                    1700000000000, 1700000000000),
+  -- tour_7 ($100 fee): reg_22 paid with note, reg_23 unpaid — exercises both states
+  ('reg_22', 'team_a', 'div_7a', 'tour_7', 'pending',    '2026-09-01T10:00:00Z', NULL,                                1700000100000, 'Venmo @river-hawks',    1700000000000, 1700000000000),
+  ('reg_23', 'team_e', 'div_7a', 'tour_7', 'approved',   '2026-09-08T09:00:00Z', NULL,                                NULL,          NULL,                    1700000000000, 1700000000000),
+  -- tour_8 ($75 fee, owned by director_b): both paid — one with note, one without
+  ('reg_24', 'team_f', 'div_8a', 'tour_8', 'pending',    '2026-11-05T09:00:00Z', NULL,                                1700000200000, 'Check #4421',           1700000000000, 1700000000000),
+  ('reg_25', 'team_g', 'div_8b', 'tour_8', 'approved',   '2026-11-03T14:00:00Z', NULL,                                1700000300000, NULL,                    1700000000000, 1700000000000),
+  -- tour_9 ($150 fee, owned by both): one paid, one awaiting payment
+  ('reg_26', 'team_e', 'div_9a', 'tour_9', 'approved',   '2026-12-01T10:00:00Z', NULL,                                1700000400000, 'Zelle confirmed 12/1',  1700000000000, 1700000000000),
+  ('reg_27', 'team_a', 'div_9a', 'tour_9', 'pending',    '2026-12-10T11:00:00Z', NULL,                                NULL,          NULL,                    1700000000000, 1700000000000);
 
 -- ------------------------------------------------------------
 -- 11. Tournament Managers
@@ -332,7 +337,16 @@ INSERT INTO notifications (id, user_id, type, title, body, reference_url, read_a
    'Morgan Kim joined Coastal FC via the invite link.',
    '/teams/team_c',
    1700000250000,
-   1700000220000, 1700000250000);
+   1700000220000, 1700000250000),
+
+  -- coach_a: payment confirmed for tour_7 (unread) — exercises REGISTRATION_MARKED_PAID
+  ('notif_08', 'usr_coach_a',
+   'registration_marked_paid',
+   'Payment received',
+   'Your registration payment for Fall Championship 2026 has been confirmed.',
+   '/teams/team_a#registrations',
+   NULL,
+   1700000600000, 1700000600000);
 
 -- ------------------------------------------------------------
 -- 13. Tournament Manager Invites
