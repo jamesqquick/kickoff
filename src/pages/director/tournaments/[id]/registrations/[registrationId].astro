@@ -69,7 +69,7 @@ function formatDateTime(iso: string) {
     sectionSlug="registrations"
   />
 
-  <div class="p-4 sm:p-6 lg:p-8 max-w-3xl">
+  <div class="p-4 sm:p-6 lg:p-8">
 
     <!-- Back link -->
     <a
@@ -88,10 +88,10 @@ function formatDateTime(iso: string) {
       </div>
     </div>
 
-    <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
       <!-- Left: details -->
-      <div class="sm:col-span-2 space-y-4">
+      <div class="lg:col-span-2 space-y-4">
 
         <!-- Registration info -->
         <SectionCard title="Details" class="p-5">
@@ -129,7 +129,7 @@ function formatDateTime(iso: string) {
       </div>
 
       <!-- Right: actions -->
-      <div class="sm:col-span-1">
+      <div class="lg:col-span-1">
         <SectionCard title="Actions" class="p-5">
           <RegistrationDetailActions
             client:load
