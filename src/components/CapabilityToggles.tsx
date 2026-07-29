@@ -7,11 +7,9 @@ interface Props {
   initialIsCoach: boolean;
   initialIsDirector: boolean;
   isAdmin: boolean;
-  /** When true, a successful save redirects to /dashboard instead of reloading in place. */
-  onboarding?: boolean;
 }
 
-export function CapabilityToggles({ initialIsCoach, initialIsDirector, isAdmin, onboarding = false }: Props) {
+export function CapabilityToggles({ initialIsCoach, initialIsDirector, isAdmin }: Props) {
   const [isCoach, setIsCoach] = useState(initialIsCoach);
   const [isDirector, setIsDirector] = useState(initialIsDirector);
   const [loading, setLoading] = useState(false);
