@@ -203,3 +203,53 @@ src/
   styles/
     globals.css
 ```
+
+### In-App Notifications
+
+The notification system is D1-backed with a React island bell and a dedicated `/notifications` page. All display metadata (type labels, date formatters) lives in `src/lib/notifications.ts` — the single source of truth for anything notification-related.
+
+**Adding a new notification type**
+
+1. Add a constant to `NOTIFICATION_TYPES` in `src/lib/notifications.ts`:
+   ```ts
+   PLAYER_LEFT_TEAM: "player_left_team",
+   ```
+
+2. Add a human-readable label to `NOTIFICATION_TYPE_LABELS` in the same file:
+   ```ts
+   [NOTIFICATION_TYPES.PLAYER_LEFT_TEAM]: "Team",
+   ```
+
+3. Wire the trigger in the relevant service as a **private fire-and-forget helper**. The helper must never throw — errors are logged and swallowed so a notification failure never blocks the primary operation:
+   ```ts
+   // In the public service method, after the primary operation succeeds:
+   void this.notifyCoachOfPlayerLeft(teamId, playerName);
+
+   // Private helper:
+   private async notifyCoachOfPlayerLeft(teamId: string, playerName: string): Promise<void> {
+     try {
+       const team = await this.teamsRepo.findById(teamId);
+       if (!team) return;
+       await makeNotificationService().createForUser(team.coachId, {
+         type: NOTIFICATION_TYPES.PLAYER_LEFT_TEAM,
+         title: "Player left team",
+         body: `${playerName} left ${team.name}.`,
+         referenceUrl: `/teams/${team.id}`,
+       });
+     } catch (err) {
+       console.error("[notifications] Failed to notify coach of player leaving:", err);
+     }
+   }
+   ```
+
+4. Add representative rows to `seed/seed.sql` (required per the Seed Data rule above).
+
+**referenceUrl conventions**
+
+| Recipient | Context | referenceUrl |
+|---|---|---|
+| Coach | Registration status changed | `/teams/[teamId]#registrations` |
+| Director/manager | New registration submitted | `/director/tournaments/[tournamentId]/registrations` |
+| Coach | Player joined team | `/teams/[teamId]` |
+
+**Display components** (`NotificationBell`, `NotificationList`) automatically pick up new types — no changes needed there unless you want a distinct badge label.

@@ -8,6 +8,7 @@ import { tournamentRegistrations } from "./tournament-registrations";
 import { rosterImport } from "./roster-import";
 import { tournamentManagers } from "./tournament-managers";
 import { settings } from "./settings";
+import { notifications } from "./notifications";
 
 // All Astro Actions are registered here.
 // Add new action namespaces alongside `teams` as features grow.
@@ -22,4 +23,5 @@ export const server = {
   rosterImport,
   tournamentManagers,
   settings,
+  notifications,
 };
