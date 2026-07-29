@@ -1,5 +1,5 @@
 import { getEmailSender } from "@/lib/email";
-import { EMAIL_FROM_ADDRESS, SEND_EMAIL_IN_DEV } from "astro:env/server";
+import { BaseEmailService, h, formatExpiry } from "@/lib/base-email-service";
 import type { RegistrationStatus } from "@/lib/schema";
 
 // ─── Parameter types ────────────────────────────────────────────────────────
@@ -44,27 +44,7 @@ export interface TeamPlayerInviteParams {
   expiresAt: number; // Unix ms timestamp
 }
 
-// ─── Helpers ────────────────────────────────────────────────────────────────
-
-/** Escape user-controlled strings before embedding in HTML email bodies. */
-function h(s: string): string {
-  return s
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;");
-}
-
-function formatExpiry(expiresAt: number): string {
-  return new Date(expiresAt).toLocaleString("en-US", {
-    month: "long",
-    day: "numeric",
-    year: "numeric",
-    hour: "numeric",
-    minute: "2-digit",
-    timeZoneName: "short",
-  });
-}
+// ─── Project-specific constants ──────────────────────────────────────────────
 
 const STATUS_LABELS: Record<RegistrationStatus, string> = {
   pending: "Pending",
@@ -75,14 +55,7 @@ const STATUS_LABELS: Record<RegistrationStatus, string> = {
 
 // ─── Service ────────────────────────────────────────────────────────────────
 
-export class EmailService {
-  constructor(private readonly sender: SendEmail) {}
-
-  /**
-   * Notify the team coach when a director actions their registration.
-   * Failures are caught and logged — email is best-effort and must not break
-   * the registration status update.
-   */
+export class EmailService extends BaseEmailService {
   async sendRegistrationStatusChanged(
     to: string,
     params: RegistrationStatusChangedParams,
@@ -116,10 +89,6 @@ ${directorNote ? `<p><strong>Note from director:</strong> ${h(directorNote)}</p>
     await this.send({ to, subject, text, html });
   }
 
-  /**
-   * Notify all tournament directors and managers when a team registers.
-   * Failures are caught and logged per recipient.
-   */
   async sendNewRegistrationSubmitted(
     to: string[],
     params: NewRegistrationSubmittedParams,
@@ -147,9 +116,6 @@ ${directorNote ? `<p><strong>Note from director:</strong> ${h(directorNote)}</p>
     await Promise.all(to.map((recipient) => this.send({ to: recipient, subject, text, html })));
   }
 
-  /**
-   * Send a manager invite link to the specified email address.
-   */
   async sendManagerInvite(to: string, params: ManagerInviteParams): Promise<void> {
     const { tournamentName, inviteUrl, expiresAt } = params;
     const expiry = formatExpiry(expiresAt);
@@ -172,9 +138,6 @@ ${directorNote ? `<p><strong>Note from director:</strong> ${h(directorNote)}</p>
     await this.send({ to, subject, text, html });
   }
 
-  /**
-   * Send a welcome email to a newly signed-up user.
-   */
   async sendWelcome(to: string, params: WelcomeParams): Promise<void> {
     const { firstName } = params;
     const subject = "Welcome to Kickoff!";
@@ -196,9 +159,6 @@ ${directorNote ? `<p><strong>Note from director:</strong> ${h(directorNote)}</p>
     await this.send({ to, subject, text, html });
   }
 
-  /**
-   * Send a password reset link.
-   */
   async sendPasswordReset(to: string, params: PasswordResetParams): Promise<void> {
     const { resetUrl, expiresAt } = params;
     const expiry = formatExpiry(expiresAt);
@@ -224,9 +184,6 @@ ${directorNote ? `<p><strong>Note from director:</strong> ${h(directorNote)}</p>
     await this.send({ to, subject, text, html });
   }
 
-  /**
-   * Notify the coach when a player accepts a team invite.
-   */
   async sendPlayerJoinedTeam(to: string, params: PlayerJoinedTeamParams): Promise<void> {
     const { playerName, teamName } = params;
     const subject = `${playerName} joined ${teamName}`;
@@ -238,9 +195,6 @@ ${directorNote ? `<p><strong>Note from director:</strong> ${h(directorNote)}</p>
     await this.send({ to, subject, text, html });
   }
 
-  /**
-   * Send an email-scoped team invite link to a prospective player.
-   */
   async sendTeamPlayerInvite(to: string, params: TeamPlayerInviteParams): Promise<void> {
     const { teamName, inviteUrl, expiresAt } = params;
     const expiry = formatExpiry(expiresAt);
@@ -261,42 +215,6 @@ ${directorNote ? `<p><strong>Note from director:</strong> ${h(directorNote)}</p>
 `.trim();
 
     await this.send({ to, subject, text, html });
-  }
-
-  // ─── Private ──────────────────────────────────────────────────────────────
-
-  private async send({
-    to,
-    subject,
-    text,
-    html,
-  }: {
-    to: string;
-    subject: string;
-    text: string;
-    html: string;
-  }): Promise<void> {
-    // Email is not configured — skip silently.
-    if (!EMAIL_FROM_ADDRESS) return;
-
-    // Dev guard: skip actual sending unless SEND_EMAIL_IN_DEV is enabled.
-    if (!SEND_EMAIL_IN_DEV) {
-      console.log("[email] SEND_EMAIL_IN_DEV=false — skipping send", { to, subject });
-      return;
-    }
-
-    try {
-      await this.sender.send({
-        from: EMAIL_FROM_ADDRESS,
-        to,
-        subject,
-        text,
-        html,
-      });
-    } catch (err) {
-      // Email is best-effort — log but never propagate so callers are not blocked.
-      console.error("[email] Failed to send email", { to, subject, err });
-    }
   }
 }
 
