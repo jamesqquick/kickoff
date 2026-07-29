@@ -52,6 +52,12 @@
   --color-success:         #059669;
   --color-success-subtle:  rgba(5, 150, 105, 0.10);
 
+  /* Popover — used by shadcn DropdownMenu, Tooltip, etc.
+     bg-popover / text-popover-foreground require --color-* entries in @theme
+     (Tailwind v4 generates utilities only from @theme variables). */
+  --color-popover:            #ffffff;
+  --color-popover-foreground: #0f1826;
+
   /* Pitch grid (background texture tint) */
   --color-pitch-line:      rgba(5, 150, 105, 0.045);
 }

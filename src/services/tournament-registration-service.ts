@@ -8,6 +8,8 @@ import { DivisionRepository } from "@/repositories/division-repository";
 import { TournamentRepository } from "@/repositories/tournament-repository";
 import { TeamRepository } from "@/repositories/team-repository";
 import type { TournamentRegistration, RegistrationStatus } from "@/lib/schema";
+import { makeNotificationService } from "@/services/notification-service";
+import { NOTIFICATION_TYPES } from "@/lib/notifications";
 
 export class TournamentRegistrationService {
   constructor(
@@ -93,7 +95,7 @@ export class TournamentRegistrationService {
     }
 
     const now = Date.now();
-    return this.registrationsRepo.insert({
+    const registration = await this.registrationsRepo.insert({
       id: crypto.randomUUID(),
       teamId,
       divisionId,
@@ -104,6 +106,11 @@ export class TournamentRegistrationService {
       createdAt: now,
       updatedAt: now,
     });
+
+    // Notify: tournament owner + co-managers that a new registration was submitted.
+    void this.notifyDirectorsOfNewRegistration(team.name, tournament.name, tournament);
+
+    return registration;
   }
 
   async updateRegistrationStatus(
@@ -123,7 +130,82 @@ export class TournamentRegistrationService {
       throw new ForbiddenError("update registration status for this tournament");
     }
 
-    return this.registrationsRepo.updateStatus(registrationId, status, notes);
+    const updated = await this.registrationsRepo.updateStatus(registrationId, status, notes);
+
+    // Notify: team coach that their registration status changed.
+    void this.notifyCoachOfStatusChange(registration.teamId, status, notes, registration.tournamentId);
+
+    return updated;
+  }
+
+  // ── Private notification helpers ─────────────────────────────────────────
+
+  /**
+   * Fire-and-forget: notify all directors/managers of a tournament that a team
+   * has submitted a new registration. Errors are logged and swallowed — a
+   * notification failure must never block the primary operation.
+   */
+  private async notifyDirectorsOfNewRegistration(
+    teamName: string,
+    tournamentName: string,
+    tournament: { id: string; createdBy: string | null },
+  ): Promise<void> {
+    try {
+      const notificationService = makeNotificationService();
+      const payload = {
+        type: NOTIFICATION_TYPES.NEW_REGISTRATION_SUBMITTED,
+        title: "New registration submitted",
+        body: `${teamName} has registered for ${tournamentName}.`,
+        referenceUrl: `/director/tournaments/${tournament.id}/registrations`,
+      };
+
+      // Collect unique recipient user IDs: owner + all co-managers.
+      const recipientIds = new Set<string>();
+      if (tournament.createdBy) recipientIds.add(tournament.createdBy);
+
+      const managers = await this.tournamentsRepo.listManagers(tournament.id);
+      for (const m of managers) recipientIds.add(m.userId);
+
+      await Promise.all(
+        [...recipientIds].map((userId) => notificationService.createForUser(userId, payload)),
+      );
+    } catch (err) {
+      console.error("[notifications] Failed to notify directors of new registration:", err);
+    }
+  }
+
+  /**
+   * Fire-and-forget: notify the team's coach that a director actioned their
+   * registration. Errors are logged and swallowed.
+   */
+  private async notifyCoachOfStatusChange(
+    teamId: string,
+    status: RegistrationStatus,
+    notes: string | undefined,
+    tournamentId: string,
+  ): Promise<void> {
+    // Moving a registration back to pending is a director-only housekeeping
+    // action with no actionable meaning for the coach — skip the notification.
+    if (status === "pending") return;
+
+    try {
+      const team = await this.teamsRepo.findById(teamId);
+      const tournament = await this.tournamentsRepo.findById(tournamentId);
+      if (!team || !tournament) return;
+
+      const body = notes
+        ? `Your registration for ${tournament.name} was ${status}. Director note: ${notes}`
+        : `Your registration for ${tournament.name} was ${status}.`;
+
+      await makeNotificationService().createForUser(team.coachId, {
+        type: NOTIFICATION_TYPES.REGISTRATION_STATUS_CHANGED,
+        title: `Registration ${status}`,
+        body,
+        referenceUrl: `/teams/${team.id}#registrations`,
+      });
+    } catch (err) {
+      console.error("[notifications] Failed to notify coach of registration status change:", err);
+    }
   }
 }
 

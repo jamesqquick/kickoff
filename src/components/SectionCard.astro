@@ -27,12 +27,13 @@ interface Props {
   title?: string;
   subtitle?: string;
   class?: string;
+  id?: string;
 }
 
-const { title, subtitle, class: className } = Astro.props;
+const { title, subtitle, class: className, id } = Astro.props;
 ---
 
-<div class:list={["rounded-xl border border-(--color-border) bg-(--color-card)", className]}>
+<div id={id} class:list={["rounded-xl border border-(--color-border) bg-(--color-card)", className]}>
   {title && (
     <div class="flex items-start justify-between px-6 py-4 border-b border-(--color-border)">
       <div>

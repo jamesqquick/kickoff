@@ -6,6 +6,8 @@ import { TeamMemberRepository } from "@/repositories/team-member-repository";
 import { TeamRepository } from "@/repositories/team-repository";
 import type { TeamInvite } from "@/lib/schema";
 import type { TeamWithCoach } from "@/repositories/team-repository";
+import { makeNotificationService } from "@/services/notification-service";
+import { NOTIFICATION_TYPES } from "@/lib/notifications";
 
 export interface InviteWithTeam {
   invite: TeamInvite;
@@ -97,7 +99,32 @@ export class TeamInviteService {
     }
 
     await this.members.add(currentUser.id, team.id);
+
+    // Notify: coach that a player joined their team via the invite link.
+    void this.notifyCoachOfPlayerJoin(team, currentUser);
+
     return { teamId: team.id };
+  }
+
+  // ── Private notification helper ───────────────────────────────────────────
+
+  /**
+   * Fire-and-forget: notify the team coach when a player joins via invite link.
+   * Errors are logged and swallowed — a notification failure must never block
+   * the primary join operation.
+   */
+  private async notifyCoachOfPlayerJoin(team: TeamWithCoach, player: AppUser): Promise<void> {
+    try {
+      const playerName = player.name ?? player.email ?? "A player";
+      await makeNotificationService().createForUser(team.coachId, {
+        type: NOTIFICATION_TYPES.PLAYER_JOINED_TEAM,
+        title: "New player joined",
+        body: `${playerName} joined ${team.name} via the invite link.`,
+        referenceUrl: `/teams/${team.id}`,
+      });
+    } catch (err) {
+      console.error("[notifications] Failed to notify coach of player join:", err);
+    }
   }
 }
 
