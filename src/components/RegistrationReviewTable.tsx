@@ -2,8 +2,6 @@ import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { FilterTabs } from "@/components/ui/FilterTabs";
 import type { FilterTab } from "@/components/ui/FilterTabs";
-import { RegistrationStatusButton } from "@/components/RegistrationStatusButton";
-import { MarkPaidButton } from "@/components/MarkPaidButton";
 import type { RegistrationWithDetails } from "@/repositories/tournament-registration-repository";
 import type { RegistrationStatus } from "@/lib/schema";
 
@@ -16,7 +14,7 @@ const STATUS_COLORS: Record<RegistrationStatus, string> = {
 
 interface Props {
   initialRegistrations: RegistrationWithDetails[];
-  /** When true, shows the Payment column with MarkPaidButton per row. */
+  tournamentId: string;
   hasFee: boolean;
 }
 
@@ -30,23 +28,22 @@ const TABS: FilterTab<StatusFilter>[] = [
   { label: "Rejected",   value: "rejected"   },
 ];
 
-export function RegistrationReviewTable({ initialRegistrations, hasFee }: Props) {
-  const [registrations, setRegistrations] = useState<RegistrationWithDetails[]>(initialRegistrations);
-  const [activeTab, setActiveTab] = useState<StatusFilter>("pending");
+function formatPaidDate(epochMs: number): string {
+  return new Date(epochMs).toLocaleDateString("en-US", { month: "short", day: "numeric" });
+}
 
-  function handleStatusChange(id: string, newStatus: RegistrationStatus) {
-    setRegistrations((prev) =>
-      prev.map((r) => (r.id === id ? { ...r, status: newStatus } : r)),
-    );
-  }
+export function RegistrationReviewTable({ initialRegistrations, tournamentId, hasFee }: Props) {
+  const [activeTab, setActiveTab] = useState<StatusFilter>("pending");
 
   const filtered =
     activeTab === "all"
-      ? registrations
-      : registrations.filter((r) => r.status === activeTab);
+      ? initialRegistrations
+      : initialRegistrations.filter((r) => r.status === activeTab);
 
   function countFor(v: StatusFilter) {
-    return v === "all" ? registrations.length : registrations.filter((r) => r.status === v).length;
+    return v === "all"
+      ? initialRegistrations.length
+      : initialRegistrations.filter((r) => r.status === v).length;
   }
 
   return (
@@ -74,19 +71,25 @@ export function RegistrationReviewTable({ initialRegistrations, hasFee }: Props)
                 {hasFee && (
                   <th className="text-left text-xs font-semibold uppercase tracking-wider text-(--color-muted-fg) px-5 py-3">Payment</th>
                 )}
-                <th className="text-right text-xs font-semibold uppercase tracking-wider text-(--color-muted-fg) px-5 py-3">Actions</th>
               </tr>
             </thead>
             <tbody>
               {filtered.map((r) => (
                 <tr
                   key={r.id}
-                  className="border-b border-(--color-border-soft) last:border-0 hover:bg-(--color-background) transition-colors"
+                  onClick={() => {
+                    window.location.href = `/director/tournaments/${tournamentId}/registrations/${r.id}`;
+                  }}
+                  className="border-b border-(--color-border-soft) last:border-0 hover:bg-(--color-background) transition-colors cursor-pointer"
                 >
                   <td className="px-5 py-3.5 font-medium text-(--color-foreground)">{r.teamName}</td>
                   <td className="px-5 py-3.5 text-(--color-muted)">{r.divisionName}</td>
                   <td className="hidden sm:table-cell px-5 py-3.5 text-(--color-muted)">
-                    {new Date(r.registeredAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+                    {new Date(r.registeredAt).toLocaleDateString("en-US", {
+                      month: "short",
+                      day: "numeric",
+                      year: "numeric",
+                    })}
                   </td>
                   <td className="px-5 py-3.5">
                     <span className={cn("inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium", STATUS_COLORS[r.status])}>
@@ -95,22 +98,15 @@ export function RegistrationReviewTable({ initialRegistrations, hasFee }: Props)
                   </td>
                   {hasFee && (
                     <td className="px-5 py-3.5">
-                      <MarkPaidButton
-                        registrationId={r.id}
-                        initialPaidAt={r.paidAt ?? null}
-                        initialPaidNote={r.paidNote ?? null}
-                      />
+                      {r.paidAt ? (
+                        <span className="inline-flex items-center rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-medium text-emerald-800">
+                          Paid {formatPaidDate(r.paidAt)}
+                        </span>
+                      ) : (
+                        <span className="text-xs text-(--color-muted)">Unpaid</span>
+                      )}
                     </td>
                   )}
-                  <td className="px-5 py-3.5">
-                    <div className="flex items-center justify-end gap-1.5">
-                      <RegistrationStatusButton
-                        registrationId={r.id}
-                        currentStatus={r.status}
-                        onSuccess={(newStatus) => handleStatusChange(r.id, newStatus)}
-                      />
-                    </div>
-                  </td>
                 </tr>
               ))}
             </tbody>

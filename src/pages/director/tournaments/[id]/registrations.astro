@@ -62,6 +62,7 @@ const allForSwitcher = allTournaments.map((t) => ({
         <RegistrationReviewTable
           client:load
           initialRegistrations={registrations}
+          tournamentId={tournament.id}
           hasFee={Boolean(tournament.registrationFee)}
         />
       )}

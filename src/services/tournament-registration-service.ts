@@ -19,6 +19,24 @@ export class TournamentRegistrationService {
     private readonly teamsRepo: TeamRepository,
   ) {}
 
+  async getRegistrationDetails(
+    registrationId: string,
+    currentUser: AppUser,
+  ): Promise<RegistrationWithDetails> {
+    const registration = await this.registrationsRepo.findByIdWithDetails(registrationId);
+    if (!registration) throw new NotFoundError("Registration", registrationId);
+
+    const ownerOrManager = await this.tournamentsRepo.isOwnerOrManager(
+      registration.tournamentId,
+      currentUser.id,
+    );
+    if (!canManageTournament(currentUser, ownerOrManager)) {
+      throw new ForbiddenError("view registrations for this tournament");
+    }
+
+    return registration;
+  }
+
   async getRegistrationsForTournament(tournamentId: string): Promise<RegistrationWithDetails[]> {
     return this.registrationsRepo.listByTournament(tournamentId);
   }

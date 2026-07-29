@@ -113,6 +113,35 @@ export class TournamentRegistrationRepository {
     return rows;
   }
 
+  async findByIdWithDetails(id: string): Promise<RegistrationWithDetails | undefined> {
+    const results = await this.db
+      .select({
+        id: tournamentRegistrations.id,
+        teamId: tournamentRegistrations.teamId,
+        divisionId: tournamentRegistrations.divisionId,
+        tournamentId: tournamentRegistrations.tournamentId,
+        status: tournamentRegistrations.status,
+        registeredAt: tournamentRegistrations.registeredAt,
+        notes: tournamentRegistrations.notes,
+        paidAt: tournamentRegistrations.paidAt,
+        paidNote: tournamentRegistrations.paidNote,
+        createdAt: tournamentRegistrations.createdAt,
+        updatedAt: tournamentRegistrations.updatedAt,
+        teamName: teams.name,
+        teamColor: teams.color,
+        teamShortName: teams.shortName,
+        divisionName: divisions.name,
+        tournamentName: tournaments.name,
+      })
+      .from(tournamentRegistrations)
+      .innerJoin(teams, eq(tournamentRegistrations.teamId, teams.id))
+      .innerJoin(divisions, eq(tournamentRegistrations.divisionId, divisions.id))
+      .innerJoin(tournaments, eq(tournamentRegistrations.tournamentId, tournaments.id))
+      .where(eq(tournamentRegistrations.id, id))
+      .limit(1);
+    return results[0];
+  }
+
   async findByTeamAndTournament(
     teamId: string,
     tournamentId: string,

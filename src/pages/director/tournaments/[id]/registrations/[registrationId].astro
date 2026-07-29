@@ -1,0 +1,147 @@
+---
+import AppLayout from "@/layouts/AppLayout.astro";
+import { buttonVariants } from "@/components/ui/button";
+import { cn, getTournamentStatus } from "@/lib/utils";
+import TournamentPageHeader from "@/components/TournamentPageHeader.astro";
+import SectionCard from "@/components/SectionCard.astro";
+import TeamCrest from "@/components/TeamCrest.astro";
+import { RegistrationDetailActions } from "@/components/RegistrationDetailActions";
+import { makeTournamentService } from "@/services/tournament-service";
+import { makeTournamentRegistrationService } from "@/services/tournament-registration-service";
+import { NotFoundError, ForbiddenError } from "@/lib/errors";
+
+const user = Astro.locals.user;
+if (!user || (!user.isDirector && user.role !== "admin")) {
+  return Astro.redirect("/dashboard");
+}
+
+const { id, registrationId } = Astro.params;
+
+let tournament, registration, allTournaments;
+try {
+  [tournament, allTournaments] = await Promise.all([
+    makeTournamentService().getTournament(id!),
+    makeTournamentService().listForDirector(user.id),
+  ]);
+  registration = await makeTournamentRegistrationService().getRegistrationDetails(
+    registrationId!,
+    user,
+  );
+} catch (err) {
+  if (err instanceof NotFoundError || err instanceof ForbiddenError) {
+    return Astro.redirect(`/director/tournaments/${id}/registrations`);
+  }
+  throw err;
+}
+
+const allForSwitcher = allTournaments.map((t) => ({
+  id: t.id,
+  name: t.name,
+  status: getTournamentStatus(t),
+}));
+
+const hasFee = Boolean(tournament.registrationFee);
+
+function formatDate(iso: string) {
+  return new Date(iso).toLocaleDateString("en-US", {
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+  });
+}
+
+function formatDateTime(iso: string) {
+  return new Date(iso).toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  });
+}
+---
+
+<AppLayout title={`${registration.teamName} — Registration`} activeNav="director-tournaments">
+  <TournamentPageHeader
+    tournament={tournament}
+    allTournaments={allForSwitcher}
+    section="Registrations"
+    sectionSlug="registrations"
+  />
+
+  <div class="p-4 sm:p-6 lg:p-8 max-w-3xl">
+
+    <!-- Back link -->
+    <a
+      href={`/director/tournaments/${id}/registrations`}
+      class="inline-flex items-center gap-1.5 text-sm text-(--color-muted) hover:text-(--color-foreground) mb-6 transition-colors"
+    >
+      ← Back to registrations
+    </a>
+
+    <!-- Team identity -->
+    <div class="flex items-center gap-4 mb-6">
+      <TeamCrest color={registration.teamColor} shortName={registration.teamShortName} size="lg" />
+      <div>
+        <h1 class="font-display text-2xl font-bold text-(--color-foreground)">{registration.teamName}</h1>
+        <p class="text-sm text-(--color-muted)">{registration.divisionName}</p>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
+
+      <!-- Left: details -->
+      <div class="sm:col-span-2 space-y-4">
+
+        <!-- Registration info -->
+        <SectionCard title="Details" class="p-5">
+          <dl class="space-y-3 text-sm px-1">
+            <div class="flex justify-between gap-4">
+              <dt class="font-medium text-(--color-foreground) shrink-0">Tournament</dt>
+              <dd class="text-(--color-muted) text-right">{registration.tournamentName}</dd>
+            </div>
+            <div class="flex justify-between gap-4">
+              <dt class="font-medium text-(--color-foreground) shrink-0">Division</dt>
+              <dd class="text-(--color-muted) text-right">{registration.divisionName}</dd>
+            </div>
+            <div class="flex justify-between gap-4">
+              <dt class="font-medium text-(--color-foreground) shrink-0">Registered</dt>
+              <dd class="text-(--color-muted) text-right">{formatDateTime(registration.registeredAt)}</dd>
+            </div>
+            {hasFee && (
+              <div class="flex justify-between gap-4">
+                <dt class="font-medium text-(--color-foreground) shrink-0">Fee</dt>
+                <dd class="text-(--color-muted) text-right">
+                  ${(tournament.registrationFee! / 100).toFixed(2)}
+                </dd>
+              </div>
+            )}
+          </dl>
+        </SectionCard>
+
+        <!-- Admin notes (if any) -->
+        {registration.notes && (
+          <SectionCard title="Director Notes" class="p-5">
+            <p class="text-sm text-(--color-muted) px-1">{registration.notes}</p>
+          </SectionCard>
+        )}
+
+      </div>
+
+      <!-- Right: actions -->
+      <div class="sm:col-span-1">
+        <SectionCard title="Actions" class="p-5">
+          <RegistrationDetailActions
+            client:load
+            registrationId={registration.id}
+            initialStatus={registration.status}
+            initialPaidAt={registration.paidAt ?? null}
+            initialPaidNote={registration.paidNote ?? null}
+            hasFee={hasFee}
+          />
+        </SectionCard>
+      </div>
+
+    </div>
+  </div>
+</AppLayout>
