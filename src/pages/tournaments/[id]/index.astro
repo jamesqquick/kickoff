@@ -142,13 +142,18 @@ function formatDate(d: string | null) {
             <p class="text-xs text-(--color-muted) mt-2">{statusDesc[existingReg.status]}</p>
           )}
           {tournament.registrationFee && existingReg.status !== "rejected" && (
-            <p class="text-xs text-(--color-muted) mt-1">
-              Payment:{" "}
-              {existingReg.paidAt
-                ? <span class="font-medium text-emerald-700 dark:text-emerald-400">Confirmed{existingReg.paidNote ? ` · ${existingReg.paidNote}` : ""}</span>
-                : <span class="font-medium text-amber-700 dark:text-amber-400">Payment pending</span>
-              }
-            </p>
+            <div class="mt-2 space-y-1">
+              <p class="text-xs text-(--color-muted)">
+                Payment:{" "}
+                {existingReg.paidAt
+                  ? <span class="font-medium text-emerald-700 dark:text-emerald-400">Confirmed{existingReg.paidNote ? ` · ${existingReg.paidNote}` : ""}</span>
+                  : <span class="font-medium text-amber-700 dark:text-amber-400">Payment pending</span>
+                }
+              </p>
+              {!existingReg.paidAt && tournament.paymentInstructions && (
+                <p class="text-xs text-(--color-muted) whitespace-pre-line">{tournament.paymentInstructions}</p>
+              )}
+            </div>
           )}
         </div>
       );
