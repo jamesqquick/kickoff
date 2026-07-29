@@ -22,6 +22,7 @@ export const tournaments = {
       registrationDeadline: z.string().nullable().optional(),
       location: z.string().nullable().optional(),
       description: z.string().nullable().optional(),
+      registrationFee: z.number().int().min(0).nullable().optional(),
     }),
     handler: async (input, context) => {
       const user = context.locals.user;
@@ -45,6 +46,7 @@ export const tournaments = {
       registrationDeadline: z.string().nullable().optional(),
       location: z.string().nullable().optional(),
       description: z.string().nullable().optional(),
+      registrationFee: z.number().int().min(0).nullable().optional(),
     }),
     handler: async ({ id, ...input }, context) => {
       const user = context.locals.user;
