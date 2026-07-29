@@ -39,8 +39,18 @@ function slugify(name: string): string {
 export class TournamentService {
   constructor(private readonly tournaments: TournamentRepository) {}
 
-  async listTournaments(): Promise<Tournament[]> {
-    return this.tournaments.list();
+  /**
+   * List tournaments with optional text search and status filter.
+   *
+   * When no status is provided (i.e., "All" view), the repository returns all
+   * tournaments sorted ASC. The caller (Astro page) splits them into sections
+   * and reverses the past slice so it sorts DESC within its own section.
+   */
+  async listTournaments({
+    query,
+    status,
+  }: { query?: string; status?: string } = {}): Promise<Tournament[]> {
+    return this.tournaments.list({ query, status });
   }
 
   /** Returns all tournaments the director owns or manages. */

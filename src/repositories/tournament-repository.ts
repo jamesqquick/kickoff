@@ -1,4 +1,4 @@
-import { eq, or, and } from "drizzle-orm";
+import { eq, or, and, like, asc, desc, gt, lte, lt, isNull, gte } from "drizzle-orm";
 import type { AppDatabase } from "@/lib/db";
 import {
   tournaments,
@@ -19,8 +19,63 @@ export class TournamentRepository {
 
   // ── Tournaments ──────────────────────────────────────────────────────────
 
-  async list(): Promise<Tournament[]> {
-    return this.db.select().from(tournaments).all();
+  /**
+   * List tournaments with optional text search and status filter.
+   *
+   * @param query  - Filters by LIKE %query% on name and location (server-side).
+   * @param status - Filters to a single status bucket derived from start/end dates:
+   *                   upcoming: startDate IS NULL OR startDate > today
+   *                   active:   startDate <= today AND (endDate IS NULL OR endDate >= today)
+   *                   past:     endDate < today (endDate must be set)
+   *                 Omit (or pass undefined) to return all statuses.
+   *
+   * Sort order: past results sort DESC (most-recently-ended first); everything
+   * else sorts ASC (nearest upcoming first). When returning all statuses the
+   * caller is responsible for reversing the past slice if a DESC order is needed
+   * within that section — see TournamentService.listTournaments.
+   */
+  async list({
+    query,
+    status,
+  }: { query?: string; status?: string } = {}): Promise<Tournament[]> {
+    const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+
+    // Build WHERE conditions array.
+    const conditions = [];
+
+    if (query) {
+      conditions.push(
+        or(
+          like(tournaments.name, `%${query}%`),
+          like(tournaments.location, `%${query}%`),
+        ),
+      );
+    }
+
+    if (status === "upcoming") {
+      // startDate IS NULL (TBD) or startDate is in the future.
+      conditions.push(or(isNull(tournaments.startDate), gt(tournaments.startDate, today)));
+    } else if (status === "active") {
+      // startDate <= today AND (endDate IS NULL OR endDate >= today)
+      conditions.push(
+        and(
+          lte(tournaments.startDate, today),
+          or(isNull(tournaments.endDate), gte(tournaments.endDate, today)),
+        ),
+      );
+    } else if (status === "past") {
+      // endDate is set and in the past.
+      conditions.push(lt(tournaments.endDate, today));
+    }
+
+    const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
+
+    // Past results sort DESC (most recently ended at top); all others sort ASC.
+    const orderBy = status === "past" ? desc(tournaments.startDate) : asc(tournaments.startDate);
+
+    const baseQuery = this.db.select().from(tournaments);
+    const filteredQuery = whereClause ? baseQuery.where(whereClause) : baseQuery;
+    return filteredQuery.orderBy(orderBy).all();
   }
 
   /**

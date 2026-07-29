@@ -4,29 +4,81 @@ import { getTournamentStatus } from "@/lib/utils";
 import PageHeader from "@/components/PageHeader.astro";
 import RegistrationStatusBadge from "@/components/RegistrationStatusBadge.astro";
 import { makeTournamentService } from "@/services/tournament-service";
+import { SearchBar } from "@/components/ui/SearchBar";
+import { TournamentStatusTabs } from "@/components/TournamentStatusTabs";
 
-const tournaments = await makeTournamentService().listTournaments();
+// ── URL params ─────────────────────────────────────────────────────────────
+const q      = Astro.url.searchParams.get("q")      ?? undefined;
+const status = Astro.url.searchParams.get("status") ?? undefined;
+const page   = Math.max(1, Number(Astro.url.searchParams.get("page") ?? "1"));
+
+const PAST_PAGE_SIZE = 12;
+
+// ── Data ───────────────────────────────────────────────────────────────────
+const allTournaments = await makeTournamentService().listTournaments({ query: q, status });
 
 const today = new Date().toISOString().slice(0, 10);
 
-const active   = tournaments.filter((t) => getTournamentStatus(t) === "active");
-const upcoming = tournaments.filter((t) => getTournamentStatus(t) === "upcoming");
-const past     = tournaments.filter((t) => getTournamentStatus(t) === "past");
+// When a status filter is active the repo already returns only that bucket.
+// When no filter is active (status === undefined) we split the full list into sections.
+const active   = allTournaments.filter((t) => getTournamentStatus(t) === "active");
+const upcoming = allTournaments.filter((t) => getTournamentStatus(t) === "upcoming");
+const pastFiltered = allTournaments.filter((t) => getTournamentStatus(t) === "past");
 
-function isRegistrationOpen(t: (typeof tournaments)[number]): boolean {
+// The repo sorts everything ASC. For the "all" view the past section should
+// display most-recently-ended first (DESC), so we reverse. When status=past
+// the repo already returns DESC — reversing would flip it back to ASC, so we
+// skip the reversal in that case.
+const pastAll = status === "past" ? pastFiltered : [...pastFiltered].reverse();
+
+// Paginate past results.
+const pastVisible    = pastAll.slice(0, page * PAST_PAGE_SIZE);
+const hasMorePast    = pastAll.length > page * PAST_PAGE_SIZE;
+const nextPageParams = new URLSearchParams(Astro.url.searchParams);
+nextPageParams.set("page", String(page + 1));
+
+// Tab bar counts must always reflect the full (unfiltered-by-status) dataset so
+// switching tabs shows meaningful numbers. When a status filter is active the
+// primary query only returns that bucket, so we run a second count-only query
+// filtered only by the search query (no status) to get accurate tab totals.
+const countSource = status
+  ? await makeTournamentService().listTournaments({ query: q })
+  : allTournaments;
+
+const counts = {
+  all:      countSource.length,
+  active:   countSource.filter((t) => getTournamentStatus(t) === "active").length,
+  upcoming: countSource.filter((t) => getTournamentStatus(t) === "upcoming").length,
+  past:     countSource.filter((t) => getTournamentStatus(t) === "past").length,
+} as const;
+
+// ── Helpers ────────────────────────────────────────────────────────────────
+type TournamentItem = (typeof allTournaments)[number];
+
+function isRegistrationOpen(t: TournamentItem): boolean {
   return getTournamentStatus(t) === "upcoming" &&
     (!t.registrationDeadline || t.registrationDeadline >= today);
 }
 
 function formatDate(d: string): string {
-  return new Date(d).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+  return new Date(d).toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
 }
 
-function formatDates(t: (typeof tournaments)[number]): string {
+function formatDates(t: TournamentItem): string {
   if (t.startDate && t.endDate) return `${formatDate(t.startDate)} – ${formatDate(t.endDate)}`;
   if (t.startDate) return `From ${formatDate(t.startDate)}`;
   return "Dates TBD";
 }
+
+// Resolve the active tab for the status tab bar.
+// Normalise unexpected values to "all" so the component always receives a
+// valid StatusFilter.
+const activeTab =
+  status === "upcoming" || status === "active" || status === "past" ? status : "all";
 ---
 
 <AppLayout title="Tournaments" activeNav="tournaments">
@@ -36,62 +88,138 @@ function formatDates(t: (typeof tournaments)[number]): string {
       subtitle="Browse tournaments open for registration and upcoming events."
     />
 
-    {tournaments.length === 0 ? (
+    <!-- Search + filter controls -->
+    <div class="mb-6 space-y-3">
+      <SearchBar
+        client:load
+        placeholder="Search tournaments…"
+        paramName="q"
+        defaultValue={q ?? ""}
+      />
+      <TournamentStatusTabs
+        client:load
+        counts={counts}
+        initialTab={activeTab}
+      />
+    </div>
+
+    <!-- No results at all -->
+    {allTournaments.length === 0 ? (
       <div class="rounded-xl border border-(--color-border) bg-(--color-card) p-12 text-center">
-        <p class="text-(--color-muted) text-sm">No tournaments have been created yet.</p>
+        {q ? (
+          <p class="text-(--color-muted) text-sm">
+            No tournaments match <span class="font-medium text-(--color-foreground)">"{q}"</span>.
+          </p>
+        ) : (
+          <p class="text-(--color-muted) text-sm">No tournaments have been created yet.</p>
+        )}
       </div>
     ) : (
       <div class="space-y-8">
-        {active.length > 0 && (
-          <section>
-            <h2 class="text-xs font-semibold uppercase tracking-wider text-(--color-muted-fg) mb-3">Happening Now</h2>
-            <div class="rounded-xl border border-(--color-border) bg-(--color-card) divide-y divide-(--color-border-soft)">
-              {active.map((t) => (
-                <a href={`/tournaments/${t.id}`} class="flex items-center justify-between gap-4 px-5 py-4 hover:bg-(--color-card-hover) transition-colors">
-                  <div>
-                    <p class="font-semibold text-sm text-(--color-foreground)">{t.name}</p>
-                    <p class="text-xs text-(--color-muted) mt-0.5">{formatDates(t)}</p>
-                  </div>
-                  <RegistrationStatusBadge open={false} withPrefix />
-                </a>
-              ))}
+
+        <!-- Active -->
+        {(!status || status === "active") && (
+          active.length > 0 ? (
+            <section>
+              <h2 class="text-xs font-semibold uppercase tracking-wider text-(--color-muted-fg) mb-3">
+                Happening Now
+              </h2>
+              <div class="rounded-xl border border-(--color-border) bg-(--color-card) divide-y divide-(--color-border-soft)">
+                {active.map((t) => (
+                  <a
+                    href={`/tournaments/${t.id}`}
+                    class="flex items-center justify-between gap-4 px-5 py-4 hover:bg-(--color-card-hover) transition-colors"
+                  >
+                    <div>
+                      <p class="font-semibold text-sm text-(--color-foreground)">{t.name}</p>
+                      <p class="text-xs text-(--color-muted) mt-0.5">{formatDates(t)}</p>
+                    </div>
+                    <RegistrationStatusBadge open={false} withPrefix />
+                  </a>
+                ))}
+              </div>
+            </section>
+          ) : status === "active" && (
+            <div class="rounded-xl border border-(--color-border) bg-(--color-card) p-12 text-center">
+              <p class="text-(--color-muted) text-sm">
+                No active tournaments{q ? ` matching "${q}"` : ""}.
+              </p>
             </div>
-          </section>
+          )
         )}
 
-        {upcoming.length > 0 && (
-          <section>
-            <h2 class="text-xs font-semibold uppercase tracking-wider text-(--color-muted-fg) mb-3">Upcoming</h2>
-            <div class="rounded-xl border border-(--color-border) bg-(--color-card) divide-y divide-(--color-border-soft)">
-              {upcoming.map((t) => (
-                <a href={`/tournaments/${t.id}`} class="flex items-center justify-between gap-4 px-5 py-4 hover:bg-(--color-card-hover) transition-colors">
-                  <div>
-                    <p class="font-semibold text-sm text-(--color-foreground)">{t.name}</p>
-                    <p class="text-xs text-(--color-muted) mt-0.5">{formatDates(t)}</p>
-                  </div>
-                  <RegistrationStatusBadge open={isRegistrationOpen(t)} withPrefix />
-                </a>
-              ))}
+        <!-- Upcoming -->
+        {(!status || status === "upcoming") && (
+          upcoming.length > 0 ? (
+            <section>
+              <h2 class="text-xs font-semibold uppercase tracking-wider text-(--color-muted-fg) mb-3">
+                Upcoming
+              </h2>
+              <div class="rounded-xl border border-(--color-border) bg-(--color-card) divide-y divide-(--color-border-soft)">
+                {upcoming.map((t) => (
+                  <a
+                    href={`/tournaments/${t.id}`}
+                    class="flex items-center justify-between gap-4 px-5 py-4 hover:bg-(--color-card-hover) transition-colors"
+                  >
+                    <div>
+                      <p class="font-semibold text-sm text-(--color-foreground)">{t.name}</p>
+                      <p class="text-xs text-(--color-muted) mt-0.5">{formatDates(t)}</p>
+                    </div>
+                    <RegistrationStatusBadge open={isRegistrationOpen(t)} withPrefix />
+                  </a>
+                ))}
+              </div>
+            </section>
+          ) : status === "upcoming" && (
+            <div class="rounded-xl border border-(--color-border) bg-(--color-card) p-12 text-center">
+              <p class="text-(--color-muted) text-sm">
+                No upcoming tournaments{q ? ` matching "${q}"` : ""}.
+              </p>
             </div>
-          </section>
+          )
         )}
 
-        {past.length > 0 && (
-          <section>
-            <h2 class="text-xs font-semibold uppercase tracking-wider text-(--color-muted-fg) mb-3">Past</h2>
-            <div class="rounded-xl border border-(--color-border) bg-(--color-card) divide-y divide-(--color-border-soft)">
-              {past.map((t) => (
-                <a href={`/tournaments/${t.id}`} class="flex items-center justify-between gap-4 px-5 py-4 opacity-70 hover:bg-(--color-card-hover) hover:opacity-100 transition-all">
-                  <div>
-                    <p class="font-semibold text-sm text-(--color-foreground)">{t.name}</p>
-                    <p class="text-xs text-(--color-muted) mt-0.5">{formatDates(t)}</p>
-                  </div>
-                  <RegistrationStatusBadge open={false} withPrefix />
-                </a>
-              ))}
+        <!-- Past (paginated) -->
+        {(!status || status === "past") && (
+          pastAll.length > 0 ? (
+            <section>
+              <h2 class="text-xs font-semibold uppercase tracking-wider text-(--color-muted-fg) mb-3">
+                Past
+              </h2>
+              <div class="rounded-xl border border-(--color-border) bg-(--color-card) divide-y divide-(--color-border-soft)">
+                {pastVisible.map((t) => (
+                  <a
+                    href={`/tournaments/${t.id}`}
+                    class="flex items-center justify-between gap-4 px-5 py-4 opacity-70 hover:bg-(--color-card-hover) hover:opacity-100 transition-all"
+                  >
+                    <div>
+                      <p class="font-semibold text-sm text-(--color-foreground)">{t.name}</p>
+                      <p class="text-xs text-(--color-muted) mt-0.5">{formatDates(t)}</p>
+                    </div>
+                    <RegistrationStatusBadge open={false} withPrefix />
+                  </a>
+                ))}
+              </div>
+              {hasMorePast && (
+                <div class="mt-4 text-center">
+                  <a
+                    href={`?${nextPageParams.toString()}`}
+                    class="text-sm text-(--color-primary) hover:underline"
+                  >
+                    Load more ({pastAll.length - pastVisible.length} remaining)
+                  </a>
+                </div>
+              )}
+            </section>
+          ) : status === "past" && (
+            <div class="rounded-xl border border-(--color-border) bg-(--color-card) p-12 text-center">
+              <p class="text-(--color-muted) text-sm">
+                No past tournaments{q ? ` matching "${q}"` : ""}.
+              </p>
             </div>
-          </section>
+          )
         )}
+
       </div>
     )}
   </div>
