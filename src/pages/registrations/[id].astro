@@ -1,0 +1,155 @@
+---
+import AppLayout from "@/layouts/AppLayout.astro";
+import PageHeader from "@/components/PageHeader.astro";
+import SectionCard from "@/components/SectionCard.astro";
+import { makeTournamentRegistrationService } from "@/services/tournament-registration-service";
+import { makeTournamentService } from "@/services/tournament-service";
+import { makeTeamService } from "@/services/team-service";
+import { NotFoundError, ForbiddenError } from "@/lib/errors";
+import type { RegistrationStatus } from "@/lib/schema";
+
+const user = Astro.locals.user;
+if (!user || !user.isCoach) {
+  return Astro.redirect("/dashboard");
+}
+
+const { id } = Astro.params;
+
+// Fetch the registration with full details.
+let registration;
+try {
+  const svc = makeTournamentRegistrationService();
+  // Use the repo directly — we need a coach-scoped fetch (coach owns the team).
+  const { TournamentRegistrationRepository } = await import("@/repositories/tournament-registration-repository");
+  const { getDb } = await import("@/lib/db");
+  const repo = new TournamentRegistrationRepository(getDb());
+  registration = await repo.findByIdWithDetails(id!);
+  if (!registration) throw new NotFoundError("Registration", id!);
+
+  // Authorization: coach must own the team on this registration.
+  const teams = await makeTeamService().listByCoach(user.id);
+  const ownsTeam = teams.some((t) => t.id === registration!.teamId);
+  if (!ownsTeam) return Astro.redirect("/registrations");
+} catch (err) {
+  if (err instanceof NotFoundError || err instanceof ForbiddenError) {
+    return Astro.redirect("/registrations");
+  }
+  throw err;
+}
+
+// Fetch the tournament for fee + payment instructions.
+const tournament = await makeTournamentService().getTournament(registration.tournamentId);
+
+const STATUS_LABELS: Record<RegistrationStatus, string> = {
+  pending:    "Pending review",
+  approved:   "Confirmed",
+  waitlisted: "Waitlisted",
+  rejected:   "Not accepted",
+};
+
+const STATUS_STYLES: Record<RegistrationStatus, string> = {
+  pending:    "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300",
+  approved:   "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300",
+  waitlisted: "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300",
+  rejected:   "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300",
+};
+
+const STATUS_DESC: Record<RegistrationStatus, string> = {
+  pending:    "",
+  approved:   "Your spot is confirmed for this tournament.",
+  waitlisted: "You'll be notified if a spot opens up.",
+  rejected:   "Your team wasn't accepted for this tournament.",
+};
+
+const hasFee = Boolean(tournament.registrationFee);
+
+function formatDateTime(iso: string) {
+  return new Date(iso).toLocaleDateString("en-US", {
+    month: "long", day: "numeric", year: "numeric",
+    hour: "numeric", minute: "2-digit",
+  });
+}
+---
+
+<AppLayout title={`${registration.teamName} — ${registration.tournamentName}`} activeNav="registrations">
+  <div class="p-4 sm:p-6 lg:p-8">
+
+    <a
+      href="/registrations"
+      class="inline-flex items-center gap-1.5 text-sm text-(--color-muted) hover:text-(--color-foreground) mb-4 transition-colors"
+    >
+      ← Back to registrations
+    </a>
+
+    <PageHeader
+      title={registration.teamName}
+      subtitle={`${registration.divisionName} · ${registration.tournamentName}`}
+    />
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+      <!-- Left: details -->
+      <div class="lg:col-span-2 space-y-4">
+        <SectionCard title="Details">
+          <dl class="grid grid-cols-[max-content_1fr] gap-x-8 gap-y-3 text-sm px-6 py-4">
+            <dt class="font-medium text-(--color-foreground)">Tournament</dt>
+            <dd class="text-(--color-muted)">{registration.tournamentName}</dd>
+
+            <dt class="font-medium text-(--color-foreground)">Division</dt>
+            <dd class="text-(--color-muted)">{registration.divisionName}</dd>
+
+            <dt class="font-medium text-(--color-foreground)">Registered</dt>
+            <dd class="text-(--color-muted)">{formatDateTime(registration.registeredAt)}</dd>
+
+            {hasFee && (
+              <>
+                <dt class="font-medium text-(--color-foreground)">Fee</dt>
+                <dd class="text-(--color-muted)">${(tournament.registrationFee! / 100).toFixed(2)}</dd>
+              </>
+            )}
+          </dl>
+        </SectionCard>
+
+        {registration.notes && (
+          <SectionCard title="Director Notes">
+            <p class="text-sm text-(--color-muted) px-6 py-4">{registration.notes}</p>
+          </SectionCard>
+        )}
+      </div>
+
+      <!-- Right: status + payment -->
+      <div class="lg:col-span-1 space-y-4">
+        <SectionCard title="Status">
+          <div class="px-6 py-4 space-y-2">
+            <span class={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold ${STATUS_STYLES[registration.status]}`}>
+              {STATUS_LABELS[registration.status]}
+            </span>
+            {STATUS_DESC[registration.status] && (
+              <p class="text-sm text-(--color-muted)">{STATUS_DESC[registration.status]}</p>
+            )}
+          </div>
+        </SectionCard>
+
+        {hasFee && registration.status !== "rejected" && (
+          <SectionCard title="Payment">
+            <div class="px-6 py-4 space-y-3">
+              {registration.paidAt ? (
+                <p class="text-sm font-medium text-emerald-700 dark:text-emerald-400">
+                  Confirmed{registration.paidNote ? ` · ${registration.paidNote}` : ""}
+                </p>
+              ) : (
+                <>
+                  <p class="text-sm font-medium text-amber-700 dark:text-amber-400">Payment pending</p>
+                  {tournament.paymentInstructions && (
+                    <p class="text-sm text-(--color-muted) whitespace-pre-line">{tournament.paymentInstructions}</p>
+                  )}
+                </>
+              )}
+            </div>
+          </SectionCard>
+        )}
+      </div>
+
+    </div>
+  </div>
+</AppLayout>
