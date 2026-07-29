@@ -1,0 +1,19 @@
+src/lib/notifications.ts
+  s_f220e51497d5cb::t_d04359223c1fb1 11-12,24
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "0cf48c8a6fb263651113b69de9258e5a5ae7a072",
+  "prompts": {},
+  "sessions": {
+    "s_f220e51497d5cb": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_05196457dffei63V3YyqcewX9l",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "James Quick <jquick@cloudflare.com>"
+    }
+  }
+}
