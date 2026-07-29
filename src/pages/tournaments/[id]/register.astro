@@ -89,7 +89,7 @@ function formatDate(d: string | null) {
     />
 
     <!-- Tournament summary -->
-    <div class="rounded-lg border border-(--color-border) bg-(--color-card) px-5 py-4 mb-6 flex flex-wrap gap-x-6 gap-y-1 text-sm text-(--color-muted)">
+    <div class="rounded-lg border border-(--color-border) bg-(--color-card) px-5 py-4 mb-4 flex flex-wrap gap-x-6 gap-y-1 text-sm text-(--color-muted)">
       {tournament.startDate && tournament.endDate && (
         <span>📅 {formatDate(tournament.startDate)} – {formatDate(tournament.endDate)}</span>
       )}
@@ -98,6 +98,18 @@ function formatDate(d: string | null) {
         <span>⏳ Registration deadline: {formatDate(tournament.registrationDeadline)}</span>
       )}
     </div>
+
+    <!-- Fee notice -->
+    {tournament.registrationFee && (
+      <div class="rounded-lg border border-(--color-border) bg-(--color-card) px-5 py-3 mb-6 text-sm">
+        <span class="font-medium text-(--color-foreground)">
+          Registration fee: ${(tournament.registrationFee / 100).toFixed(2)}
+        </span>
+        <span class="text-(--color-muted)">
+          {" "}— the tournament director will contact you about payment after you register.
+        </span>
+      </div>
+    )}
 
     <SectionCard class="p-5 sm:p-7">
       <RegisterForTournamentForm
