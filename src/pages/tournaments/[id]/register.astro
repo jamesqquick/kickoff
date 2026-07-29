@@ -47,15 +47,14 @@ if (coachTeams.length === 0) {
   return Astro.redirect(`/teams/register`);
 }
 
-// Already registered — redirect back to tournament page.
+// Find which of the coach's teams are already registered for this tournament.
 const regRepo = new TournamentRegistrationRepository(getDb());
-const existingReg = await Promise.all(
+const existingRegs = await Promise.all(
   coachTeams.map((t) => regRepo.findByTeamAndTournament(t.id, tournament.id))
-).then((results) => results.find(Boolean) ?? null);
-
-if (existingReg) {
-  return Astro.redirect(`/tournaments/${id}`);
-}
+);
+const registeredTeamIds = new Set(
+  existingRegs.filter(Boolean).map((r) => r!.teamId)
+);
 
 // Build division list with current registration counts for capacity display.
 const divisionCounts = await Promise.all(
@@ -122,6 +121,8 @@ function formatDate(d: string | null) {
         tournamentId={tournament.id}
         divisions={divisionCounts}
         coachTeams={coachTeams.map((t) => ({ id: t.id, name: t.name }))}
+        registeredTeamIds={[...registeredTeamIds]}
+        registrationFee={tournament.registrationFee ?? null}
       />
     </SectionCard>
 
