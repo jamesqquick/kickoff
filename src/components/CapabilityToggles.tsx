@@ -22,12 +22,12 @@ export function CapabilityToggles({ initialIsCoach, initialIsDirector, isAdmin }
 
     setLoading(true);
     try {
-      const { data, error } = await actions.settings.updateCapabilities({ isCoach, isDirector });
+      const { error } = await actions.settings.updateCapabilities({ isCoach, isDirector });
       if (error) {
         toast.error(error.message ?? "Could not update capabilities. Try again.");
         return;
       }
-      toast.success("Capabilities updated. Refresh to see nav changes.");
+      toast.success("Capabilities updated.");
     } catch {
       toast.error("Could not update capabilities. Try again.");
     } finally {

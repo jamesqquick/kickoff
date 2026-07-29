@@ -155,6 +155,20 @@ if (isAdmin) {
       </div>
     )}
 
+    {/* ── No-capability fallback (should be rare — middleware redirects first) */}
+    {!isCoach && !isDirector && !isAdmin && (
+      <SectionCard class="p-8 text-center">
+        <p class="text-sm font-medium text-(--color-foreground) mb-1">No capabilities set</p>
+        <p class="text-sm text-(--color-muted) mb-4">
+          Choose whether you're a Coach, a Tournament Director, or both to unlock
+          the relevant sections of the app.
+        </p>
+        <a href="/settings" class={cn(buttonVariants({ variant: "default" }))}>
+          Set up capabilities
+        </a>
+      </SectionCard>
+    )}
+
     {/* ── Director section ────────────────────────────────────────── */}
     {isDirector && !isAdmin && (
       <div class="space-y-6">
