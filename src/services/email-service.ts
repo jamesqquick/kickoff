@@ -276,6 +276,9 @@ ${directorNote ? `<p><strong>Note from director:</strong> ${h(directorNote)}</p>
     text: string;
     html: string;
   }): Promise<void> {
+    // Email is not configured — skip silently.
+    if (!EMAIL_FROM_ADDRESS) return;
+
     // Dev guard: skip actual sending unless SEND_EMAIL_IN_DEV is enabled.
     if (!SEND_EMAIL_IN_DEV) {
       console.log("[email] SEND_EMAIL_IN_DEV=false — skipping send", { to, subject });
