@@ -10,6 +10,7 @@ import {
 } from "astro:env/server";
 import { getDb } from "@/lib/db";
 import { TeamMemberRepository } from "@/repositories/team-member-repository";
+import { sendPasswordReset } from "@/lib/email";
 
 // Extends Better Auth's base User with our custom additionalFields.
 // Use this everywhere instead of `User` from "better-auth" + a cast.
@@ -35,6 +36,9 @@ function createAuth() {
     baseURL: BETTER_AUTH_URL,
     emailAndPassword: {
       enabled: true,
+      sendResetPassword: async ({ user, url }) => {
+        await sendPasswordReset({ to: user.email, resetUrl: url });
+      },
     },
     socialProviders: {
       google: {

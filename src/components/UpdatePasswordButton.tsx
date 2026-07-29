@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { toast } from "sonner";
-import { actions } from "astro:actions";
+import { actions, isInputError } from "astro:actions";
 import { Button } from "@/components/ui/button";
 
 /**
@@ -23,6 +23,10 @@ export function UpdatePasswordButton() {
       toast.error("All password fields are required.");
       return;
     }
+    if (newPassword.length < 8) {
+      toast.error("New password must be at least 8 characters.");
+      return;
+    }
     if (newPassword !== confirmPassword) {
       toast.error("Passwords don't match.");
       return;
@@ -36,7 +40,14 @@ export function UpdatePasswordButton() {
         confirmPassword,
       });
       if (error) {
-        toast.error(error.message ?? "Could not update password. Try again.");
+        if (isInputError(error)) {
+          // Extract the first Zod field message — these are already user-friendly
+          // (e.g. "New password must be at least 8 characters").
+          const firstMessage = Object.values(error.fields).flat()[0];
+          toast.error(firstMessage ?? "Please check your inputs and try again.");
+        } else {
+          toast.error(error.message ?? "Could not update password. Try again.");
+        }
         return;
       }
       toast.success("Password updated");

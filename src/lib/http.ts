@@ -13,6 +13,21 @@ export function redirectWithError(
   });
 }
 
+// Redirect (302) back to a form route with a `?success=` message. Optional
+// `extra` params are merged in (e.g. `{ tab: "signin" }`). Mirrors the shape
+// of redirectWithError so callers stay consistent.
+export function redirectWithSuccess(
+  path: string,
+  message: string,
+  extra?: Record<string, string>,
+) {
+  const params = new URLSearchParams({ ...extra, success: message });
+  return new Response(null, {
+    status: 302,
+    headers: { Location: `${path}?${params}` },
+  });
+}
+
 // Validate a post-auth redirect destination. Returns the path if it is a
 // safe same-origin path (starts with "/"), or null to fall back to /dashboard.
 // Prevents open-redirect attacks by rejecting anything with a host.
