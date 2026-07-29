@@ -145,6 +145,7 @@ export class TournamentRepository {
         | "registrationDeadline"
         | "location"
         | "description"
+        | "registrationFee"
       >
     >,
   ): Promise<Tournament> {

@@ -94,6 +94,8 @@ export class TournamentRegistrationRepository {
         status: tournamentRegistrations.status,
         registeredAt: tournamentRegistrations.registeredAt,
         notes: tournamentRegistrations.notes,
+        paidAt: tournamentRegistrations.paidAt,
+        paidNote: tournamentRegistrations.paidNote,
         createdAt: tournamentRegistrations.createdAt,
         updatedAt: tournamentRegistrations.updatedAt,
         teamName: teams.name,

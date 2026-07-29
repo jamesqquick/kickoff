@@ -41,6 +41,7 @@ const baseTournament: Tournament = {
   registrationDeadline: null,
   location: null,
   description: null,
+  registrationFee: null,
   createdBy: "user-1",
   createdAt: 1000,
   updatedAt: 1000,
