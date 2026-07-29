@@ -1,0 +1,22 @@
+---
+import AppLayout from "@/layouts/AppLayout.astro";
+import PageHeader from "@/components/PageHeader.astro";
+import { NotificationList } from "@/components/NotificationList";
+import { makeNotificationService } from "@/services/notification-service";
+
+const user = Astro.locals.user;
+if (!user) return Astro.redirect("/signin");
+
+const notifications = await makeNotificationService().listForUser(user.id, 50);
+---
+
+<AppLayout activeNav="notifications">
+  <div class="max-w-2xl mx-auto px-4 py-8">
+    <PageHeader
+      title="Notifications"
+      description="Your recent activity across teams and tournaments."
+    />
+
+    <NotificationList client:load initialNotifications={notifications} />
+  </div>
+</AppLayout>
