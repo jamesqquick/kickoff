@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { RegistrationStatusButton } from "@/components/RegistrationStatusButton";
 import { MarkPaidButton } from "@/components/MarkPaidButton";
+import { SectionSeparator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 import type { RegistrationStatus } from "@/lib/schema";
 
@@ -57,7 +58,7 @@ export function RegistrationDetailActions({
       {/* Payment */}
       {hasFee && (
         <>
-          <div className="border-t border-(--color-border)" />
+          <SectionSeparator />
           <div>
             <p className="text-xs font-semibold uppercase tracking-wider text-(--color-muted) mb-3">
               Payment

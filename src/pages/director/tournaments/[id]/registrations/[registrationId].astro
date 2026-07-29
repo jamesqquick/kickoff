@@ -95,26 +95,21 @@ function formatDateTime(iso: string) {
 
         <!-- Registration info -->
         <SectionCard title="Details" class="p-5">
-          <dl class="space-y-3 text-sm px-1">
-            <div class="flex justify-between gap-4">
-              <dt class="font-medium text-(--color-foreground) shrink-0">Tournament</dt>
-              <dd class="text-(--color-muted) text-right">{registration.tournamentName}</dd>
-            </div>
-            <div class="flex justify-between gap-4">
-              <dt class="font-medium text-(--color-foreground) shrink-0">Division</dt>
-              <dd class="text-(--color-muted) text-right">{registration.divisionName}</dd>
-            </div>
-            <div class="flex justify-between gap-4">
-              <dt class="font-medium text-(--color-foreground) shrink-0">Registered</dt>
-              <dd class="text-(--color-muted) text-right">{formatDateTime(registration.registeredAt)}</dd>
-            </div>
+          <dl class="grid grid-cols-[max-content_1fr] gap-x-8 gap-y-3 text-sm px-1">
+            <dt class="font-medium text-(--color-foreground)">Tournament</dt>
+            <dd class="text-(--color-muted)">{registration.tournamentName}</dd>
+
+            <dt class="font-medium text-(--color-foreground)">Division</dt>
+            <dd class="text-(--color-muted)">{registration.divisionName}</dd>
+
+            <dt class="font-medium text-(--color-foreground)">Registered</dt>
+            <dd class="text-(--color-muted)">{formatDateTime(registration.registeredAt)}</dd>
+
             {hasFee && (
-              <div class="flex justify-between gap-4">
-                <dt class="font-medium text-(--color-foreground) shrink-0">Fee</dt>
-                <dd class="text-(--color-muted) text-right">
-                  ${(tournament.registrationFee! / 100).toFixed(2)}
-                </dd>
-              </div>
+              <>
+                <dt class="font-medium text-(--color-foreground)">Fee</dt>
+                <dd class="text-(--color-muted)">${(tournament.registrationFee! / 100).toFixed(2)}</dd>
+              </>
             )}
           </dl>
         </SectionCard>
