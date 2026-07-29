@@ -1,0 +1,19 @@
+src/pages/director/tournaments/[id]/registrations.astro
+  s_4abd0d4baa20f6::t_a380e53cf4a8fd 62-66
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "dec11877bdd33be7a630c568a372384c64e8704e",
+  "prompts": {},
+  "sessions": {
+    "s_4abd0d4baa20f6": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_051ccdac2ffeGuT1NOIQbSHzZl",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "James Quick <jquick@cloudflare.com>"
+    }
+  }
+}
