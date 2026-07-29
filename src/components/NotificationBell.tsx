@@ -29,11 +29,11 @@ export function NotificationBell({ initialUnreadCount }: Props) {
     try {
       const { data } = await actions.notifications.list();
       if (data) setItems(data);
+      setLoaded(true);
     } catch {
       toast.error("Could not load notifications. Try again.");
     } finally {
       setLoading(false);
-      setLoaded(true);
     }
   }
 
