@@ -152,19 +152,38 @@ INSERT INTO team_invites (id, team_id, token, created_by, is_active, created_at,
 
 -- ------------------------------------------------------------
 -- 8. Tournaments  (created_by set on all rows)
+--
+-- Status as of 2026-07-29 (today):
+--   Past (endDate < today):   tour_1–4, tour_6, tour_p1–tour_p10
+--   Active (start<=today, end>=today): tour_5
+--   Upcoming (start > today): tour_7, tour_8, tour_9
+--
+-- tour_p1–tour_p10 are extra past fixtures so the "Load more" pagination
+-- path on /tournaments fires (page size = 12; 15 past total exercises it).
 -- ------------------------------------------------------------
 INSERT INTO tournaments (id, name, slug, start_date, end_date, registration_deadline, location, description, created_by, created_at, updated_at) VALUES
-  ('tour_1', 'Winter Cup 2024',             'winter-cup-2024',             '2024-01-15', '2024-01-28', NULL,         NULL,                     NULL,                                              'usr_director_a', 1700000000000, 1700000000000),
-  ('tour_2', 'Spring Invitational 2025',    'spring-invitational-2025',    '2025-03-01', '2025-03-15', NULL,         NULL,                     NULL,                                              'usr_director_a', 1700000000000, 1700000000000),
-  ('tour_3', 'Pacific Coast Cup 2025',      'pacific-coast-cup-2025',      '2025-08-10', '2025-08-24', NULL,         'San Diego Sports Park',  NULL,                                              'usr_director_a', 1700000000000, 1700000000000),
-  ('tour_4', 'Regional Qualifiers 2026',    'regional-qualifiers-2026',    '2026-04-05', '2026-04-12', '2026-03-20', 'Austin FC Stadium',      'Regional qualifier for the state championship.', 'usr_director_a', 1700000000000, 1700000000000),
-  ('tour_5', 'Summer Classic 2026',         'summer-classic-2026',         '2026-06-01', '2026-08-31', '2026-05-15', 'Zilker Park Fields',     'Open summer league across all age groups.',      'usr_director_a', 1700000000000, 1700000000000),
-  ('tour_6', 'Open State Championship 2026','open-state-championship-2026','2026-07-01', '2026-07-20', '2026-06-15', 'Round Rock Multiplex',   NULL,                                              'usr_director_a', 1700000000000, 1700000000000),
-  ('tour_7', 'Fall Championship 2026',      'fall-championship-2026',      '2026-12-01', '2026-12-20', '2026-11-01', NULL,                     NULL,                                              'usr_director_a', 1700000000000, 1700000000000),
+  ('tour_1',  'Winter Cup 2024',             'winter-cup-2024',             '2024-01-15', '2024-01-28', NULL,         NULL,                     NULL,                                              'usr_director_a', 1700000000000, 1700000000000),
+  ('tour_2',  'Spring Invitational 2025',    'spring-invitational-2025',    '2025-03-01', '2025-03-15', NULL,         NULL,                     NULL,                                              'usr_director_a', 1700000000000, 1700000000000),
+  ('tour_3',  'Pacific Coast Cup 2025',      'pacific-coast-cup-2025',      '2025-08-10', '2025-08-24', NULL,         'San Diego Sports Park',  NULL,                                              'usr_director_a', 1700000000000, 1700000000000),
+  ('tour_4',  'Regional Qualifiers 2026',    'regional-qualifiers-2026',    '2026-04-05', '2026-04-12', '2026-03-20', 'Austin FC Stadium',      'Regional qualifier for the state championship.', 'usr_director_a', 1700000000000, 1700000000000),
+  ('tour_5',  'Summer Classic 2026',         'summer-classic-2026',         '2026-06-01', '2026-08-31', '2026-05-15', 'Zilker Park Fields',     'Open summer league across all age groups.',      'usr_director_a', 1700000000000, 1700000000000),
+  ('tour_6',  'Open State Championship 2026','open-state-championship-2026','2026-07-01', '2026-07-20', '2026-06-15', 'Round Rock Multiplex',   NULL,                                              'usr_director_a', 1700000000000, 1700000000000),
+  ('tour_7',  'Fall Championship 2026',      'fall-championship-2026',      '2026-12-01', '2026-12-20', '2026-11-01', NULL,                     NULL,                                              'usr_director_a', 1700000000000, 1700000000000),
   -- tour_8 owned by director_b
-  ('tour_8', 'Youth Invitational 2027',     'youth-invitational-2027',     '2027-02-14', '2027-02-21', '2027-01-31', 'Cedar Park Center',      'Annual youth invitational for U12-U18 divisions.','usr_director_b', 1700000000000, 1700000000000),
+  ('tour_8',  'Youth Invitational 2027',     'youth-invitational-2027',     '2027-02-14', '2027-02-21', '2027-01-31', 'Cedar Park Center',      'Annual youth invitational for U12-U18 divisions.','usr_director_b', 1700000000000, 1700000000000),
   -- tour_9 owned by usr_both (coach+director)
-  ('tour_9', 'Masters League Spring 2027',  'masters-league-spring-2027',  '2027-04-01', '2027-04-30', '2027-03-15', NULL,                     NULL,                                              'usr_both',       1700000000000, 1700000000000);
+  ('tour_9',  'Masters League Spring 2027',  'masters-league-spring-2027',  '2027-04-01', '2027-04-30', '2027-03-15', NULL,                     NULL,                                              'usr_both',       1700000000000, 1700000000000),
+  -- Extra past tournaments to exercise pagination (Load more at 12/page)
+  ('tour_p1', 'Kickoff Classic 2022',        'kickoff-classic-2022',        '2022-05-01', '2022-05-08', NULL,         'Houston Sports Complex',  NULL,                                             'usr_director_a', 1700000000000, 1700000000000),
+  ('tour_p2', 'Fall Invitational 2022',      'fall-invitational-2022',      '2022-10-10', '2022-10-16', NULL,         NULL,                      NULL,                                             'usr_director_a', 1700000000000, 1700000000000),
+  ('tour_p3', 'Spring Classic 2023',         'spring-classic-2023',         '2023-03-15', '2023-03-22', NULL,         'Dallas Soccer Fields',    NULL,                                             'usr_director_a', 1700000000000, 1700000000000),
+  ('tour_p4', 'Youth Cup 2023',              'youth-cup-2023',              '2023-06-10', '2023-06-17', NULL,         'Cedar Park Center',       NULL,                                             'usr_director_b', 1700000000000, 1700000000000),
+  ('tour_p5', 'Summer League 2023',          'summer-league-2023',          '2023-07-01', '2023-08-31', NULL,         'Zilker Park Fields',      NULL,                                             'usr_director_a', 1700000000000, 1700000000000),
+  ('tour_p6', 'State Cup 2023',              'state-cup-2023',              '2023-09-20', '2023-09-27', NULL,         'Round Rock Multiplex',    NULL,                                             'usr_director_a', 1700000000000, 1700000000000),
+  ('tour_p7', 'Fall Championship 2023',      'fall-championship-2023',      '2023-11-04', '2023-11-12', NULL,         NULL,                      NULL,                                             'usr_director_a', 1700000000000, 1700000000000),
+  ('tour_p8', 'Winter Classic 2023',         'winter-classic-2023',         '2023-12-09', '2023-12-16', NULL,         'Austin FC Stadium',       NULL,                                             'usr_director_a', 1700000000000, 1700000000000),
+  ('tour_p9', 'Coastal Open 2024',           'coastal-open-2024',           '2024-04-06', '2024-04-13', NULL,         'San Diego Sports Park',   NULL,                                             'usr_director_a', 1700000000000, 1700000000000),
+  ('tour_p10','Masters Cup 2024',            'masters-cup-2024',            '2024-09-14', '2024-09-21', NULL,         'Chicago United Center',   NULL,                                             'usr_director_b', 1700000000000, 1700000000000);
 
 -- ------------------------------------------------------------
 -- 9. Divisions

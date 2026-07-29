@@ -65,7 +65,7 @@ export class TournamentRepository {
       );
     } else if (status === "past") {
       // endDate is set and in the past.
-      conditions.push(and(lt(tournaments.endDate, today)));
+      conditions.push(lt(tournaments.endDate, today));
     }
 
     const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
@@ -73,9 +73,9 @@ export class TournamentRepository {
     // Past results sort DESC (most recently ended at top); all others sort ASC.
     const orderBy = status === "past" ? desc(tournaments.startDate) : asc(tournaments.startDate);
 
-    const q = this.db.select().from(tournaments);
-    const qWithWhere = whereClause ? q.where(whereClause) : q;
-    return qWithWhere.orderBy(orderBy).all();
+    const baseQuery = this.db.select().from(tournaments);
+    const filteredQuery = whereClause ? baseQuery.where(whereClause) : baseQuery;
+    return filteredQuery.orderBy(orderBy).all();
   }
 
   /**

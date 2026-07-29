@@ -31,8 +31,17 @@ export function SearchBar({ placeholder, paramName = "q", className }: Props) {
 
   const [value, setValue] = useState(initialValue);
   const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // Track whether the user has actually typed since mount. Without this guard
+  // the effect fires on the initial render and triggers a replace() back to
+  // the same URL, causing an infinite reload when ?q= is already in the URL.
+  const hasMounted = useRef(false);
 
   useEffect(() => {
+    if (!hasMounted.current) {
+      hasMounted.current = true;
+      return;
+    }
+
     if (debounceTimer.current) clearTimeout(debounceTimer.current);
 
     debounceTimer.current = setTimeout(() => {

@@ -20,13 +20,16 @@ const allTournaments = await makeTournamentService().listTournaments({ query: q,
 const today = new Date().toISOString().slice(0, 10);
 
 // When a status filter is active the repo already returns only that bucket.
-// When no filter is active (status === undefined) we split the full list into
-// sections, reversing the past slice so it displays most-recently-ended first.
+// When no filter is active (status === undefined) we split the full list into sections.
 const active   = allTournaments.filter((t) => getTournamentStatus(t) === "active");
 const upcoming = allTournaments.filter((t) => getTournamentStatus(t) === "upcoming");
-const pastAll  = allTournaments
-  .filter((t) => getTournamentStatus(t) === "past")
-  .reverse(); // repo sorted ASC; past section displays DESC (most recent first)
+const pastFiltered = allTournaments.filter((t) => getTournamentStatus(t) === "past");
+
+// The repo sorts everything ASC. For the "all" view the past section should
+// display most-recently-ended first (DESC), so we reverse. When status=past
+// the repo already returns DESC — reversing would flip it back to ASC, so we
+// skip the reversal in that case.
+const pastAll = status === "past" ? pastFiltered : [...pastFiltered].reverse();
 
 // Paginate past results.
 const pastVisible    = pastAll.slice(0, page * PAST_PAGE_SIZE);
@@ -34,13 +37,19 @@ const hasMorePast    = pastAll.length > page * PAST_PAGE_SIZE;
 const nextPageParams = new URLSearchParams(Astro.url.searchParams);
 nextPageParams.set("page", String(page + 1));
 
-// Tab counts reflect the full unfiltered dataset when no filter is active so
-// the tab bar shows accurate totals regardless of active search/status.
+// Tab bar counts must always reflect the full (unfiltered-by-status) dataset so
+// switching tabs shows meaningful numbers. When a status filter is active the
+// primary query only returns that bucket, so we run a second count-only query
+// filtered only by the search query (no status) to get accurate tab totals.
+const countSource = status
+  ? await makeTournamentService().listTournaments({ query: q })
+  : allTournaments;
+
 const counts = {
-  all:      allTournaments.length,
-  upcoming: status ? (status === "upcoming" ? allTournaments.length : 0) : upcoming.length,
-  active:   status ? (status === "active"   ? allTournaments.length : 0) : active.length,
-  past:     status ? (status === "past"     ? allTournaments.length : 0) : pastAll.length,
+  all:      countSource.length,
+  active:   countSource.filter((t) => getTournamentStatus(t) === "active").length,
+  upcoming: countSource.filter((t) => getTournamentStatus(t) === "upcoming").length,
+  past:     countSource.filter((t) => getTournamentStatus(t) === "past").length,
 } as const;
 
 // ── Helpers ────────────────────────────────────────────────────────────────
