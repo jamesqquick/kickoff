@@ -138,6 +138,51 @@ export class TournamentRegistrationService {
     return updated;
   }
 
+  async markRegistrationPaid(
+    registrationId: string,
+    note: string | undefined,
+    currentUser: AppUser,
+  ): Promise<TournamentRegistration> {
+    const registration = await this.registrationsRepo.findById(registrationId);
+    if (!registration) throw new NotFoundError("Registration", registrationId);
+
+    const ownerOrManager = await this.tournamentsRepo.isOwnerOrManager(
+      registration.tournamentId,
+      currentUser.id,
+    );
+    if (!canManageTournament(currentUser, ownerOrManager)) {
+      throw new ForbiddenError("mark registrations as paid for this tournament");
+    }
+
+    const updated = await this.registrationsRepo.updatePaymentStatus(
+      registrationId,
+      Date.now(),
+      note ?? null,
+    );
+
+    void this.notifyCoachOfPaymentReceived(registration.teamId, registration.tournamentId);
+
+    return updated;
+  }
+
+  async markRegistrationUnpaid(
+    registrationId: string,
+    currentUser: AppUser,
+  ): Promise<TournamentRegistration> {
+    const registration = await this.registrationsRepo.findById(registrationId);
+    if (!registration) throw new NotFoundError("Registration", registrationId);
+
+    const ownerOrManager = await this.tournamentsRepo.isOwnerOrManager(
+      registration.tournamentId,
+      currentUser.id,
+    );
+    if (!canManageTournament(currentUser, ownerOrManager)) {
+      throw new ForbiddenError("update payment status for this tournament");
+    }
+
+    return this.registrationsRepo.updatePaymentStatus(registrationId, null, null);
+  }
+
   // ── Private notification helpers ─────────────────────────────────────────
 
   /**
@@ -171,6 +216,30 @@ export class TournamentRegistrationService {
       );
     } catch (err) {
       console.error("[notifications] Failed to notify directors of new registration:", err);
+    }
+  }
+
+  /**
+   * Fire-and-forget: notify the team's coach that their registration payment
+   * has been confirmed by the director. Errors are logged and swallowed.
+   */
+  private async notifyCoachOfPaymentReceived(
+    teamId: string,
+    tournamentId: string,
+  ): Promise<void> {
+    try {
+      const team = await this.teamsRepo.findById(teamId);
+      const tournament = await this.tournamentsRepo.findById(tournamentId);
+      if (!team || !tournament) return;
+
+      await makeNotificationService().createForUser(team.coachId, {
+        type: NOTIFICATION_TYPES.REGISTRATION_MARKED_PAID,
+        title: "Payment received",
+        body: `Your registration payment for ${tournament.name} has been confirmed.`,
+        referenceUrl: `/teams/${team.id}#registrations`,
+      });
+    } catch (err) {
+      console.error("[notifications] Failed to notify coach of payment received:", err);
     }
   }
 
