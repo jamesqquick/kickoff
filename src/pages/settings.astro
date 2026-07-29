@@ -10,6 +10,8 @@ import { getAuth } from "@/lib/auth";
 const user = Astro.locals.user;
 if (!user) return Astro.redirect("/");
 
+const isOnboarding = Astro.url.searchParams.get("onboarding") === "1";
+
 // Determine whether the user has an email/password credential.
 // Google-only users see a "managed by Google" note instead of password fields.
 const accounts = await getAuth().api.listUserAccounts({
@@ -24,6 +26,16 @@ const hasPassword = accounts.some(
   <div class="p-4 sm:p-6 lg:p-8">
     <PageHeader title="Settings" subtitle="Manage your account security and notification preferences." />
 
+    {isOnboarding && (
+      <div class="max-w-xl mb-6 rounded-lg border border-amber-200 bg-amber-50 p-4">
+        <p class="text-sm font-medium text-amber-900 mb-1">One more step to get started</p>
+        <p class="text-sm text-amber-800">
+          Select at least one capability below so Kickoff knows how you'll use the app.
+          You can change this at any time.
+        </p>
+      </div>
+    )}
+
     <div class="max-w-xl space-y-6">
       <!-- Capability flags -->
       <SectionCard class="p-5">
@@ -37,6 +49,7 @@ const hasPassword = accounts.some(
           initialIsCoach={user.isCoach}
           initialIsDirector={user.isDirector}
           isAdmin={user.role === "admin"}
+          onboarding={isOnboarding}
         />
       </SectionCard>
 

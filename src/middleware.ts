@@ -40,6 +40,16 @@ export const onRequest = defineMiddleware(async (context, next) => {
 
   const user = locals.user;
 
+  // ── Onboarding gate: no capabilities set yet ──────────────────────────────
+  // Catches both Google OAuth signups (which bypass the checkbox form) and any
+  // edge case where flags were never written. Redirect to settings so the user
+  // can pick Coach / Director before accessing the rest of the app.
+  const needsOnboarding =
+    !user.isCoach && !user.isDirector && user.role !== "admin";
+  if (needsOnboarding && pathname !== "/settings") {
+    return redirect("/settings?onboarding=1");
+  }
+
   // ── Admin-only routes (/admin/*) ───────────────────────────────────────────
   if (pathname.startsWith("/admin/")) {
     if (user.role !== "admin") return redirect("/dashboard");

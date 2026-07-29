@@ -7,9 +7,11 @@ interface Props {
   initialIsCoach: boolean;
   initialIsDirector: boolean;
   isAdmin: boolean;
+  /** When true, a successful save redirects to /dashboard instead of reloading in place. */
+  onboarding?: boolean;
 }
 
-export function CapabilityToggles({ initialIsCoach, initialIsDirector, isAdmin }: Props) {
+export function CapabilityToggles({ initialIsCoach, initialIsDirector, isAdmin, onboarding = false }: Props) {
   const [isCoach, setIsCoach] = useState(initialIsCoach);
   const [isDirector, setIsDirector] = useState(initialIsDirector);
   const [loading, setLoading] = useState(false);
@@ -22,12 +24,17 @@ export function CapabilityToggles({ initialIsCoach, initialIsDirector, isAdmin }
 
     setLoading(true);
     try {
-      const { data, error } = await actions.settings.updateCapabilities({ isCoach, isDirector });
+      const { error } = await actions.settings.updateCapabilities({ isCoach, isDirector });
       if (error) {
         toast.error(error.message ?? "Could not update capabilities. Try again.");
         return;
       }
-      toast.success("Capabilities updated. Refresh to see nav changes.");
+      // Reload so the server re-renders the nav and dashboard with the new flags.
+      if (onboarding) {
+        window.location.href = "/dashboard";
+      } else {
+        window.location.reload();
+      }
     } catch {
       toast.error("Could not update capabilities. Try again.");
     } finally {
