@@ -10,6 +10,8 @@ export interface RegistrationWithDetails extends TournamentRegistration {
   divisionName: string;
   /** Present on all listByTeam results; null on listByTournament (tournament is already known). */
   tournamentName: string | null;
+  // paidAt and paidNote are inherited from TournamentRegistration via schema inference.
+  // Explicitly listed here for documentation clarity.
 }
 
 export class TournamentRegistrationRepository {
@@ -25,6 +27,8 @@ export class TournamentRegistrationRepository {
         status: tournamentRegistrations.status,
         registeredAt: tournamentRegistrations.registeredAt,
         notes: tournamentRegistrations.notes,
+        paidAt: tournamentRegistrations.paidAt,
+        paidNote: tournamentRegistrations.paidNote,
         createdAt: tournamentRegistrations.createdAt,
         updatedAt: tournamentRegistrations.updatedAt,
         teamName: teams.name,
@@ -55,6 +59,8 @@ export class TournamentRegistrationRepository {
         status: tournamentRegistrations.status,
         registeredAt: tournamentRegistrations.registeredAt,
         notes: tournamentRegistrations.notes,
+        paidAt: tournamentRegistrations.paidAt,
+        paidNote: tournamentRegistrations.paidNote,
         createdAt: tournamentRegistrations.createdAt,
         updatedAt: tournamentRegistrations.updatedAt,
         teamName: teams.name,
@@ -156,6 +162,19 @@ export class TournamentRegistrationRepository {
     const results = await this.db
       .update(tournamentRegistrations)
       .set({ status, notes: notes ?? null, updatedAt: Date.now() })
+      .where(eq(tournamentRegistrations.id, id))
+      .returning();
+    return results[0];
+  }
+
+  async updatePaymentStatus(
+    id: string,
+    paidAt: number | null,
+    paidNote: string | null,
+  ): Promise<TournamentRegistration> {
+    const results = await this.db
+      .update(tournamentRegistrations)
+      .set({ paidAt, paidNote, updatedAt: Date.now() })
       .where(eq(tournamentRegistrations.id, id))
       .returning();
     return results[0];
