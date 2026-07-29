@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Bell } from "lucide-react";
 import { actions } from "astro:actions";
+import { toast } from "sonner";
 import { formatNotificationRelativeTime } from "@/lib/notifications";
 import {
   DropdownMenu,
@@ -28,6 +29,8 @@ export function NotificationBell({ initialUnreadCount }: Props) {
     try {
       const { data } = await actions.notifications.list();
       if (data) setItems(data);
+    } catch {
+      toast.error("Could not load notifications. Try again.");
     } finally {
       setLoading(false);
       setLoaded(true);
@@ -50,10 +53,18 @@ export function NotificationBell({ initialUnreadCount }: Props) {
   }
 
   async function handleMarkAllRead() {
+    const prev = { count: unreadCount, items: [...items] };
     const now = Date.now();
     setUnreadCount(0);
-    setItems((prev) => prev.map((n) => ({ ...n, readAt: n.readAt ?? now })));
-    await actions.notifications.markAllRead();
+    setItems((current) => current.map((n) => ({ ...n, readAt: n.readAt ?? now })));
+    try {
+      await actions.notifications.markAllRead();
+    } catch {
+      // Revert optimistic update on failure.
+      setUnreadCount(prev.count);
+      setItems(prev.items);
+      toast.error("Could not mark notifications as read. Try again.");
+    }
   }
 
   return (
@@ -95,14 +106,14 @@ export function NotificationBell({ initialUnreadCount }: Props) {
           <div className="py-8 text-center text-sm text-(--color-muted)">Loading…</div>
         )}
 
-        {!loading && loaded && items.length === 0 && (
-          <div className="py-8 text-center text-sm text-(--color-muted)">
-            No notifications yet
-          </div>
-        )}
-
-        {!loading && loaded && items.length > 0 && (
+        {!loading && loaded && (
           <>
+            {items.length === 0 && (
+              <div className="py-8 text-center text-sm text-(--color-muted)">
+                No notifications yet
+              </div>
+            )}
+
             {items.map((n) => (
               <DropdownMenuItem
                 key={n.id}
@@ -154,5 +165,3 @@ export function NotificationBell({ initialUnreadCount }: Props) {
     </DropdownMenu>
   );
 }
-
-

@@ -115,7 +115,7 @@ export class TeamInviteService {
    */
   private async notifyCoachOfPlayerJoin(team: TeamWithCoach, player: AppUser): Promise<void> {
     try {
-      const playerName = player.name ?? player.email;
+      const playerName = player.name ?? player.email ?? "A player";
       await makeNotificationService().createForUser(team.coachId, {
         type: NOTIFICATION_TYPES.PLAYER_JOINED_TEAM,
         title: "New player joined",

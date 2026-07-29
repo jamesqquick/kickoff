@@ -184,27 +184,22 @@ export class TournamentRegistrationService {
     notes: string | undefined,
     tournamentId: string,
   ): Promise<void> {
+    // Moving a registration back to pending is a director-only housekeeping
+    // action with no actionable meaning for the coach — skip the notification.
+    if (status === "pending") return;
+
     try {
       const team = await this.teamsRepo.findById(teamId);
       const tournament = await this.tournamentsRepo.findById(tournamentId);
       if (!team || !tournament) return;
 
-      const statusLabel =
-        status === "approved"
-          ? "approved"
-          : status === "rejected"
-            ? "rejected"
-            : status === "waitlisted"
-              ? "waitlisted"
-              : "updated";
-
       const body = notes
-        ? `Your registration for ${tournament.name} was ${statusLabel}. Director note: ${notes}`
-        : `Your registration for ${tournament.name} was ${statusLabel}.`;
+        ? `Your registration for ${tournament.name} was ${status}. Director note: ${notes}`
+        : `Your registration for ${tournament.name} was ${status}.`;
 
       await makeNotificationService().createForUser(team.coachId, {
         type: NOTIFICATION_TYPES.REGISTRATION_STATUS_CHANGED,
-        title: `Registration ${statusLabel}`,
+        title: `Registration ${status}`,
         body,
         referenceUrl: `/teams/${team.id}#registrations`,
       });
