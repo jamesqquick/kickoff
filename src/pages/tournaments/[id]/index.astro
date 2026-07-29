@@ -87,8 +87,8 @@ function formatDate(d: string | null) {
       <div class="mb-6 rounded-lg border border-emerald-200 bg-emerald-50 dark:border-emerald-800 dark:bg-emerald-900/20 px-5 py-4 flex items-center gap-3">
         <span class="text-emerald-600 dark:text-emerald-400 text-lg">✓</span>
         <div>
-          <p class="text-sm font-semibold text-emerald-800 dark:text-emerald-300">Registration submitted — pending review</p>
-          <p class="text-xs text-emerald-700 dark:text-emerald-400 mt-0.5">An admin will review your registration and confirm your spot.</p>
+          <p class="text-sm font-semibold text-emerald-800 dark:text-emerald-300">Registration submitted</p>
+          <p class="text-xs text-emerald-700 dark:text-emerald-400 mt-0.5">You'll hear back once the director reviews.</p>
         </div>
       </div>
     )}
@@ -101,24 +101,30 @@ function formatDate(d: string | null) {
         waitlisted: "border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-900/20",
         rejected:   "border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-900/20",
       };
+      const statusTitle: Record<string, string> = {
+        pending:    "Registration submitted",
+        approved:   "Registration confirmed",
+        waitlisted: "On the waitlist",
+        rejected:   "Not accepted",
+      };
       const statusLabel: Record<string, string> = {
         pending:    "Pending review",
-        approved:   "Approved",
+        approved:   "Confirmed",
         waitlisted: "Waitlisted",
         rejected:   "Not accepted",
       };
       const statusDesc: Record<string, string> = {
-        pending:    "Your registration is awaiting director review.",
-        approved:   "Your team has been approved for this tournament.",
-        waitlisted: "Your team is on the waitlist.",
-        rejected:   "Your registration was not accepted for this tournament.",
+        pending:    "You'll hear back once the director reviews.",
+        approved:   "Your spot is confirmed for this tournament.",
+        waitlisted: "You'll be notified if a spot opens up.",
+        rejected:   "Your team wasn't accepted for this tournament.",
       };
       return (
         <div class={`mb-6 rounded-lg border px-5 py-4 ${statusStyles[existingReg.status]}`}>
           <div class="flex items-start justify-between gap-4 flex-wrap">
             <div>
               <p class="text-sm font-semibold text-(--color-foreground) mb-0.5">
-                Your team is registered
+                {statusTitle[existingReg.status]}
               </p>
               <p class="text-xs text-(--color-muted)">
                 {existingReg.teamName} · {existingReg.divisionName}
@@ -134,12 +140,12 @@ function formatDate(d: string | null) {
             </span>
           </div>
           <p class="text-xs text-(--color-muted) mt-2">{statusDesc[existingReg.status]}</p>
-          {tournament.registrationFee && (
+          {tournament.registrationFee && existingReg.status !== "rejected" && (
             <p class="text-xs text-(--color-muted) mt-1">
               Payment:{" "}
               {existingReg.paidAt
                 ? <span class="font-medium text-emerald-700 dark:text-emerald-400">Confirmed{existingReg.paidNote ? ` · ${existingReg.paidNote}` : ""}</span>
-                : <span class="font-medium text-amber-700 dark:text-amber-400">Awaiting payment from director</span>
+                : <span class="font-medium text-amber-700 dark:text-amber-400">Not yet recorded</span>
               }
             </p>
           )}
