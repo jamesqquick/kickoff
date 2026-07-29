@@ -46,6 +46,15 @@ export interface TeamPlayerInviteParams {
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
+/** Escape user-controlled strings before embedding in HTML email bodies. */
+function h(s: string): string {
+  return s
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
 function formatExpiry(expiresAt: number): string {
   return new Date(expiresAt).toLocaleString("en-US", {
     month: "long",
@@ -96,12 +105,12 @@ export class EmailService {
     const html = `
 <p>Your registration status has been updated.</p>
 <table>
-  <tr><td><strong>Team</strong></td><td>${teamName}</td></tr>
-  <tr><td><strong>Tournament</strong></td><td>${tournamentName}</td></tr>
-  <tr><td><strong>Division</strong></td><td>${divisionName}</td></tr>
+  <tr><td><strong>Team</strong></td><td>${h(teamName)}</td></tr>
+  <tr><td><strong>Tournament</strong></td><td>${h(tournamentName)}</td></tr>
+  <tr><td><strong>Division</strong></td><td>${h(divisionName)}</td></tr>
   <tr><td><strong>Status</strong></td><td>${statusLabel}</td></tr>
 </table>
-${directorNote ? `<p><strong>Note from director:</strong> ${directorNote}</p>` : ""}
+${directorNote ? `<p><strong>Note from director:</strong> ${h(directorNote)}</p>` : ""}
 `.trim();
 
     await this.send({ to, subject, text, html });
@@ -129,9 +138,9 @@ ${directorNote ? `<p><strong>Note from director:</strong> ${directorNote}</p>` :
     const html = `
 <p>A new team has registered for your tournament.</p>
 <table>
-  <tr><td><strong>Team</strong></td><td>${teamName}</td></tr>
-  <tr><td><strong>Tournament</strong></td><td>${tournamentName}</td></tr>
-  <tr><td><strong>Division</strong></td><td>${divisionName}</td></tr>
+  <tr><td><strong>Team</strong></td><td>${h(teamName)}</td></tr>
+  <tr><td><strong>Tournament</strong></td><td>${h(tournamentName)}</td></tr>
+  <tr><td><strong>Division</strong></td><td>${h(divisionName)}</td></tr>
 </table>
 `.trim();
 
@@ -155,8 +164,8 @@ ${directorNote ? `<p><strong>Note from director:</strong> ${directorNote}</p>` :
     ].join("\n");
 
     const html = `
-<p>You have been invited to become a manager of <strong>${tournamentName}</strong>.</p>
-<p><a href="${inviteUrl}">Accept your invite</a></p>
+<p>You have been invited to become a manager of <strong>${h(tournamentName)}</strong>.</p>
+<p><a href="${h(inviteUrl)}">Accept your invite</a></p>
 <p>This invite expires on ${expiry}.</p>
 `.trim();
 
@@ -179,7 +188,7 @@ ${directorNote ? `<p><strong>Note from director:</strong> ${directorNote}</p>` :
     ].join("\n");
 
     const html = `
-<p>Hi ${firstName},</p>
+<p>Hi ${h(firstName)},</p>
 <p>Welcome to <strong>Kickoff</strong> — your home for soccer tournament management.</p>
 <p>Get started by creating or joining a team.</p>
 `.trim();
@@ -207,7 +216,7 @@ ${directorNote ? `<p><strong>Note from director:</strong> ${directorNote}</p>` :
 
     const html = `
 <p>We received a request to reset your password.</p>
-<p><a href="${resetUrl}">Reset your password</a></p>
+<p><a href="${h(resetUrl)}">Reset your password</a></p>
 <p>This link expires on ${expiry}.</p>
 <p>If you did not request a password reset, you can ignore this email.</p>
 `.trim();
@@ -222,11 +231,9 @@ ${directorNote ? `<p><strong>Note from director:</strong> ${directorNote}</p>` :
     const { playerName, teamName } = params;
     const subject = `${playerName} joined ${teamName}`;
 
-    const text = [
-      `Good news — ${playerName} has joined your team ${teamName}.`,
-    ].join("\n");
+    const text = `Good news — ${playerName} has joined your team ${teamName}.`;
 
-    const html = `<p>Good news — <strong>${playerName}</strong> has joined your team <strong>${teamName}</strong>.</p>`;
+    const html = `<p>Good news — <strong>${h(playerName)}</strong> has joined your team <strong>${h(teamName)}</strong>.</p>`;
 
     await this.send({ to, subject, text, html });
   }
@@ -248,8 +255,8 @@ ${directorNote ? `<p><strong>Note from director:</strong> ${directorNote}</p>` :
     ].join("\n");
 
     const html = `
-<p>You have been invited to join <strong>${teamName}</strong> on Kickoff.</p>
-<p><a href="${inviteUrl}">Accept your invite</a></p>
+<p>You have been invited to join <strong>${h(teamName)}</strong> on Kickoff.</p>
+<p><a href="${h(inviteUrl)}">Accept your invite</a></p>
 <p>This invite expires on ${expiry}.</p>
 `.trim();
 

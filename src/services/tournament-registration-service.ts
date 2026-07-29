@@ -290,7 +290,7 @@ export class TournamentRegistrationService {
       const placeholders = [...recipientIds].map(() => "?").join(", ");
       const rows = await db.$client
         .prepare(`SELECT email FROM "user" WHERE id IN (${placeholders})`)
-        .bind(...[...recipientIds])
+        .bind(...recipientIds)
         .all<{ email: string }>();
 
       const emails = rows.results.map((r) => r.email).filter(Boolean);

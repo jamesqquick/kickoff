@@ -23,6 +23,7 @@
   "send_email": [
     {
       "name": "EMAIL"
+      // TODO: add "allowed_sender_addresses": ["noreply@<domain>"] once sending domain is confirmed
     }
   ]
 }
