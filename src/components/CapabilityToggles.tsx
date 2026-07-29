@@ -29,8 +29,7 @@ export function CapabilityToggles({ initialIsCoach, initialIsDirector, isAdmin, 
         toast.error(error.message ?? "Could not update capabilities. Try again.");
         return;
       }
-      // Reload so the server re-renders the nav and dashboard with the new flags.
-      window.location.reload();
+      toast.success("Capabilities updated.");
     } catch {
       toast.error("Could not update capabilities. Try again.");
     } finally {
