@@ -8,6 +8,13 @@ interface Props {
   /** URL search param name. Defaults to "q". */
   paramName?: string;
   className?: string;
+  /**
+   * Server-provided initial value. Pass Astro.url.searchParams.get(paramName)
+   * here so the server renders the input pre-populated. This eliminates the
+   * flash of an empty input that occurs when the value is read client-side
+   * only after React hydrates.
+   */
+  defaultValue?: string;
 }
 
 /**
@@ -23,13 +30,8 @@ interface Props {
  * back button takes the user to their previous page, not each intermediate
  * keystroke state.
  */
-export function SearchBar({ placeholder, paramName = "q", className }: Props) {
-  const initialValue =
-    typeof window !== "undefined"
-      ? (new URLSearchParams(window.location.search).get(paramName) ?? "")
-      : "";
-
-  const [value, setValue] = useState(initialValue);
+export function SearchBar({ placeholder, paramName = "q", className, defaultValue = "" }: Props) {
+  const [value, setValue] = useState(defaultValue);
   const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   // Track whether the user has actually typed since mount. Without this guard
   // the effect fires on the initial render and triggers a replace() back to
