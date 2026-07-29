@@ -1,0 +1,63 @@
+AGENTS.md
+  s_0dc4ee63bdc434::t_b99a0341378dca 206-255
+migrations/0020_notifications_init.sql
+  s_0dc4ee63bdc434::t_285105b6459e01 1-20
+seed/seed.sql
+  s_0dc4ee63bdc434::t_9c0f82403cb1e8 13,246-319
+src/actions/index.ts
+  s_0dc4ee63bdc434::t_920ac590ff4c19 11,26
+src/actions/notifications.ts
+  s_0dc4ee63bdc434::t_3f7275bf9f07bc 1-53
+src/components/NotificationBell.tsx
+  s_0dc4ee63bdc434::t_f98062e7ca2b84 1-167
+src/components/NotificationList.tsx
+  s_0dc4ee63bdc434::t_555ec9408452d8 1-114
+src/components/SectionCard.astro
+  s_0dc4ee63bdc434::t_800cbd5e3327f8 30,33,36
+src/components/layout/Sidebar.astro
+  s_0dc4ee63bdc434::t_ee8a5a066f460d 7,9,36-40,70-75
+src/lib/notifications.ts
+  s_0dc4ee63bdc434::t_abb5dbfdbb053c 1-52
+src/lib/schema.ts
+  s_0dc4ee63bdc434::t_1a93729a31a51e 198-215
+src/pages/forgot-password.astro
+  s_9d738d921050ea::t_94d5b49e872ddf 85
+src/pages/notifications.astro
+  s_0dc4ee63bdc434::t_374df313aab821 1-22
+src/pages/teams/[id]/index.astro
+  s_0dc4ee63bdc434::t_ea076a697826b0 153
+src/repositories/notification-repository.ts
+  s_0dc4ee63bdc434::t_345f43573c0888 1-57
+src/services/notification-service.ts
+  s_0dc4ee63bdc434::t_b08d7589225379 1-55
+src/services/team-invite-service.ts
+  s_0dc4ee63bdc434::t_2e3f9dc83c28f3 9-10,102-105,108-128
+src/services/tournament-registration-service.ts
+  s_0dc4ee63bdc434::t_202ad98ff6eddd 11-12,98,109-113,133-208
+src/styles/globals.css
+  s_0dc4ee63bdc434::t_11601d442d1f66 55-60
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "abe14b87909422d2517b31ee1d738f8222fe7e42",
+  "prompts": {},
+  "sessions": {
+    "s_0dc4ee63bdc434": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_06585b10bffesfuiaOhzj9eDEI",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "James Quick <jquick@cloudflare.com>"
+    },
+    "s_9d738d921050ea": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_06585cd20ffe5d946yP6HnBoeJ",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "James Quick <jquick@cloudflare.com>"
+    }
+  }
+}
