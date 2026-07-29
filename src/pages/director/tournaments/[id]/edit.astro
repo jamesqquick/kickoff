@@ -90,7 +90,7 @@ const allForSwitcher = allTournaments.map((t) => ({
         />
       </div>
 
-      <div class="mb-6">
+      <div class="mb-4">
         <FormField
           label="Registration Fee (USD)"
           name="registrationFee"
@@ -105,6 +105,22 @@ const allForSwitcher = allTournaments.map((t) => ({
             value={tournament.registrationFee ? (tournament.registrationFee / 100).toFixed(2) : ""}
             class="w-full h-10 px-3 rounded-md border border-(--color-border) bg-(--color-surface) text-sm text-(--color-foreground) placeholder:text-(--color-muted-fg) focus:outline-none focus:ring-2 focus:ring-(--color-primary) focus:ring-offset-1"
           />
+        </FormField>
+      </div>
+
+      <div class="mb-6">
+        <FormField
+          label="Payment Instructions"
+          name="paymentInstructions"
+          hint="Shown to coaches on the registration page. Include your payment handles, preferred memo format, and any deadline."
+        >
+          <textarea
+            name="paymentInstructions"
+            rows="3"
+            maxlength="1000"
+            placeholder="e.g. Venmo: @your-handle · Zelle: you@email.com&#10;Memo: &quot;Fall Championship — [team name]&quot;&#10;Payment due within 7 days of registration."
+            class="w-full px-3 py-2 rounded-md border border-(--color-border) bg-(--color-surface) text-sm text-(--color-foreground) placeholder:text-(--color-muted-fg) focus:outline-none focus:ring-2 focus:ring-(--color-primary) focus:ring-offset-1 resize-none"
+          >{tournament.paymentInstructions ?? ""}</textarea>
         </FormField>
       </div>
 
