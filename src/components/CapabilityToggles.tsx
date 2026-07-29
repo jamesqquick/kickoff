@@ -30,11 +30,7 @@ export function CapabilityToggles({ initialIsCoach, initialIsDirector, isAdmin, 
         return;
       }
       // Reload so the server re-renders the nav and dashboard with the new flags.
-      if (onboarding) {
-        window.location.href = "/dashboard";
-      } else {
-        window.location.reload();
-      }
+      window.location.reload();
     } catch {
       toast.error("Could not update capabilities. Try again.");
     } finally {
