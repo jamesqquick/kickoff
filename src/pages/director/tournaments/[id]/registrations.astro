@@ -59,7 +59,11 @@ const allForSwitcher = allTournaments.map((t) => ({
       {registrations.length === 0 ? (
         <p class="text-sm text-(--color-muted) text-center py-8">No teams have registered yet.</p>
       ) : (
-        <RegistrationReviewTable client:load initialRegistrations={registrations} />
+        <RegistrationReviewTable
+          client:load
+          initialRegistrations={registrations}
+          hasFee={Boolean(tournament.registrationFee)}
+        />
       )}
     </SectionCard>
   </div>

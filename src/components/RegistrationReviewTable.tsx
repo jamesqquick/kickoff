@@ -3,6 +3,7 @@ import { cn } from "@/lib/utils";
 import { FilterTabs } from "@/components/ui/FilterTabs";
 import type { FilterTab } from "@/components/ui/FilterTabs";
 import { RegistrationStatusButton } from "@/components/RegistrationStatusButton";
+import { MarkPaidButton } from "@/components/MarkPaidButton";
 import type { RegistrationWithDetails } from "@/repositories/tournament-registration-repository";
 import type { RegistrationStatus } from "@/lib/schema";
 
@@ -15,6 +16,8 @@ const STATUS_COLORS: Record<RegistrationStatus, string> = {
 
 interface Props {
   initialRegistrations: RegistrationWithDetails[];
+  /** When true, shows the Payment column with MarkPaidButton per row. */
+  hasFee: boolean;
 }
 
 type StatusFilter = "all" | RegistrationStatus;
@@ -27,7 +30,7 @@ const TABS: FilterTab<StatusFilter>[] = [
   { label: "Rejected",   value: "rejected"   },
 ];
 
-export function RegistrationReviewTable({ initialRegistrations }: Props) {
+export function RegistrationReviewTable({ initialRegistrations, hasFee }: Props) {
   const [registrations, setRegistrations] = useState<RegistrationWithDetails[]>(initialRegistrations);
   const [activeTab, setActiveTab] = useState<StatusFilter>("pending");
 
@@ -68,6 +71,9 @@ export function RegistrationReviewTable({ initialRegistrations }: Props) {
                 <th className="text-left text-xs font-semibold uppercase tracking-wider text-(--color-muted-fg) px-5 py-3">Division</th>
                 <th className="hidden sm:table-cell text-left text-xs font-semibold uppercase tracking-wider text-(--color-muted-fg) px-5 py-3">Registered</th>
                 <th className="text-left text-xs font-semibold uppercase tracking-wider text-(--color-muted-fg) px-5 py-3">Status</th>
+                {hasFee && (
+                  <th className="text-left text-xs font-semibold uppercase tracking-wider text-(--color-muted-fg) px-5 py-3">Payment</th>
+                )}
                 <th className="text-right text-xs font-semibold uppercase tracking-wider text-(--color-muted-fg) px-5 py-3">Actions</th>
               </tr>
             </thead>
@@ -87,6 +93,15 @@ export function RegistrationReviewTable({ initialRegistrations }: Props) {
                       {r.status.charAt(0).toUpperCase() + r.status.slice(1)}
                     </span>
                   </td>
+                  {hasFee && (
+                    <td className="px-5 py-3.5">
+                      <MarkPaidButton
+                        registrationId={r.id}
+                        initialPaidAt={r.paidAt ?? null}
+                        initialPaidNote={r.paidNote ?? null}
+                      />
+                    </td>
+                  )}
                   <td className="px-5 py-3.5">
                     <div className="flex items-center justify-end gap-1.5">
                       <RegistrationStatusButton
