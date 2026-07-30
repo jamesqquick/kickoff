@@ -7,6 +7,7 @@ import { makeTeamService } from "@/services/team-service";
 import { makeTournamentRegistrationService } from "@/services/tournament-registration-service";
 import type { RegistrationWithDetails } from "@/repositories/tournament-registration-repository";
 import type { RegistrationStatus } from "@/lib/schema";
+import { REGISTRATION_STATUS_COLORS, PAYMENT_STATUS_COLORS } from "@/lib/registration-display";
 
 const user = Astro.locals.user;
 if (!user || !user.isCoach) {
@@ -15,12 +16,12 @@ if (!user || !user.isCoach) {
 
 const teams = await makeTeamService().listByCoach(user.id);
 
-// Collect all registrations across all coach's teams, tagged with team info.
-const allRegs: RegistrationWithDetails[] = [];
-for (const team of teams) {
-  const regs = await makeTournamentRegistrationService().getRegistrationsForTeam(team.id);
-  allRegs.push(...regs);
-}
+// Collect all registrations across all coach's teams (fetched concurrently).
+const regService = makeTournamentRegistrationService();
+const regsPerTeam = await Promise.all(
+  teams.map((team) => regService.getRegistrationsForTeam(team.id)),
+);
+const allRegs: RegistrationWithDetails[] = regsPerTeam.flat();
 
 // Sort: pending first, then approved, then waitlisted, then rejected — within each by most recent.
 const ORDER: Record<RegistrationStatus, number> = { pending: 0, approved: 1, waitlisted: 2, rejected: 3 };
@@ -29,13 +30,6 @@ allRegs.sort((a, b) =>
     ? ORDER[a.status] - ORDER[b.status]
     : new Date(b.registeredAt).getTime() - new Date(a.registeredAt).getTime()
 );
-
-const STATUS_COLORS: Record<RegistrationStatus, string> = {
-  pending:    "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300",
-  approved:   "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300",
-  waitlisted: "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300",
-  rejected:   "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300",
-};
 
 function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
@@ -67,6 +61,7 @@ function formatDate(iso: string) {
                 <th class="text-left text-xs font-semibold uppercase tracking-wider text-(--color-muted-fg) px-6 py-3">Division</th>
                 <th class="hidden sm:table-cell text-left text-xs font-semibold uppercase tracking-wider text-(--color-muted-fg) px-6 py-3">Registered</th>
                 <th class="text-left text-xs font-semibold uppercase tracking-wider text-(--color-muted-fg) px-6 py-3">Status</th>
+                <th class="text-left text-xs font-semibold uppercase tracking-wider text-(--color-muted-fg) px-6 py-3">Payment</th>
               </tr>
             </thead>
             <tbody>
@@ -81,9 +76,22 @@ function formatDate(iso: string) {
                   <td class="px-6 py-3.5 text-(--color-muted)">{r.divisionName}</td>
                   <td class="hidden sm:table-cell px-6 py-3.5 text-(--color-muted)">{formatDate(r.registeredAt)}</td>
                   <td class="px-6 py-3.5">
-                    <span class={cn("inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium", STATUS_COLORS[r.status])}>
+                    <span class={cn("inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium", REGISTRATION_STATUS_COLORS[r.status])}>
                       {r.status.charAt(0).toUpperCase() + r.status.slice(1)}
                     </span>
+                  </td>
+                  <td class="px-6 py-3.5">
+                    {r.registrationFee === null ? (
+                      <span class="text-xs text-(--color-muted)">—</span>
+                    ) : r.paidAt ? (
+                      <span class={cn("inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium", PAYMENT_STATUS_COLORS.paid)}>
+                        Paid
+                      </span>
+                    ) : (
+                      <span class={cn("inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium", PAYMENT_STATUS_COLORS.unpaid)}>
+                        Unpaid
+                      </span>
+                    )}
                   </td>
                 </tr>
               ))}

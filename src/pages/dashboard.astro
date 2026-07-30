@@ -11,7 +11,7 @@ import { makeTournamentService } from "@/services/tournament-service";
 import { makeTournamentRegistrationService } from "@/services/tournament-registration-service";
 import TeamCrest from "@/components/TeamCrest.astro";
 import { teamColorGradient, getTournamentStatus } from "@/lib/utils";
-import type { RegistrationStatus } from "@/lib/schema";
+import { REGISTRATION_STATUS_COLORS, PAYMENT_STATUS_COLORS } from "@/lib/registration-display";
 
 const user = Astro.locals.user;
 if (!user) return Astro.redirect("/signin");
@@ -29,11 +29,12 @@ let pendingRegistrations: Awaited<ReturnType<typeof makeTournamentRegistrationSe
 
 if (isCoach && !isAdmin) {
   myTeams = await makeTeamService().listByCoach(user.id);
-  // Aggregate registrations across all owned teams
-  for (const team of myTeams) {
-    const regs = await makeTournamentRegistrationService().getRegistrationsForTeam(team.id);
-    myRegistrations = [...myRegistrations, ...regs];
-  }
+  // Aggregate registrations across all owned teams (fetched concurrently).
+  const regService = makeTournamentRegistrationService();
+  const regsPerTeam = await Promise.all(
+    myTeams.map((team) => regService.getRegistrationsForTeam(team.id)),
+  );
+  myRegistrations = regsPerTeam.flat();
 }
 
 if (isDirector && !isAdmin) {
@@ -156,53 +157,55 @@ if (isAdmin) {
               <a href="/tournaments" class={cn(buttonVariants({ variant: "default" }))}>Browse tournaments</a>
             </SectionCard>
           </>
-        ) : (() => {
-          const STATUS_COLORS: Record<RegistrationStatus, string> = {
-            pending:    "bg-amber-100 text-amber-800",
-            approved:   "bg-emerald-100 text-emerald-800",
-            waitlisted: "bg-blue-100 text-blue-800",
-            rejected:   "bg-red-100 text-red-800",
-          };
-          return (
-            <SectionCard title="My Registrations">
-              <div slot="header-action">
-                <a href="/registrations" class="text-sm text-(--color-primary) hover:underline">View all →</a>
-              </div>
-              <table class="w-full">
-                <thead>
-                  <tr class="border-b border-(--color-border)">
-                    <th class="text-left text-xs font-semibold uppercase tracking-wider text-(--color-muted-fg) px-5 py-3">Tournament</th>
-                    <th class="hidden sm:table-cell text-left text-xs font-semibold uppercase tracking-wider text-(--color-muted-fg) px-5 py-3">Team · Division</th>
-                    <th class="text-left text-xs font-semibold uppercase tracking-wider text-(--color-muted-fg) px-5 py-3">Status</th>
+        ) : (
+          <SectionCard title="My Registrations">
+            <div slot="header-action">
+              <a href="/registrations" class="text-sm text-(--color-primary) hover:underline">View all →</a>
+            </div>
+            <table class="w-full">
+              <thead>
+                <tr class="border-b border-(--color-border)">
+                  <th class="text-left text-xs font-semibold uppercase tracking-wider text-(--color-muted-fg) px-5 py-3">Tournament</th>
+                  <th class="hidden sm:table-cell text-left text-xs font-semibold uppercase tracking-wider text-(--color-muted-fg) px-5 py-3">Team · Division</th>
+                  <th class="text-left text-xs font-semibold uppercase tracking-wider text-(--color-muted-fg) px-5 py-3">Status</th>
+                  <th class="text-left text-xs font-semibold uppercase tracking-wider text-(--color-muted-fg) px-5 py-3">Payment</th>
+                </tr>
+              </thead>
+              <tbody>
+                {myRegistrations.slice(0, 5).map((reg) => (
+                  <tr
+                    class="border-b border-(--color-border-soft) last:border-0 hover:bg-(--color-background) transition-colors cursor-pointer"
+                    onclick={`window.location.href='/registrations/${reg.id}'`}
+                  >
+                    <td class="px-5 py-3.5 font-medium text-sm text-(--color-foreground)">{reg.tournamentName}</td>
+                    <td class="hidden sm:table-cell px-5 py-3.5 text-sm text-(--color-muted)">{reg.teamName} · {reg.divisionName}</td>
+                    <td class="px-5 py-3.5">
+                      <span class={cn("inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium", REGISTRATION_STATUS_COLORS[reg.status])}>
+                        {reg.status.charAt(0).toUpperCase() + reg.status.slice(1)}
+                      </span>
+                    </td>
+                    <td class="px-5 py-3.5">
+                      {reg.registrationFee === null ? (
+                        <span class="text-xs text-(--color-muted)">—</span>
+                      ) : reg.paidAt ? (
+                        <span class={cn("inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium", PAYMENT_STATUS_COLORS.paid)}>Paid</span>
+                      ) : (
+                        <span class={cn("inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium", PAYMENT_STATUS_COLORS.unpaid)}>Unpaid</span>
+                      )}
+                    </td>
                   </tr>
-                </thead>
-                <tbody>
-                  {myRegistrations.slice(0, 5).map((reg) => (
-                    <tr
-                      class="border-b border-(--color-border-soft) last:border-0 hover:bg-(--color-background) transition-colors cursor-pointer"
-                      onclick={`window.location.href='/registrations/${reg.id}'`}
-                    >
-                      <td class="px-5 py-3.5 font-medium text-sm text-(--color-foreground)">{reg.tournamentName}</td>
-                      <td class="hidden sm:table-cell px-5 py-3.5 text-sm text-(--color-muted)">{reg.teamName} · {reg.divisionName}</td>
-                      <td class="px-5 py-3.5">
-                        <span class={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${STATUS_COLORS[reg.status]}`}>
-                          {reg.status.charAt(0).toUpperCase() + reg.status.slice(1)}
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-              {myRegistrations.length > 5 && (
-                <div class="px-5 py-3 border-t border-(--color-border)">
-                  <a href="/registrations" class="text-sm text-(--color-primary) hover:underline">
-                    View all {myRegistrations.length} registrations →
-                  </a>
-                </div>
-              )}
-            </SectionCard>
-          );
-        })()}
+                ))}
+              </tbody>
+            </table>
+            {myRegistrations.length > 5 && (
+              <div class="px-5 py-3 border-t border-(--color-border)">
+                <a href="/registrations" class="text-sm text-(--color-primary) hover:underline">
+                  View all {myRegistrations.length} registrations →
+                </a>
+              </div>
+            )}
+          </SectionCard>
+        )}
       </div>
     )}
 
