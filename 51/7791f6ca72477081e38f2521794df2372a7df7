@@ -1,0 +1,19 @@
+src/repositories/tournament-registration-repository.ts
+  s_7cdd660f5e7aef::t_e78e830af68635 13-14,18-41,45-48,52-56,65,77,83
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "517791f6ca72477081e38f2521794df2372a7df7",
+  "prompts": {},
+  "sessions": {
+    "s_7cdd660f5e7aef": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_050a58649ffe8uu6e5ULWhbGAl",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "James Quick <jquick@cloudflare.com>"
+    }
+  }
+}
