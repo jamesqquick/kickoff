@@ -10,69 +10,59 @@ export interface RegistrationWithDetails extends TournamentRegistration {
   divisionName: string;
   /** Present on all listByTeam results; null on listByTournament (tournament is already known). */
   tournamentName: string | null;
+  /** Tournament fee in cents; null = no fee. Lets list views show payment state without a second fetch. */
+  registrationFee: number | null;
   // paidAt and paidNote are inherited from TournamentRegistration via schema inference.
-  // Explicitly listed here for documentation clarity.
 }
+
+/**
+ * Shared column projection for every "with details" query. Kept in one place so
+ * the joined shape stays consistent across list/find methods.
+ */
+const REGISTRATION_DETAIL_COLUMNS = {
+  id: tournamentRegistrations.id,
+  teamId: tournamentRegistrations.teamId,
+  divisionId: tournamentRegistrations.divisionId,
+  tournamentId: tournamentRegistrations.tournamentId,
+  status: tournamentRegistrations.status,
+  registeredAt: tournamentRegistrations.registeredAt,
+  notes: tournamentRegistrations.notes,
+  paidAt: tournamentRegistrations.paidAt,
+  paidNote: tournamentRegistrations.paidNote,
+  createdAt: tournamentRegistrations.createdAt,
+  updatedAt: tournamentRegistrations.updatedAt,
+  teamName: teams.name,
+  teamColor: teams.color,
+  teamShortName: teams.shortName,
+  divisionName: divisions.name,
+  tournamentName: tournaments.name,
+  registrationFee: tournaments.registrationFee,
+} as const;
 
 export class TournamentRegistrationRepository {
   constructor(private readonly db: AppDatabase) {}
 
-  async listByTournament(tournamentId: string): Promise<RegistrationWithDetails[]> {
-    const rows = await this.db
-      .select({
-        id: tournamentRegistrations.id,
-        teamId: tournamentRegistrations.teamId,
-        divisionId: tournamentRegistrations.divisionId,
-        tournamentId: tournamentRegistrations.tournamentId,
-        status: tournamentRegistrations.status,
-        registeredAt: tournamentRegistrations.registeredAt,
-        notes: tournamentRegistrations.notes,
-        paidAt: tournamentRegistrations.paidAt,
-        paidNote: tournamentRegistrations.paidNote,
-        createdAt: tournamentRegistrations.createdAt,
-        updatedAt: tournamentRegistrations.updatedAt,
-        teamName: teams.name,
-        teamColor: teams.color,
-        teamShortName: teams.shortName,
-        divisionName: divisions.name,
-        tournamentName: tournaments.name,
-      })
+  /** Base SELECT + joins shared by every "with details" query. Callers append `.where(...)`. */
+  private detailsQuery() {
+    return this.db
+      .select(REGISTRATION_DETAIL_COLUMNS)
       .from(tournamentRegistrations)
       .innerJoin(teams, eq(tournamentRegistrations.teamId, teams.id))
       .innerJoin(divisions, eq(tournamentRegistrations.divisionId, divisions.id))
-      .innerJoin(tournaments, eq(tournamentRegistrations.tournamentId, tournaments.id))
+      .innerJoin(tournaments, eq(tournamentRegistrations.tournamentId, tournaments.id));
+  }
+
+  async listByTournament(tournamentId: string): Promise<RegistrationWithDetails[]> {
+    return this.detailsQuery()
       .where(eq(tournamentRegistrations.tournamentId, tournamentId))
       .all();
-    return rows;
   }
 
   async listByTournamentAndStatus(
     tournamentId: string,
     status: RegistrationStatus,
   ): Promise<RegistrationWithDetails[]> {
-    const rows = await this.db
-      .select({
-        id: tournamentRegistrations.id,
-        teamId: tournamentRegistrations.teamId,
-        divisionId: tournamentRegistrations.divisionId,
-        tournamentId: tournamentRegistrations.tournamentId,
-        status: tournamentRegistrations.status,
-        registeredAt: tournamentRegistrations.registeredAt,
-        notes: tournamentRegistrations.notes,
-        paidAt: tournamentRegistrations.paidAt,
-        paidNote: tournamentRegistrations.paidNote,
-        createdAt: tournamentRegistrations.createdAt,
-        updatedAt: tournamentRegistrations.updatedAt,
-        teamName: teams.name,
-        teamColor: teams.color,
-        teamShortName: teams.shortName,
-        divisionName: divisions.name,
-        tournamentName: tournaments.name,
-      })
-      .from(tournamentRegistrations)
-      .innerJoin(teams, eq(tournamentRegistrations.teamId, teams.id))
-      .innerJoin(divisions, eq(tournamentRegistrations.divisionId, divisions.id))
-      .innerJoin(tournaments, eq(tournamentRegistrations.tournamentId, tournaments.id))
+    return this.detailsQuery()
       .where(
         and(
           eq(tournamentRegistrations.tournamentId, tournamentId),
@@ -80,63 +70,17 @@ export class TournamentRegistrationRepository {
         ),
       )
       .all();
-    return rows;
   }
 
   /** Returns all registrations for a team, joined with tournament and division names. */
   async listByTeam(teamId: string): Promise<RegistrationWithDetails[]> {
-    const rows = await this.db
-      .select({
-        id: tournamentRegistrations.id,
-        teamId: tournamentRegistrations.teamId,
-        divisionId: tournamentRegistrations.divisionId,
-        tournamentId: tournamentRegistrations.tournamentId,
-        status: tournamentRegistrations.status,
-        registeredAt: tournamentRegistrations.registeredAt,
-        notes: tournamentRegistrations.notes,
-        paidAt: tournamentRegistrations.paidAt,
-        paidNote: tournamentRegistrations.paidNote,
-        createdAt: tournamentRegistrations.createdAt,
-        updatedAt: tournamentRegistrations.updatedAt,
-        teamName: teams.name,
-        teamColor: teams.color,
-        teamShortName: teams.shortName,
-        divisionName: divisions.name,
-        tournamentName: tournaments.name,
-      })
-      .from(tournamentRegistrations)
-      .innerJoin(teams, eq(tournamentRegistrations.teamId, teams.id))
-      .innerJoin(divisions, eq(tournamentRegistrations.divisionId, divisions.id))
-      .innerJoin(tournaments, eq(tournamentRegistrations.tournamentId, tournaments.id))
+    return this.detailsQuery()
       .where(eq(tournamentRegistrations.teamId, teamId))
       .all();
-    return rows;
   }
 
   async findByIdWithDetails(id: string): Promise<RegistrationWithDetails | undefined> {
-    const results = await this.db
-      .select({
-        id: tournamentRegistrations.id,
-        teamId: tournamentRegistrations.teamId,
-        divisionId: tournamentRegistrations.divisionId,
-        tournamentId: tournamentRegistrations.tournamentId,
-        status: tournamentRegistrations.status,
-        registeredAt: tournamentRegistrations.registeredAt,
-        notes: tournamentRegistrations.notes,
-        paidAt: tournamentRegistrations.paidAt,
-        paidNote: tournamentRegistrations.paidNote,
-        createdAt: tournamentRegistrations.createdAt,
-        updatedAt: tournamentRegistrations.updatedAt,
-        teamName: teams.name,
-        teamColor: teams.color,
-        teamShortName: teams.shortName,
-        divisionName: divisions.name,
-        tournamentName: tournaments.name,
-      })
-      .from(tournamentRegistrations)
-      .innerJoin(teams, eq(tournamentRegistrations.teamId, teams.id))
-      .innerJoin(divisions, eq(tournamentRegistrations.divisionId, divisions.id))
-      .innerJoin(tournaments, eq(tournamentRegistrations.tournamentId, tournaments.id))
+    const results = await this.detailsQuery()
       .where(eq(tournamentRegistrations.id, id))
       .limit(1);
     return results[0];

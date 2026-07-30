@@ -22,10 +22,9 @@ interface Props {
   divisions: DivisionWithCount[];
   coachTeams: { id: string; name: string }[];
   registeredTeamIds: string[];
-  registrationFee: number | null; // cents, nullable = free
 }
 
-export function RegisterForTournamentForm({ tournamentId, divisions, coachTeams, registeredTeamIds, registrationFee }: Props) {
+export function RegisterForTournamentForm({ tournamentId, divisions, coachTeams, registeredTeamIds }: Props) {
   const registeredSet = new Set(registeredTeamIds);
   const firstEligible = coachTeams.find((t) => !registeredSet.has(t.id));
   const [selectedTeamId, setSelectedTeamId] = useState(firstEligible?.id ?? "");

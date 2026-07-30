@@ -37,6 +37,26 @@ export class TournamentRegistrationService {
     return registration;
   }
 
+  /**
+   * Coach-scoped registration read. The caller must own the team on the
+   * registration (admins bypass). Used by the coach-facing detail page.
+   */
+  async getRegistrationDetailsForCoach(
+    registrationId: string,
+    currentUser: AppUser,
+  ): Promise<RegistrationWithDetails> {
+    const registration = await this.registrationsRepo.findByIdWithDetails(registrationId);
+    if (!registration) throw new NotFoundError("Registration", registrationId);
+
+    const team = await this.teamsRepo.findById(registration.teamId);
+    if (!team) throw new NotFoundError("Team", registration.teamId);
+    if (team.coachId !== currentUser.id && !isAdmin(currentUser)) {
+      throw new ForbiddenError("view this registration");
+    }
+
+    return registration;
+  }
+
   async getRegistrationsForTournament(tournamentId: string): Promise<RegistrationWithDetails[]> {
     return this.registrationsRepo.listByTournament(tournamentId);
   }
@@ -50,12 +70,10 @@ export class TournamentRegistrationService {
     const tournaments = await this.tournamentsRepo.listForDirector(userId);
     if (tournaments.length === 0) return [];
 
-    const allPending: RegistrationWithDetails[] = [];
-    for (const t of tournaments) {
-      const regs = await this.registrationsRepo.listByTournamentAndStatus(t.id, "pending");
-      allPending.push(...regs);
-    }
-    return allPending;
+    const pendingPerTournament = await Promise.all(
+      tournaments.map((t) => this.registrationsRepo.listByTournamentAndStatus(t.id, "pending")),
+    );
+    return pendingPerTournament.flat();
   }
 
   async registerTeam(

@@ -122,7 +122,6 @@ function formatDate(d: string | null) {
         divisions={divisionCounts}
         coachTeams={coachTeams.map((t) => ({ id: t.id, name: t.name }))}
         registeredTeamIds={[...registeredTeamIds]}
-        registrationFee={tournament.registrationFee ?? null}
       />
     </SectionCard>
 

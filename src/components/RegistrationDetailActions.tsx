@@ -8,19 +8,13 @@ import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import type { RegistrationStatus } from "@/lib/schema";
+import { REGISTRATION_STATUS_COLORS, PAYMENT_STATUS_COLORS } from "@/lib/registration-display";
 
 const STATUS_LABELS: Record<RegistrationStatus, string> = {
   pending:    "Pending review",
   approved:   "Approved",
   waitlisted: "Waitlisted",
   rejected:   "Not accepted",
-};
-
-const STATUS_COLORS: Record<RegistrationStatus, string> = {
-  pending:    "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300",
-  approved:   "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300",
-  waitlisted: "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300",
-  rejected:   "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300",
 };
 
 function formatPaidDate(epochMs: number): string {
@@ -90,7 +84,7 @@ export function RegistrationDetailActions({
         <p className="text-xs font-semibold uppercase tracking-wider text-(--color-muted) mb-3">
           Registration Status
         </p>
-        <span className={cn("inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold mb-3", STATUS_COLORS[status])}>
+        <span className={cn("inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold mb-3", REGISTRATION_STATUS_COLORS[status])}>
           {STATUS_LABELS[status]}
         </span>
         <div className="flex flex-wrap gap-2">
@@ -114,9 +108,7 @@ export function RegistrationDetailActions({
             {/* Current payment status */}
             <span className={cn(
               "inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold mb-3",
-              paidAt
-                ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300"
-                : "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300",
+              paidAt ? PAYMENT_STATUS_COLORS.paid : PAYMENT_STATUS_COLORS.unpaid,
             )}>
               {paidAt ? `Paid ${formatPaidDate(paidAt)}` : "Unpaid"}
             </span>

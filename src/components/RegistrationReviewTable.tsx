@@ -4,13 +4,7 @@ import { FilterTabs } from "@/components/ui/FilterTabs";
 import type { FilterTab } from "@/components/ui/FilterTabs";
 import type { RegistrationWithDetails } from "@/repositories/tournament-registration-repository";
 import type { RegistrationStatus } from "@/lib/schema";
-
-const STATUS_COLORS: Record<RegistrationStatus, string> = {
-  pending:    "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300",
-  approved:   "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300",
-  waitlisted: "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300",
-  rejected:   "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300",
-};
+import { REGISTRATION_STATUS_COLORS } from "@/lib/registration-display";
 
 interface Props {
   initialRegistrations: RegistrationWithDetails[];
@@ -92,7 +86,7 @@ export function RegistrationReviewTable({ initialRegistrations, tournamentId, ha
                     })}
                   </td>
                   <td className="px-5 py-3.5">
-                    <span className={cn("inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium", STATUS_COLORS[r.status])}>
+                    <span className={cn("inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium", REGISTRATION_STATUS_COLORS[r.status])}>
                       {r.status.charAt(0).toUpperCase() + r.status.slice(1)}
                     </span>
                   </td>
