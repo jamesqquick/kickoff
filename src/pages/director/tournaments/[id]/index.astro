@@ -31,11 +31,18 @@ try {
 }
 
 import { getTournamentStatus as gts } from "@/lib/utils";
+import { PAYMENT_STATUS_COLORS } from "@/lib/registration-display";
 
 const status = getTournamentStatus(tournament);
 const pendingCount  = registrations.filter((r) => r.status === "pending").length;
 const approvedCount = registrations.filter((r) => r.status === "approved").length;
 const waitlistCount = registrations.filter((r) => r.status === "waitlisted").length;
+
+const hasFee = Boolean(tournament.registrationFee);
+// Payment stats: exclude rejected teams — they don't owe anything.
+const nonRejected   = hasFee ? registrations.filter((r) => r.status !== "rejected") : [];
+const paidCount     = nonRejected.filter((r) => r.paidAt !== null).length;
+const unpaidRegs    = nonRejected.filter((r) => r.paidAt === null);
 
 const allForSwitcher = allTournaments.map((t) => ({
   id: t.id,
@@ -80,11 +87,20 @@ const allForSwitcher = allTournaments.map((t) => ({
       <StatCard icon="👥" value={String(registrations.length)} label="Registrations" />
       <StatCard icon="✅" value={String(approvedCount)} label="Approved" color="text-emerald-600" />
       <StatCard icon="⏳" value={String(pendingCount)} label="Pending" color={pendingCount > 0 ? "text-amber-600" : undefined} />
-      <StatCard icon="🏷️" value={String(divisions.length)} label="Divisions" />
+      {hasFee ? (
+        <StatCard
+          icon="💰"
+          value={`${paidCount} / ${nonRejected.length}`}
+          label="Paid"
+          color={unpaidRegs.length > 0 ? "text-amber-600" : "text-emerald-600"}
+        />
+      ) : (
+        <StatCard icon="🏷️" value={String(divisions.length)} label="Divisions" />
+      )}
     </div>
 
     <!-- Quick-action cards -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
       <a href={`/director/tournaments/${id}/registrations`} class="flex items-center gap-4 p-5 rounded-xl border border-(--color-border) bg-(--color-card) hover:bg-(--color-border-soft) transition-colors group cursor-pointer">
         <div class="w-10 h-10 rounded-[10px] bg-(--color-primary-subtle) flex items-center justify-center text-lg shrink-0">📋</div>
         <div class="min-w-0">
@@ -109,5 +125,57 @@ const allForSwitcher = allTournaments.map((t) => ({
         </div>
       </a>
     </div>
+
+    {/* Payment status — only for fee tournaments */}
+    {hasFee && (
+      <div class="space-y-4">
+        <h2 class="font-display text-lg font-semibold text-(--color-foreground)">
+          Payment Status
+        </h2>
+
+        {unpaidRegs.length === 0 ? (
+          <div class="rounded-xl border border-(--color-border) bg-(--color-card) px-5 py-4">
+            <p class="text-sm text-emerald-700 dark:text-emerald-400 font-medium">
+              All teams paid — nothing outstanding.
+            </p>
+          </div>
+        ) : (
+          <div class="rounded-xl border border-(--color-border) bg-(--color-card) overflow-hidden">
+            <div class="px-5 py-3 border-b border-(--color-border) flex items-center justify-between">
+              <p class="text-sm font-medium text-(--color-foreground)">
+                {unpaidRegs.length} unpaid team{unpaidRegs.length !== 1 ? "s" : ""}
+              </p>
+              <a
+                href={`/director/tournaments/${id}/registrations`}
+                class="text-xs text-(--color-primary) hover:underline"
+              >
+                View all registrations →
+              </a>
+            </div>
+            <ul>
+              {unpaidRegs.map((reg) => (
+                <li class="flex items-center justify-between px-5 py-3 border-b border-(--color-border-soft) last:border-0">
+                  <div class="min-w-0">
+                    <p class="text-sm font-medium text-(--color-foreground) truncate">{reg.teamName}</p>
+                    <p class="text-xs text-(--color-muted)">{reg.divisionName}</p>
+                  </div>
+                  <div class="flex items-center gap-3 shrink-0 ml-3">
+                    <span class={cn("inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium", PAYMENT_STATUS_COLORS.unpaid)}>
+                      Unpaid
+                    </span>
+                    <a
+                      href={`/director/tournaments/${id}/registrations/${reg.id}`}
+                      class="text-xs text-(--color-primary) hover:underline"
+                    >
+                      Mark paid →
+                    </a>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+      </div>
+    )}
   </div>
 </AppLayout>

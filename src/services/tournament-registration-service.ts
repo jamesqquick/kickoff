@@ -76,6 +76,25 @@ export class TournamentRegistrationService {
     return pendingPerTournament.flat();
   }
 
+  /**
+   * Returns all registrations that have an outstanding payment: the tournament
+   * has a fee, the registration isn't rejected, and payment hasn't been recorded.
+   * Fetched concurrently across all tournaments the director owns or manages.
+   */
+  async getUnpaidRegistrationsForDirector(userId: string): Promise<RegistrationWithDetails[]> {
+    const tournaments = await this.tournamentsRepo.listForDirector(userId);
+    // Only query tournaments that actually have a fee — no point fetching others.
+    const feeTorunaments = tournaments.filter((t) => t.registrationFee !== null);
+    if (feeTorunaments.length === 0) return [];
+
+    const regsPerTournament = await Promise.all(
+      feeTorunaments.map((t) => this.registrationsRepo.listByTournament(t.id)),
+    );
+    return regsPerTournament
+      .flat()
+      .filter((r) => r.paidAt === null && r.status !== "rejected");
+  }
+
   async registerTeam(
     teamId: string,
     divisionId: string,

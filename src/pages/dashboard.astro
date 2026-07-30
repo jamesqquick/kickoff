@@ -26,6 +26,7 @@ let myTeams: Awaited<ReturnType<typeof makeTeamService>["listByCoach"]> = [];
 let myTournaments: Awaited<ReturnType<typeof makeTournamentService>["listForDirector"]> = [];
 let myRegistrations: import("@/repositories/tournament-registration-repository").RegistrationWithDetails[] = [];
 let pendingRegistrations: Awaited<ReturnType<typeof makeTournamentRegistrationService>["getPendingRegistrationsForDirector"]> = [];
+let unpaidRegistrations: Awaited<ReturnType<typeof makeTournamentRegistrationService>["getUnpaidRegistrationsForDirector"]> = [];
 
 if (isCoach && !isAdmin) {
   myTeams = await makeTeamService().listByCoach(user.id);
@@ -38,8 +39,12 @@ if (isCoach && !isAdmin) {
 }
 
 if (isDirector && !isAdmin) {
-  myTournaments = await makeTournamentService().listForDirector(user.id);
-  pendingRegistrations = await makeTournamentRegistrationService().getPendingRegistrationsForDirector(user.id);
+  const regService = makeTournamentRegistrationService();
+  [myTournaments, pendingRegistrations, unpaidRegistrations] = await Promise.all([
+    makeTournamentService().listForDirector(user.id),
+    regService.getPendingRegistrationsForDirector(user.id),
+    regService.getUnpaidRegistrationsForDirector(user.id),
+  ]);
 }
 
 // Admin stats
@@ -286,27 +291,59 @@ if (isAdmin) {
         )}
 
         {pendingRegistrations.length > 0 && (
-          <>
-            <h2 class="font-display text-lg font-semibold text-(--color-foreground)">Pending Registrations</h2>
-            <SectionCard>
-              <ul>
-                {pendingRegistrations.slice(0, 5).map((reg) => (
-                  <li class="flex items-center justify-between px-5 py-3 border-b border-(--color-border-soft) last:border-0">
-                    <div class="min-w-0">
-                      <p class="text-sm font-medium text-(--color-foreground) truncate">{reg.teamName}</p>
-                      <p class="text-xs text-(--color-muted)">{reg.divisionName}</p>
-                    </div>
-                    <a
-                      href={`/director/tournaments/${reg.tournamentId}/registrations`}
-                      class="text-xs text-(--color-primary) hover:underline cursor-pointer shrink-0 ml-3"
-                    >
-                      Review →
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </SectionCard>
-          </>
+          <SectionCard title="Pending Registrations">
+            <ul>
+              {pendingRegistrations.slice(0, 5).map((reg) => (
+                <li class="flex items-center justify-between px-5 py-3 border-b border-(--color-border-soft) last:border-0">
+                  <div class="min-w-0">
+                    <p class="text-sm font-medium text-(--color-foreground) truncate">{reg.teamName}</p>
+                    <p class="text-xs text-(--color-muted)">{reg.tournamentName} · {reg.divisionName}</p>
+                  </div>
+                  <a
+                    href={`/director/tournaments/${reg.tournamentId}/registrations/${reg.id}`}
+                    class="text-xs text-(--color-primary) hover:underline shrink-0 ml-3"
+                  >
+                    Review →
+                  </a>
+                </li>
+              ))}
+            </ul>
+            {pendingRegistrations.length > 5 && (
+              <div class="px-5 py-3 border-t border-(--color-border)">
+                <p class="text-xs text-(--color-muted)">
+                  +{pendingRegistrations.length - 5} more — check each tournament's registrations page.
+                </p>
+              </div>
+            )}
+          </SectionCard>
+        )}
+
+        {unpaidRegistrations.length > 0 && (
+          <SectionCard title="Unpaid Payments">
+            <ul>
+              {unpaidRegistrations.slice(0, 5).map((reg) => (
+                <li class="flex items-center justify-between px-5 py-3 border-b border-(--color-border-soft) last:border-0">
+                  <div class="min-w-0">
+                    <p class="text-sm font-medium text-(--color-foreground) truncate">{reg.teamName}</p>
+                    <p class="text-xs text-(--color-muted)">{reg.tournamentName} · {reg.divisionName}</p>
+                  </div>
+                  <a
+                    href={`/director/tournaments/${reg.tournamentId}/registrations/${reg.id}`}
+                    class="text-xs text-(--color-primary) hover:underline shrink-0 ml-3"
+                  >
+                    Mark paid →
+                  </a>
+                </li>
+              ))}
+            </ul>
+            {unpaidRegistrations.length > 5 && (
+              <div class="px-5 py-3 border-t border-(--color-border)">
+                <p class="text-xs text-(--color-muted)">
+                  +{unpaidRegistrations.length - 5} more — check each tournament's registrations page.
+                </p>
+              </div>
+            )}
+          </SectionCard>
         )}
       </div>
     )}
