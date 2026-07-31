@@ -8,6 +8,8 @@ export const NOTIFICATION_TYPES = {
   NEW_REGISTRATION_SUBMITTED: "new_registration_submitted",
   /** A player joined a team the user coaches via the invite link. */
   PLAYER_JOINED_TEAM: "player_joined_team",
+  /** A director marked a team's registration payment as received. */
+  REGISTRATION_MARKED_PAID: "registration_marked_paid",
 } as const;
 
 export type NotificationType = (typeof NOTIFICATION_TYPES)[keyof typeof NOTIFICATION_TYPES];
@@ -19,6 +21,7 @@ export const NOTIFICATION_TYPE_LABELS: Record<string, string> = {
   [NOTIFICATION_TYPES.REGISTRATION_STATUS_CHANGED]: "Registration",
   [NOTIFICATION_TYPES.NEW_REGISTRATION_SUBMITTED]: "Registration",
   [NOTIFICATION_TYPES.PLAYER_JOINED_TEAM]: "Team",
+  [NOTIFICATION_TYPES.REGISTRATION_MARKED_PAID]: "Payment",
 };
 
 /**

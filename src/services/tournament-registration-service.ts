@@ -19,6 +19,44 @@ export class TournamentRegistrationService {
     private readonly teamsRepo: TeamRepository,
   ) {}
 
+  async getRegistrationDetails(
+    registrationId: string,
+    currentUser: AppUser,
+  ): Promise<RegistrationWithDetails> {
+    const registration = await this.registrationsRepo.findByIdWithDetails(registrationId);
+    if (!registration) throw new NotFoundError("Registration", registrationId);
+
+    const ownerOrManager = await this.tournamentsRepo.isOwnerOrManager(
+      registration.tournamentId,
+      currentUser.id,
+    );
+    if (!canManageTournament(currentUser, ownerOrManager)) {
+      throw new ForbiddenError("view registrations for this tournament");
+    }
+
+    return registration;
+  }
+
+  /**
+   * Coach-scoped registration read. The caller must own the team on the
+   * registration (admins bypass). Used by the coach-facing detail page.
+   */
+  async getRegistrationDetailsForCoach(
+    registrationId: string,
+    currentUser: AppUser,
+  ): Promise<RegistrationWithDetails> {
+    const registration = await this.registrationsRepo.findByIdWithDetails(registrationId);
+    if (!registration) throw new NotFoundError("Registration", registrationId);
+
+    const team = await this.teamsRepo.findById(registration.teamId);
+    if (!team) throw new NotFoundError("Team", registration.teamId);
+    if (team.coachId !== currentUser.id && !isAdmin(currentUser)) {
+      throw new ForbiddenError("view this registration");
+    }
+
+    return registration;
+  }
+
   async getRegistrationsForTournament(tournamentId: string): Promise<RegistrationWithDetails[]> {
     return this.registrationsRepo.listByTournament(tournamentId);
   }
@@ -32,12 +70,29 @@ export class TournamentRegistrationService {
     const tournaments = await this.tournamentsRepo.listForDirector(userId);
     if (tournaments.length === 0) return [];
 
-    const allPending: RegistrationWithDetails[] = [];
-    for (const t of tournaments) {
-      const regs = await this.registrationsRepo.listByTournamentAndStatus(t.id, "pending");
-      allPending.push(...regs);
-    }
-    return allPending;
+    const pendingPerTournament = await Promise.all(
+      tournaments.map((t) => this.registrationsRepo.listByTournamentAndStatus(t.id, "pending")),
+    );
+    return pendingPerTournament.flat();
+  }
+
+  /**
+   * Returns all registrations that have an outstanding payment: the tournament
+   * has a fee, the registration isn't rejected, and payment hasn't been recorded.
+   * Fetched concurrently across all tournaments the director owns or manages.
+   */
+  async getUnpaidRegistrationsForDirector(userId: string): Promise<RegistrationWithDetails[]> {
+    const tournaments = await this.tournamentsRepo.listForDirector(userId);
+    // Only query tournaments that actually have a fee — no point fetching others.
+    const feeTorunaments = tournaments.filter((t) => t.registrationFee !== null);
+    if (feeTorunaments.length === 0) return [];
+
+    const regsPerTournament = await Promise.all(
+      feeTorunaments.map((t) => this.registrationsRepo.listByTournament(t.id)),
+    );
+    return regsPerTournament
+      .flat()
+      .filter((r) => r.paidAt === null && r.status !== "rejected");
   }
 
   async registerTeam(
@@ -138,6 +193,51 @@ export class TournamentRegistrationService {
     return updated;
   }
 
+  async markRegistrationPaid(
+    registrationId: string,
+    note: string | undefined,
+    currentUser: AppUser,
+  ): Promise<TournamentRegistration> {
+    const registration = await this.registrationsRepo.findById(registrationId);
+    if (!registration) throw new NotFoundError("Registration", registrationId);
+
+    const ownerOrManager = await this.tournamentsRepo.isOwnerOrManager(
+      registration.tournamentId,
+      currentUser.id,
+    );
+    if (!canManageTournament(currentUser, ownerOrManager)) {
+      throw new ForbiddenError("mark registrations as paid for this tournament");
+    }
+
+    const updated = await this.registrationsRepo.updatePaymentStatus(
+      registrationId,
+      Date.now(),
+      note ?? null,
+    );
+
+    void this.notifyCoachOfPaymentReceived(registration.teamId, registration.tournamentId);
+
+    return updated;
+  }
+
+  async markRegistrationUnpaid(
+    registrationId: string,
+    currentUser: AppUser,
+  ): Promise<TournamentRegistration> {
+    const registration = await this.registrationsRepo.findById(registrationId);
+    if (!registration) throw new NotFoundError("Registration", registrationId);
+
+    const ownerOrManager = await this.tournamentsRepo.isOwnerOrManager(
+      registration.tournamentId,
+      currentUser.id,
+    );
+    if (!canManageTournament(currentUser, ownerOrManager)) {
+      throw new ForbiddenError("update payment status for this tournament");
+    }
+
+    return this.registrationsRepo.updatePaymentStatus(registrationId, null, null);
+  }
+
   // ── Private notification helpers ─────────────────────────────────────────
 
   /**
@@ -171,6 +271,30 @@ export class TournamentRegistrationService {
       );
     } catch (err) {
       console.error("[notifications] Failed to notify directors of new registration:", err);
+    }
+  }
+
+  /**
+   * Fire-and-forget: notify the team's coach that their registration payment
+   * has been confirmed by the director. Errors are logged and swallowed.
+   */
+  private async notifyCoachOfPaymentReceived(
+    teamId: string,
+    tournamentId: string,
+  ): Promise<void> {
+    try {
+      const team = await this.teamsRepo.findById(teamId);
+      const tournament = await this.tournamentsRepo.findById(tournamentId);
+      if (!team || !tournament) return;
+
+      await makeNotificationService().createForUser(team.coachId, {
+        type: NOTIFICATION_TYPES.REGISTRATION_MARKED_PAID,
+        title: "Payment received",
+        body: `Your registration payment for ${tournament.name} has been confirmed.`,
+        referenceUrl: `/teams/${team.id}#registrations`,
+      });
+    } catch (err) {
+      console.error("[notifications] Failed to notify coach of payment received:", err);
     }
   }
 

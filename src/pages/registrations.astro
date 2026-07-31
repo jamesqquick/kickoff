@@ -1,0 +1,104 @@
+---
+import AppLayout from "@/layouts/AppLayout.astro";
+import PageHeader from "@/components/PageHeader.astro";
+import SectionCard from "@/components/SectionCard.astro";
+import { cn } from "@/lib/utils";
+import { makeTeamService } from "@/services/team-service";
+import { makeTournamentRegistrationService } from "@/services/tournament-registration-service";
+import type { RegistrationWithDetails } from "@/repositories/tournament-registration-repository";
+import type { RegistrationStatus } from "@/lib/schema";
+import { REGISTRATION_STATUS_COLORS, PAYMENT_STATUS_COLORS } from "@/lib/registration-display";
+
+const user = Astro.locals.user;
+if (!user || !user.isCoach) {
+  return Astro.redirect("/dashboard");
+}
+
+const teams = await makeTeamService().listByCoach(user.id);
+
+// Collect all registrations across all coach's teams (fetched concurrently).
+const regService = makeTournamentRegistrationService();
+const regsPerTeam = await Promise.all(
+  teams.map((team) => regService.getRegistrationsForTeam(team.id)),
+);
+const allRegs: RegistrationWithDetails[] = regsPerTeam.flat();
+
+// Sort: pending first, then approved, then waitlisted, then rejected — within each by most recent.
+const ORDER: Record<RegistrationStatus, number> = { pending: 0, approved: 1, waitlisted: 2, rejected: 3 };
+allRegs.sort((a, b) =>
+  ORDER[a.status] !== ORDER[b.status]
+    ? ORDER[a.status] - ORDER[b.status]
+    : new Date(b.registeredAt).getTime() - new Date(a.registeredAt).getTime()
+);
+
+function formatDate(iso: string) {
+  return new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+}
+---
+
+<AppLayout title="My Registrations" activeNav="registrations">
+  <div class="p-4 sm:p-6 lg:p-8">
+    <PageHeader
+      title="My Registrations"
+      subtitle="All tournament registrations across your teams."
+    />
+
+    <SectionCard>
+      {allRegs.length === 0 ? (
+        <div class="px-6 py-12 text-center">
+          <p class="text-sm text-(--color-muted) mb-3">No registrations yet.</p>
+          <a href="/tournaments" class="text-sm text-(--color-primary) hover:underline">
+            Browse tournaments →
+          </a>
+        </div>
+      ) : (
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="border-b border-(--color-border)">
+                <th class="text-left text-xs font-semibold uppercase tracking-wider text-(--color-muted-fg) px-6 py-3">Tournament</th>
+                <th class="text-left text-xs font-semibold uppercase tracking-wider text-(--color-muted-fg) px-6 py-3">Team</th>
+                <th class="text-left text-xs font-semibold uppercase tracking-wider text-(--color-muted-fg) px-6 py-3">Division</th>
+                <th class="hidden sm:table-cell text-left text-xs font-semibold uppercase tracking-wider text-(--color-muted-fg) px-6 py-3">Registered</th>
+                <th class="text-left text-xs font-semibold uppercase tracking-wider text-(--color-muted-fg) px-6 py-3">Status</th>
+                <th class="text-left text-xs font-semibold uppercase tracking-wider text-(--color-muted-fg) px-6 py-3">Payment</th>
+              </tr>
+            </thead>
+            <tbody>
+              {allRegs.map((r) => (
+                <tr
+                  key={r.id}
+                  class="border-b border-(--color-border-soft) last:border-0 hover:bg-(--color-background) transition-colors cursor-pointer"
+                  onclick={`window.location.href='/registrations/${r.id}'`}
+                >
+                  <td class="px-6 py-3.5 font-medium text-(--color-foreground)">{r.tournamentName}</td>
+                  <td class="px-6 py-3.5 text-(--color-muted)">{r.teamName}</td>
+                  <td class="px-6 py-3.5 text-(--color-muted)">{r.divisionName}</td>
+                  <td class="hidden sm:table-cell px-6 py-3.5 text-(--color-muted)">{formatDate(r.registeredAt)}</td>
+                  <td class="px-6 py-3.5">
+                    <span class={cn("inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium", REGISTRATION_STATUS_COLORS[r.status])}>
+                      {r.status.charAt(0).toUpperCase() + r.status.slice(1)}
+                    </span>
+                  </td>
+                  <td class="px-6 py-3.5">
+                    {r.registrationFee === null ? (
+                      <span class="text-xs text-(--color-muted)">—</span>
+                    ) : r.paidAt ? (
+                      <span class={cn("inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium", PAYMENT_STATUS_COLORS.paid)}>
+                        Paid
+                      </span>
+                    ) : (
+                      <span class={cn("inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium", PAYMENT_STATUS_COLORS.unpaid)}>
+                        Unpaid
+                      </span>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </SectionCard>
+  </div>
+</AppLayout>

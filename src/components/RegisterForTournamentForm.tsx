@@ -21,10 +21,13 @@ interface Props {
   tournamentId: string;
   divisions: DivisionWithCount[];
   coachTeams: { id: string; name: string }[];
+  registeredTeamIds: string[];
 }
 
-export function RegisterForTournamentForm({ tournamentId, divisions, coachTeams }: Props) {
-  const [selectedTeamId, setSelectedTeamId] = useState(coachTeams[0]?.id ?? "");
+export function RegisterForTournamentForm({ tournamentId, divisions, coachTeams, registeredTeamIds }: Props) {
+  const registeredSet = new Set(registeredTeamIds);
+  const firstEligible = coachTeams.find((t) => !registeredSet.has(t.id));
+  const [selectedTeamId, setSelectedTeamId] = useState(firstEligible?.id ?? "");
   const [selectedDivisionId, setSelectedDivisionId] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -62,14 +65,22 @@ export function RegisterForTournamentForm({ tournamentId, divisions, coachTeams 
           <label className="block text-sm font-medium text-(--color-foreground) mb-2">
             Which team are you registering?
           </label>
-          <Select value={selectedTeamId} onValueChange={setSelectedTeamId}>
+          <Select
+            value={selectedTeamId}
+            onValueChange={(v) => { if (!registeredSet.has(v)) setSelectedTeamId(v); }}
+          >
             <SelectTrigger className="w-full">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              {coachTeams.map((t) => (
-                <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>
-              ))}
+              {coachTeams.map((t) => {
+                const already = registeredSet.has(t.id);
+                return (
+                  <SelectItem key={t.id} value={t.id} disabled={already}>
+                    {t.name}{already ? " (registered)" : ""}
+                  </SelectItem>
+                );
+              })}
             </SelectContent>
           </Select>
         </div>
@@ -129,7 +140,7 @@ export function RegisterForTournamentForm({ tournamentId, divisions, coachTeams 
         >
           Cancel
         </a>
-        <Button type="submit" disabled={loading || !selectedDivisionId}>
+        <Button type="submit" disabled={loading || !selectedDivisionId || registeredSet.has(selectedTeamId)}>
           {loading ? "Submitting…" : "Submit Registration"}
         </Button>
       </div>

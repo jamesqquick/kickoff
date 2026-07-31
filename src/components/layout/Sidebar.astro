@@ -127,6 +127,22 @@ function getIcon(name: string) {
         </a>
       )}
 
+      <!-- My Registrations — coach only -->
+      {isCoach && (
+        <a
+          href="/registrations"
+          class:list={[
+            "flex items-center gap-3 px-3 py-2 rounded-[8px] text-sm font-medium mb-0.5 transition-colors",
+            activeNav === "registrations"
+              ? "bg-(--color-primary-subtle) text-(--color-primary)"
+              : "text-(--color-muted) hover:bg-(--color-border-soft) hover:text-(--color-foreground)",
+          ]}
+        >
+          <span class="text-base leading-none">📋</span>
+          <span class="flex-1">My Registrations</span>
+        </a>
+      )}
+
       <!-- My Tournaments — director only -->
       {isDirector && (
         <a

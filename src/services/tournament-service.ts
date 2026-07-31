@@ -13,6 +13,8 @@ export interface CreateTournamentInput {
   registrationDeadline?: string | null;
   location?: string | null;
   description?: string | null;
+  registrationFee?: number | null;         // cents
+  paymentInstructions?: string | null;     // free text shown to coaches
 }
 
 export interface UpdateTournamentInput {
@@ -22,6 +24,8 @@ export interface UpdateTournamentInput {
   registrationDeadline?: string | null;
   location?: string | null;
   description?: string | null;
+  registrationFee?: number | null;         // cents
+  paymentInstructions?: string | null;     // free text shown to coaches
 }
 
 // Derive a URL-safe slug from a tournament name.
@@ -86,6 +90,8 @@ export class TournamentService {
       registrationDeadline: input.registrationDeadline ?? null,
       location: input.location ?? null,
       description: input.description ?? null,
+      registrationFee: input.registrationFee ?? null,
+      paymentInstructions: input.paymentInstructions ?? null,
       createdBy: currentUser.id,
       createdAt: now,
       updatedAt: now,
@@ -122,6 +128,8 @@ export class TournamentService {
       fields.registrationDeadline = input.registrationDeadline ?? null;
     if ("location" in input) fields.location = input.location ?? null;
     if ("description" in input) fields.description = input.description ?? null;
+    if ("registrationFee" in input) fields.registrationFee = input.registrationFee ?? null;
+    if ("paymentInstructions" in input) fields.paymentInstructions = input.paymentInstructions ?? null;
 
     return this.tournaments.update(id, fields);
   }

@@ -47,15 +47,14 @@ if (coachTeams.length === 0) {
   return Astro.redirect(`/teams/register`);
 }
 
-// Already registered — redirect back to tournament page.
+// Find which of the coach's teams are already registered for this tournament.
 const regRepo = new TournamentRegistrationRepository(getDb());
-const existingReg = await Promise.all(
+const existingRegs = await Promise.all(
   coachTeams.map((t) => regRepo.findByTeamAndTournament(t.id, tournament.id))
-).then((results) => results.find(Boolean) ?? null);
-
-if (existingReg) {
-  return Astro.redirect(`/tournaments/${id}`);
-}
+);
+const registeredTeamIds = new Set(
+  existingRegs.filter(Boolean).map((r) => r!.teamId)
+);
 
 // Build division list with current registration counts for capacity display.
 const divisionCounts = await Promise.all(
@@ -89,7 +88,7 @@ function formatDate(d: string | null) {
     />
 
     <!-- Tournament summary -->
-    <div class="rounded-lg border border-(--color-border) bg-(--color-card) px-5 py-4 mb-6 flex flex-wrap gap-x-6 gap-y-1 text-sm text-(--color-muted)">
+    <div class="rounded-lg border border-(--color-border) bg-(--color-card) px-5 py-4 mb-4 flex flex-wrap gap-x-6 gap-y-1 text-sm text-(--color-muted)">
       {tournament.startDate && tournament.endDate && (
         <span>📅 {formatDate(tournament.startDate)} – {formatDate(tournament.endDate)}</span>
       )}
@@ -99,12 +98,30 @@ function formatDate(d: string | null) {
       )}
     </div>
 
+    <!-- Fee notice -->
+    {tournament.registrationFee && (
+      <div class="rounded-lg border border-(--color-border) bg-(--color-card) px-5 py-4 mb-6 text-sm space-y-1.5">
+        <p>
+          <span class="font-medium text-(--color-foreground)">
+            Registration fee: ${(tournament.registrationFee / 100).toFixed(2)}
+          </span>
+          <span class="text-(--color-muted)">
+            {" "}— the director will collect payment separately.
+          </span>
+        </p>
+        {tournament.paymentInstructions && (
+          <p class="text-(--color-muted) whitespace-pre-line">{tournament.paymentInstructions}</p>
+        )}
+      </div>
+    )}
+
     <SectionCard class="p-5 sm:p-7">
       <RegisterForTournamentForm
         client:load
         tournamentId={tournament.id}
         divisions={divisionCounts}
         coachTeams={coachTeams.map((t) => ({ id: t.id, name: t.name }))}
+        registeredTeamIds={[...registeredTeamIds]}
       />
     </SectionCard>
 

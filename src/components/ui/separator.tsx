@@ -26,3 +26,12 @@ const Separator = React.forwardRef<
 Separator.displayName = SeparatorPrimitive.Root.displayName;
 
 export { Separator };
+
+/**
+ * Horizontal rule for separating named sections inside a card or panel.
+ * Tighter space above (mt-2) so it sits close to the content that precedes it;
+ * more space below (mb-6) so the next section heading has room to breathe.
+ */
+export function SectionSeparator() {
+  return <Separator className="mt-2 mb-6" />;
+}

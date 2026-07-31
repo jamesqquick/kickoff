@@ -32,6 +32,9 @@ export function SaveTournamentButton({ mode, tournamentId, redirectBase = "/admi
     const registrationDeadline = get("registrationDeadline") || null;
     const location = get("location") || null;
     const description = get("description") || null;
+    const feeRaw = get("registrationFee");
+    const registrationFee = feeRaw ? Math.round(parseFloat(feeRaw) * 100) : null;
+    const paymentInstructions = get("paymentInstructions") || null;
 
     if (!name) {
       toast.error("Tournament name is required.");
@@ -48,6 +51,8 @@ export function SaveTournamentButton({ mode, tournamentId, redirectBase = "/admi
           registrationDeadline,
           location,
           description,
+          registrationFee,
+          paymentInstructions,
         });
         if (error) {
           toast.error(error.message ?? "Could not create tournament. Try again.");
@@ -64,6 +69,8 @@ export function SaveTournamentButton({ mode, tournamentId, redirectBase = "/admi
           registrationDeadline,
           location,
           description,
+          registrationFee,
+          paymentInstructions,
         });
         if (error) {
           toast.error(error.message ?? "Could not save changes. Try again.");

@@ -52,6 +52,46 @@ export const tournamentRegistrations = {
     },
   }),
 
+  markPaid: defineAction({
+    input: z.object({
+      registrationId: z.string(),
+      note: z.string().max(500).optional(),
+    }),
+    handler: async ({ registrationId, note }, context) => {
+      const user = context.locals.user;
+      if (!user) {
+        throw new ActionError({ code: "UNAUTHORIZED", message: "You must be signed in" });
+      }
+      try {
+        return await makeTournamentRegistrationService().markRegistrationPaid(
+          registrationId,
+          note,
+          user,
+        );
+      } catch (err) {
+        throw toActionError(err);
+      }
+    },
+  }),
+
+  markUnpaid: defineAction({
+    input: z.object({ registrationId: z.string() }),
+    handler: async ({ registrationId }, context) => {
+      const user = context.locals.user;
+      if (!user) {
+        throw new ActionError({ code: "UNAUTHORIZED", message: "You must be signed in" });
+      }
+      try {
+        return await makeTournamentRegistrationService().markRegistrationUnpaid(
+          registrationId,
+          user,
+        );
+      } catch (err) {
+        throw toActionError(err);
+      }
+    },
+  }),
+
   updateStatus: defineAction({
     input: z.object({
       registrationId: z.string(),
