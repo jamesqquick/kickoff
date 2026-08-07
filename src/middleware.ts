@@ -2,7 +2,7 @@ import { defineMiddleware } from "astro:middleware";
 import { getAuth } from "@/lib/auth";
 import type { AppUser } from "@/lib/auth";
 
-const PUBLIC_ROUTES = new Set(["/signin", "/"]);
+const PUBLIC_ROUTES = new Set(["/signin", "/", "/forgot-password", "/reset-password"]);
 const PUBLIC_PREFIXES = [
   "/join/",
   "/director/join/", // manager invite landing — public so invitee can authenticate first
