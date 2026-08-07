@@ -31,3 +31,6 @@ pnpm-debug.log*
 
 # throwaway scripts
 tmp/
+
+# local design docs / specs (not checked in)
+docs/

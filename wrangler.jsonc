@@ -1,12 +1,10 @@
 {
   // Kickoff — Soccer Tournament Manager
   // https://developers.cloudflare.com/workers/wrangler/configuration/
-  "name": "kickoff",
+  "name": "quick-tour",
   "account_id": "4426cbeacb457b1ca1b865d6c36ced0d",
   "compatibility_date": "2025-01-01",
   "compatibility_flags": ["nodejs_compat"],
-  // Vars set via the dashboard (e.g. EMAIL_SENDING_ENABLED) survive
-  // `wrangler deploy` instead of being wiped/overwritten on every deploy.
   "keep_vars": true,
   "main": "@astrojs/cloudflare/entrypoints/server",
   "assets": {
