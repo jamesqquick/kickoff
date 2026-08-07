@@ -1,0 +1,29 @@
+worker-configuration.d.ts
+  s_9d738d921050ea::t_0e4d6cfffe8e3a 2,6
+wrangler.jsonc
+  s_6c066ff5e71ee6::t_e690f50144165b 22-26
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "03eba4d2bf262bf694d39190db422102e1ee1062",
+  "prompts": {},
+  "sessions": {
+    "s_6c066ff5e71ee6": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_06585f904ffeDAWmbNPR43s7nC",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "James Quick <jquick@cloudflare.com>"
+    },
+    "s_9d738d921050ea": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_06585cd20ffe5d946yP6HnBoeJ",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "James Quick <jquick@cloudflare.com>"
+    }
+  }
+}
