@@ -1,4 +1,4 @@
-import { EMAIL_FROM_ADDRESS, SEND_EMAIL_IN_DEV } from "astro:env/server";
+import { EMAIL_FROM_ADDRESS, EMAIL_SENDING_ENABLED } from "astro:env/server";
 
 // ─── Generic helpers ─────────────────────────────────────────────────────────
 
@@ -37,8 +37,11 @@ export function formatExpiry(expiresAt: number): string {
  * Handles the three cross-cutting concerns that are identical in every project:
  *   1. Graceful no-op when EMAIL_FROM_ADDRESS is not configured (safe to deploy
  *      before the sending domain is set up).
- *   2. Dev guard: skips real sends unless SEND_EMAIL_IN_DEV=true, logging the
- *      would-be payload instead.
+ *   2. Kill switch: skips real sends unless EMAIL_SENDING_ENABLED=true.
+ *      Defaults to false everywhere, including production — sending must be
+ *      explicitly turned on (e.g. `wrangler secret put EMAIL_SENDING_ENABLED`)
+ *      once the sending domain is ready, and can be turned back off the same
+ *      way without a redeploy.
  *   3. Best-effort error handling: send failures are caught and logged, never
  *      propagated — email must never break a primary operation.
  *
@@ -76,9 +79,10 @@ export abstract class BaseEmailService {
     // Email is not configured — skip silently.
     if (!EMAIL_FROM_ADDRESS) return;
 
-    // Dev guard: skip actual sending unless SEND_EMAIL_IN_DEV is enabled.
-    if (!SEND_EMAIL_IN_DEV) {
-      console.log("[email] SEND_EMAIL_IN_DEV=false — skipping send", { to, subject });
+    // Kill switch: skip actual sending unless explicitly enabled. Defaults
+    // to false in every environment, so local dev never sends real email.
+    if (!EMAIL_SENDING_ENABLED) {
+      console.log("[email] EMAIL_SENDING_ENABLED=false — skipping send", { to, subject });
       return;
     }
 
