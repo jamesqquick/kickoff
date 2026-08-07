@@ -1,7 +1,7 @@
 import { betterAuth } from "better-auth";
 import type { User } from "better-auth";
 import { D1Dialect } from "kysely-d1";
-import { env } from "cloudflare:workers";
+import { env, waitUntil } from "cloudflare:workers";
 import {
   BETTER_AUTH_SECRET,
   BETTER_AUTH_URL,
@@ -78,13 +78,19 @@ function createAuth() {
       user: {
         create: {
           // After a new user signs up, send a welcome email (best-effort).
+          // waitUntil is required here: without it this floating promise can be
+          // cut off once the OAuth callback response is sent, before the email
+          // actually reaches Cloudflare's Email API (confirmed empirically —
+          // see PR discussion).
           after: async (user) => {
             const firstName = (user.name ?? "").split(" ")[0] || "there";
-            makeEmailService()
-              .sendWelcome(user.email, { firstName })
-              .catch((err) => {
-                console.error("[auth] Failed to send welcome email", err);
-              });
+            waitUntil(
+              makeEmailService()
+                .sendWelcome(user.email, { firstName })
+                .catch((err) => {
+                  console.error("[auth] Failed to send welcome email", err);
+                }),
+            );
           },
         },
       },

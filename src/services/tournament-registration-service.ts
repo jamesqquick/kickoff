@@ -11,6 +11,7 @@ import type { TournamentRegistration, RegistrationStatus } from "@/lib/schema";
 import { makeNotificationService } from "@/services/notification-service";
 import { NOTIFICATION_TYPES } from "@/lib/notifications";
 import { makeEmailService } from "@/services/email-service";
+import { waitUntil } from "cloudflare:workers";
 
 export class TournamentRegistrationService {
   constructor(
@@ -164,11 +165,11 @@ export class TournamentRegistrationService {
     });
 
     // Notify: tournament owner + co-managers that a new registration was submitted.
-    void this.notifyDirectorsOfNewRegistration(
-      team.name,
-      tournament.name,
-      division.name,
-      tournament,
+    // waitUntil is required: this helper sends email internally, and a bare
+    // floating promise can be cut off once the response is sent, before the
+    // email reaches Cloudflare's API.
+    waitUntil(
+      this.notifyDirectorsOfNewRegistration(team.name, tournament.name, division.name, tournament),
     );
 
     return registration;
@@ -194,12 +195,17 @@ export class TournamentRegistrationService {
     const updated = await this.registrationsRepo.updateStatus(registrationId, status, notes);
 
     // Notify: team coach that their registration status changed.
-    void this.notifyCoachOfStatusChange(
-      registration.teamId,
-      registration.divisionId,
-      status,
-      notes,
-      registration.tournamentId,
+    // waitUntil is required: this helper sends email internally, and a bare
+    // floating promise can be cut off once the response is sent, before the
+    // email reaches Cloudflare's API.
+    waitUntil(
+      this.notifyCoachOfStatusChange(
+        registration.teamId,
+        registration.divisionId,
+        status,
+        notes,
+        registration.tournamentId,
+      ),
     );
 
     return updated;

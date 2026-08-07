@@ -6,6 +6,7 @@ import { TournamentRepository } from "@/repositories/tournament-repository";
 import type { TournamentManager, TournamentManagerInvite } from "@/lib/schema";
 import { makeEmailService } from "@/services/email-service";
 import { BETTER_AUTH_URL } from "astro:env/server";
+import { waitUntil } from "cloudflare:workers";
 
 // 48 hours in milliseconds
 const INVITE_TTL_MS = 48 * 60 * 60 * 1000;
@@ -153,17 +154,21 @@ export class TournamentManagerService {
     });
 
     // Send the invite email when an email address was provided (best-effort).
+    // waitUntil is required: without it this floating promise can be cut off
+    // once the response is sent, before the email reaches Cloudflare's API.
     if (email) {
       const inviteUrl = `${BETTER_AUTH_URL}/director/join/${token}`;
-      makeEmailService()
-        .sendManagerInvite(email, {
-          tournamentName: tournament.name,
-          inviteUrl,
-          expiresAt,
-        })
-        .catch((err) => {
-          console.error("[manager] Failed to send manager invite email", err);
-        });
+      waitUntil(
+        makeEmailService()
+          .sendManagerInvite(email, {
+            tournamentName: tournament.name,
+            inviteUrl,
+            expiresAt,
+          })
+          .catch((err) => {
+            console.error("[manager] Failed to send manager invite email", err);
+          }),
+      );
     }
 
     return invite;
