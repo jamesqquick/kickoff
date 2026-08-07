@@ -1,0 +1,19 @@
+worker-configuration.d.ts
+  s_84c98bbd9bbaef::t_6bde458fdf73d4 2-3,12-13
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "3f839a5df442f414c05388f154156949d0f9df7b",
+  "prompts": {},
+  "sessions": {
+    "s_84c98bbd9bbaef": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_02365eaa8ffe0sy7bWy3B1MD1Q",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "James Quick <jquick@cloudflare.com>"
+    }
+  }
+}
