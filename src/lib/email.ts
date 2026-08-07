@@ -1,28 +1,12 @@
-// Email service stub — wire real send logic here when the Cloudflare Email
-// Send infrastructure is available (see issue #41).
-//
-// All functions log intent in development so password reset URLs are still
-// accessible during local testing without an email provider.
+import { env } from "cloudflare:workers";
 
-export interface PasswordResetEmailParams {
-  to: string;
-  resetUrl: string;
-}
+// Lazy singleton — created on first request so the env binding is available.
+// Mirrors the pattern used in lib/db.ts and lib/auth.ts.
+let _email: SendEmail | null = null;
 
-/**
- * Sends a password-reset email containing the one-time reset link.
- *
- * TODO: replace the console.warn stub with a real Cloudflare Email Send call
- * once the email infrastructure issue is resolved.
- */
-export async function sendPasswordReset({
-  to,
-  resetUrl,
-}: PasswordResetEmailParams): Promise<void> {
-  // TODO: replace with Cloudflare Email Send when infrastructure is available.
-  console.warn(
-    `[email] sendPasswordReset not yet implemented.\n` +
-      `  To: ${to}\n` +
-      `  Reset URL: ${resetUrl}`,
-  );
+export function getEmailSender(): SendEmail {
+  if (!_email) {
+    _email = env.EMAIL;
+  }
+  return _email;
 }

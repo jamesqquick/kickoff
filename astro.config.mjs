@@ -43,6 +43,16 @@ export default defineConfig({
         context: "server",
         access: "secret",
       }),
+      EMAIL_FROM_ADDRESS: envField.string({
+        context: "server",
+        access: "secret",
+        optional: true,
+      }),
+      SEND_EMAIL_IN_DEV: envField.boolean({
+        context: "server",
+        access: "public",
+        default: false,
+      }),
     },
   },
 });

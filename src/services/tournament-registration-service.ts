@@ -10,6 +10,8 @@ import { TeamRepository } from "@/repositories/team-repository";
 import type { TournamentRegistration, RegistrationStatus } from "@/lib/schema";
 import { makeNotificationService } from "@/services/notification-service";
 import { NOTIFICATION_TYPES } from "@/lib/notifications";
+import { makeEmailService } from "@/services/email-service";
+import { waitUntil } from "cloudflare:workers";
 
 export class TournamentRegistrationService {
   constructor(
@@ -163,7 +165,12 @@ export class TournamentRegistrationService {
     });
 
     // Notify: tournament owner + co-managers that a new registration was submitted.
-    void this.notifyDirectorsOfNewRegistration(team.name, tournament.name, tournament);
+    // waitUntil is required: this helper sends email internally, and a bare
+    // floating promise can be cut off once the response is sent, before the
+    // email reaches Cloudflare's API.
+    waitUntil(
+      this.notifyDirectorsOfNewRegistration(team.name, tournament.name, division.name, tournament),
+    );
 
     return registration;
   }
@@ -188,7 +195,18 @@ export class TournamentRegistrationService {
     const updated = await this.registrationsRepo.updateStatus(registrationId, status, notes);
 
     // Notify: team coach that their registration status changed.
-    void this.notifyCoachOfStatusChange(registration.teamId, status, notes, registration.tournamentId);
+    // waitUntil is required: this helper sends email internally, and a bare
+    // floating promise can be cut off once the response is sent, before the
+    // email reaches Cloudflare's API.
+    waitUntil(
+      this.notifyCoachOfStatusChange(
+        registration.teamId,
+        registration.divisionId,
+        status,
+        notes,
+        registration.tournamentId,
+      ),
+    );
 
     return updated;
   }
@@ -242,23 +260,16 @@ export class TournamentRegistrationService {
 
   /**
    * Fire-and-forget: notify all directors/managers of a tournament that a team
-   * has submitted a new registration. Errors are logged and swallowed — a
-   * notification failure must never block the primary operation.
+   * has submitted a new registration — via in-app notification AND email.
+   * Errors are logged and swallowed — a failure must never block the primary operation.
    */
   private async notifyDirectorsOfNewRegistration(
     teamName: string,
     tournamentName: string,
+    divisionName: string,
     tournament: { id: string; createdBy: string | null },
   ): Promise<void> {
     try {
-      const notificationService = makeNotificationService();
-      const payload = {
-        type: NOTIFICATION_TYPES.NEW_REGISTRATION_SUBMITTED,
-        title: "New registration submitted",
-        body: `${teamName} has registered for ${tournamentName}.`,
-        referenceUrl: `/director/tournaments/${tournament.id}/registrations`,
-      };
-
       // Collect unique recipient user IDs: owner + all co-managers.
       const recipientIds = new Set<string>();
       if (tournament.createdBy) recipientIds.add(tournament.createdBy);
@@ -266,9 +277,36 @@ export class TournamentRegistrationService {
       const managers = await this.tournamentsRepo.listManagers(tournament.id);
       for (const m of managers) recipientIds.add(m.userId);
 
+      if (recipientIds.size === 0) return;
+
+      // In-app notifications.
+      const notificationService = makeNotificationService();
+      const payload = {
+        type: NOTIFICATION_TYPES.NEW_REGISTRATION_SUBMITTED,
+        title: "New registration submitted",
+        body: `${teamName} has registered for ${tournamentName}.`,
+        referenceUrl: `/director/tournaments/${tournament.id}/registrations`,
+      };
       await Promise.all(
         [...recipientIds].map((userId) => notificationService.createForUser(userId, payload)),
       );
+
+      // Email notification: look up email addresses for each recipient.
+      const db = getDb();
+      const placeholders = [...recipientIds].map(() => "?").join(", ");
+      const rows = await db.$client
+        .prepare(`SELECT email FROM "user" WHERE id IN (${placeholders})`)
+        .bind(...recipientIds)
+        .all<{ email: string }>();
+
+      const emails = rows.results.map((r) => r.email).filter(Boolean);
+      if (emails.length > 0) {
+        await makeEmailService().sendNewRegistrationSubmitted(emails, {
+          teamName,
+          tournamentName,
+          divisionName,
+        });
+      }
     } catch (err) {
       console.error("[notifications] Failed to notify directors of new registration:", err);
     }
@@ -300,23 +338,28 @@ export class TournamentRegistrationService {
 
   /**
    * Fire-and-forget: notify the team's coach that a director actioned their
-   * registration. Errors are logged and swallowed.
+   * registration — via in-app notification AND email. Errors are logged and swallowed.
    */
   private async notifyCoachOfStatusChange(
     teamId: string,
+    divisionId: string,
     status: RegistrationStatus,
     notes: string | undefined,
     tournamentId: string,
   ): Promise<void> {
     // Moving a registration back to pending is a director-only housekeeping
-    // action with no actionable meaning for the coach — skip the notification.
+    // action with no actionable meaning for the coach — skip all notifications.
     if (status === "pending") return;
 
     try {
-      const team = await this.teamsRepo.findById(teamId);
-      const tournament = await this.tournamentsRepo.findById(tournamentId);
-      if (!team || !tournament) return;
+      const [team, division, tournament] = await Promise.all([
+        this.teamsRepo.findById(teamId),
+        this.divisionsRepo.findById(divisionId),
+        this.tournamentsRepo.findById(tournamentId),
+      ]);
+      if (!team || !division || !tournament) return;
 
+      // In-app notification.
       const body = notes
         ? `Your registration for ${tournament.name} was ${status}. Director note: ${notes}`
         : `Your registration for ${tournament.name} was ${status}.`;
@@ -327,6 +370,23 @@ export class TournamentRegistrationService {
         body,
         referenceUrl: `/teams/${team.id}#registrations`,
       });
+
+      // Email notification: look up the coach's email address.
+      const db = getDb();
+      const coachUser = await db.$client
+        .prepare('SELECT email FROM "user" WHERE id = ?')
+        .bind(team.coachId)
+        .first<{ email: string }>();
+
+      if (coachUser?.email) {
+        await makeEmailService().sendRegistrationStatusChanged(coachUser.email, {
+          teamName: team.name,
+          tournamentName: tournament.name,
+          divisionName: division.name,
+          status,
+          directorNote: notes,
+        });
+      }
     } catch (err) {
       console.error("[notifications] Failed to notify coach of registration status change:", err);
     }
