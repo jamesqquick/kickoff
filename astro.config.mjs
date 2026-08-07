@@ -48,9 +48,16 @@ export default defineConfig({
         access: "secret",
         optional: true,
       }),
-      SEND_EMAIL_IN_DEV: envField.boolean({
+      // access: "secret" here is required for correctness, not because the
+      // value is sensitive (it's a plain "true"/"false" Cloudflare var, not
+      // an encrypted secret). Astro's env integration resolves "public"
+      // fields once at build time and inlines the result as a literal —
+      // "secret" fields are the only ones resolved lazily per-request
+      // against the live Cloudflare Worker `env`. Without this, no
+      // dashboard/runtime var change would ever take effect.
+      EMAIL_SENDING_ENABLED: envField.boolean({
         context: "server",
-        access: "public",
+        access: "secret",
         default: false,
       }),
     },

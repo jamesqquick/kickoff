@@ -10,7 +10,7 @@ interface __BaseEnv_Env {
 	GOOGLE_CLIENT_ID: string;
 	GOOGLE_CLIENT_SECRET: string;
 	EMAIL_FROM_ADDRESS: string;
-	SEND_EMAIL_IN_DEV: string;
+	EMAIL_SENDING_ENABLED: string;
 }
 declare namespace Cloudflare {
 	interface Env extends __BaseEnv_Env {}
