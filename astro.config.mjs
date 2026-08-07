@@ -48,12 +48,9 @@ export default defineConfig({
         access: "secret",
         optional: true,
       }),
-      // Email sending kill switch. Defaults to false everywhere (including
-      // production) so nothing sends until explicitly turned on. Set to
-      // `true` via `wrangler secret put EMAIL_SENDING_ENABLED` on the
-      // deployed Worker when ready to send real email — this lets us
-      // toggle production sending on/off instantly without a redeploy.
-      // Never set this locally; local dev should always default to false.
+      // Email sending kill switch, set via wrangler.jsonc's `vars` (plain
+      // text, not a secret). Defaults to "false" there; flip to "true" and
+      // redeploy when ready to send real email.
       EMAIL_SENDING_ENABLED: envField.boolean({
         context: "server",
         access: "public",
